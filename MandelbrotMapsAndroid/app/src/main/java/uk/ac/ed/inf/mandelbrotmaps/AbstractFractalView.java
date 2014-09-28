@@ -226,13 +226,14 @@ abstract class AbstractFractalView extends View {
         midY = 0.0f;
 
         //Create new image only if not dragging, zooming, or moving the Julia pin
-        if (controlmode == ControlMode.STATIC && !holdingPin) {
+        if (controlmode == ControlMode.STATIC && !holdingPin && getWidth() > 0) {
             bitmapCreations++;
             fractalBitmap = Bitmap.createBitmap(fractalPixels, 0, getWidth(), getWidth(), getHeight(), Bitmap.Config.RGB_565);
         }
 
         //Draw fractal image on screen
-        canvas.drawBitmap(fractalBitmap, matrix, new Paint());
+        if (getWidth() > 0)
+            canvas.drawBitmap(fractalBitmap, matrix, new Paint());
 
         // Brings little view to front if it's hidden but shouldn't be, as can happen.
         if (parentActivity.showingLittle) parentActivity.addLittleView(false);
