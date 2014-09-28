@@ -19,6 +19,7 @@ package uk.ac.ed.inf.mandelbrotmaps.colouring;
 /**
  * Defines a colour scheme that moves from black to blue, cyan, green, yellow,
  * red, magenta and back to blue.
+ *
  * @author mallia
  */
 public class RGBWalkColouringScheme implements ColouringScheme {
@@ -32,22 +33,23 @@ public class RGBWalkColouringScheme implements ColouringScheme {
 
     /**
      * The colouring algorithm colours in the following manner (values in brackets are RGB values):
-     *   1. From Black (0,0,0) to Blue (0,0,255)
-     *   2. From Blue (0,0,255) to Cyan (0,255,255)
-     *   3. From Cyan (0,255,255) to Green (0,255,0)
-     *   4. From Green (0,255,0) to Yellow (255,255,0)
-     *   5. From Yellow (255,255,0) to Red (255,0,0)
-     *   6. From Red (255,0,0) to Magenta (255,0,255)
-     *   7. From Magenta (255,0,255) to Blue (0,0,255)
-     *   8. Continue from step 2
+     * 1. From Black (0,0,0) to Blue (0,0,255)
+     * 2. From Blue (0,0,255) to Cyan (0,255,255)
+     * 3. From Cyan (0,255,255) to Green (0,255,0)
+     * 4. From Green (0,255,0) to Yellow (255,255,0)
+     * 5. From Yellow (255,255,0) to Red (255,0,0)
+     * 6. From Red (255,0,0) to Magenta (255,0,255)
+     * 7. From Magenta (255,0,255) to Blue (0,0,255)
+     * 8. Continue from step 2
      * The number of iterations handled in each segment is determined by the {@link #COLOUR_SPACING} value.
+     *
      * @param iterations
      * @return RGB colour as int
      */
-    public int colourOutsidePoint(int iterations, int maxIterations){
-        if (iterations <= 0){
+    public int colourOutsidePoint(int iterations, int maxIterations) {
+        if (iterations <= 0) {
             return 0xFF000000;
-        }   
+        }
 
         //number of iterations that we can handle in each segment of the colour scheme
         int maxValueForColour = 220;
@@ -60,7 +62,7 @@ public class RGBWalkColouringScheme implements ColouringScheme {
         boolean exceeded = false;
 
 
-        while (iterations >= iterationsPerPeriod){
+        while (iterations >= iterationsPerPeriod) {
             exceeded = true;
             int i = iterations / iterationsPerPeriod;
             iterations = iterations - (iterationsPerPeriod * i);
@@ -72,7 +74,7 @@ public class RGBWalkColouringScheme implements ColouringScheme {
         int colourCodeB = 0;
 
         //1. From Black (0,0,0) to Blue (0,0,255)
-        if ((iterations < (iterationsPerSegment)) && !(exceeded)){
+        if ((iterations < (iterationsPerSegment)) && !(exceeded)) {
             //the colour sequence from within the segment
             int segmentSequenceNo = iterations;
             colourCodeR = 0;
@@ -80,42 +82,42 @@ public class RGBWalkColouringScheme implements ColouringScheme {
             colourCodeB = (int) (segmentSequenceNo * COLOUR_SPACING);
         }
         //7. From Magenta (255,0,255) to Blue (0,0,255)
-        else if ((iterations < (iterationsPerSegment)) && (exceeded)){
+        else if ((iterations < (iterationsPerSegment)) && (exceeded)) {
             int segmentSequenceNo = iterations;
             colourCodeR = maxValueForColour - ((int) (segmentSequenceNo * COLOUR_SPACING));
             colourCodeG = 0;
             colourCodeB = maxValueForColour;
         }
         //2. From Blue (0,0,255) to Cyan (0,255,255)
-        else if ((iterations >= iterationsPerSegment) && (iterations < iterationsPerSegment * 2)){
+        else if ((iterations >= iterationsPerSegment) && (iterations < iterationsPerSegment * 2)) {
             int segmentSequenceNo = iterations - (int) iterationsPerSegment;
             colourCodeR = 0;
             colourCodeG = ((int) (segmentSequenceNo * COLOUR_SPACING));
             colourCodeB = maxValueForColour;
         }
         //3. From Cyan (0,255,255) to Green (0,255,0)
-        else if ((iterations >= iterationsPerSegment * 2) && (iterations < iterationsPerSegment * 3)){
+        else if ((iterations >= iterationsPerSegment * 2) && (iterations < iterationsPerSegment * 3)) {
             int segmentSequenceNo = iterations - (int) (iterationsPerSegment * 2);
             colourCodeR = 0;
             colourCodeG = maxValueForColour;
             colourCodeB = maxValueForColour - ((int) (segmentSequenceNo * COLOUR_SPACING));
         }
         //4. From Green (0,255,0) to Yellow (255,255,0)
-        else if ((iterations >= iterationsPerSegment * 3) && (iterations < iterationsPerSegment * 4)){
+        else if ((iterations >= iterationsPerSegment * 3) && (iterations < iterationsPerSegment * 4)) {
             int segmentSequenceNo = iterations - (int) (iterationsPerSegment * 3);
             colourCodeR = ((int) (segmentSequenceNo * COLOUR_SPACING));
             colourCodeG = maxValueForColour;
             colourCodeB = 0;
         }
         //5. From Yellow (255,255,0) to Red (255,0,0)
-        else if ((iterations >= iterationsPerSegment * 4) && (iterations < iterationsPerSegment * 5)){
+        else if ((iterations >= iterationsPerSegment * 4) && (iterations < iterationsPerSegment * 5)) {
             int segmentSequenceNo = iterations - (int) (iterationsPerSegment * 4);
             colourCodeR = maxValueForColour;
             colourCodeG = maxValueForColour - ((int) (segmentSequenceNo * COLOUR_SPACING));
             colourCodeB = 0;
         }
         //6. From Red (255,0,0) to Magenta (255,0,255)
-        else if ((iterations >= iterationsPerSegment * 5) && (iterations < iterationsPerSegment * 6)){
+        else if ((iterations >= iterationsPerSegment * 5) && (iterations < iterationsPerSegment * 6)) {
             int segmentSequenceNo = iterations - (int) (iterationsPerSegment * 5);
             colourCodeR = maxValueForColour;
             colourCodeG = 0;
