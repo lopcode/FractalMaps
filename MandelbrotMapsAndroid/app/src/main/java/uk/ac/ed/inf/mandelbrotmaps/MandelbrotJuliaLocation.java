@@ -2,7 +2,6 @@ package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.util.Log;
 
-
 class MandelbrotJuliaLocation {
     private double[] mandelbrotGraphArea;
     private double[] juliaGraphArea;
@@ -38,7 +37,6 @@ class MandelbrotJuliaLocation {
         juliaParams = defaultJuliaParams;
     }
 
-
     public MandelbrotJuliaLocation(String bookmark) {
         mandelbrotGraphArea = new double[3];
         juliaGraphArea = new double[3];
@@ -59,7 +57,6 @@ class MandelbrotJuliaLocation {
 
         Log.d("MMaps", "Just set the mbrot graph area. It is... " + mandelbrotGraphArea[0] + "");
     }
-
 
     public void setMandelbrotGraphArea(double[] newMandelbrotGraphArea) {
         System.arraycopy(newMandelbrotGraphArea, 0, mandelbrotGraphArea, 0, mandelbrotGraphArea.length);

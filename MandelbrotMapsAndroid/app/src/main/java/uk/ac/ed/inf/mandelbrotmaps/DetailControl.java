@@ -13,9 +13,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 public class DetailControl extends Activity implements OnClickListener, OnSeekBarChangeListener {
-
-    private final String TAG = "MMaps";
-
     Button applyButton;
     Button defaultsButton;
     Button cancelButton;
@@ -26,14 +23,7 @@ public class DetailControl extends Activity implements OnClickListener, OnSeekBa
     TextView mandelbrotText;
     TextView juliaText;
 
-    int originalMandelbrot = 0;
-    int originalJulia = 0;
-
-    int returnMandelbrot = 0;
-    int returnJulia = 0;
-
     boolean changed = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +53,6 @@ public class DetailControl extends Activity implements OnClickListener, OnSeekBa
         juliaBar.setOnSeekBarChangeListener(this);
         juliaBar.setProgress((int) prefs.getFloat(FractalActivity.juliaDetailKey, (float) AbstractFractalView.DEFAULT_DETAIL_LEVEL));
     }
-
 
     public void onClick(View view) {
         int button = view.getId();
@@ -107,14 +96,11 @@ public class DetailControl extends Activity implements OnClickListener, OnSeekBa
     }
 
     public void onStartTrackingTouch(SeekBar seekBar) {
-        // TODO Auto-generated method stub
 
     }
 
     public void onStopTrackingTouch(SeekBar seekBar) {
-        // TODO Auto-generated method stub
 
     }
-
 }
  

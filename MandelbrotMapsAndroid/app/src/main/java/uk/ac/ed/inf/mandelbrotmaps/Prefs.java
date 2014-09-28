@@ -6,7 +6,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
 public class Prefs extends PreferenceActivity {
-
     private static final String CRUDE_OPTION = "CRUDE";
     private static final boolean CRUDE_OPT_DEFAULT = true;
 

@@ -4,17 +4,14 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 
 public class JuliaFractalView extends AbstractFractalView {
-
     // Point paramaterising this Julia set
     private double juliaX = 0;
     private double juliaY = 0;
 
-
     public JuliaFractalView(Context context, FractalViewSize size) {
         super(context, size);
 
-        setColouringScheme(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("JULIA_COLOURS", "JuliaDefault")
-                , false);
+        setColouringScheme(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("JULIA_COLOURS", "JuliaDefault"), false);
 
         for (int i = 0; i < noOfThreads; i++) {
             renderThreadList.get(i).setName("Julia thread " + i);
@@ -32,14 +29,12 @@ public class JuliaFractalView extends AbstractFractalView {
         MAXZOOM_LN_PIXEL = -20; // Beyond -21, "double"s break down(!).
     }
 
-
     public void setJuliaParameter(double newJuliaX, double newJuliaY) {
         //stopAllRendering();
         juliaX = newJuliaX;
         juliaY = newJuliaY;
         setGraphArea(graphArea, true);
     }
-
 
     public double[] getJuliaParam() {
         double[] juliaParam = new double[2];
@@ -48,7 +43,6 @@ public class JuliaFractalView extends AbstractFractalView {
         return juliaParam;
     }
 
-
     // Load a location
     void loadLocation(MandelbrotJuliaLocation mjLocation) {
         //setScaledIterationCount(mjLocation.getJuliaContrast());
@@ -56,7 +50,6 @@ public class JuliaFractalView extends AbstractFractalView {
         setGraphArea(mjLocation.getJuliaGraphArea(), true);
         setJuliaParameter(juliaParam[0], juliaParam[1]);
     }
-
 
     int pixelInSet(int xPixel, int yPixel, int maxIterations) {
         boolean inside = true;
@@ -86,7 +79,5 @@ public class JuliaFractalView extends AbstractFractalView {
             return colourer.colourInsidePoint();
         else
             return colourer.colourOutsidePoint(iterationNr, maxIterations);
-
     }
-
 }

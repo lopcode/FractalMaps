@@ -1,46 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="2"
-      android:versionName="1.01" 
-      package="uk.ac.ed.inf.mandelbrotmaps">
+    android:versionCode="2"
+    android:versionName="1.01"
+    package="uk.ac.ed.inf.mandelbrotmaps">
+
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
-    <application android:icon="@drawable/icon"
-          android:label="@string/app_name"
-          android:debuggable="true">
-        <activity android:name=".LauncherActivity"
-              android:label="@string/app_name"
-              android:screenOrientation="landscape"
-              android:configChanges="orientation"/>
-              
-        <activity android:name=".DetailControl"
-              android:label="@string/detail_title"
-              android:theme="@android:style/Theme.Dialog"
-              android:screenOrientation="landscape"
-              android:configChanges="orientation"/>
-              
-        <activity android:name=".Prefs"
-              android:label="@string/settings_title"
-              />
-              
-        <activity android:name=".FractalActivity"
-              android:label="Mandelbrot Maps"
-              android:screenOrientation="landscape"
-              android:configChanges="orientation">
-              <intent-filter>
+    <application
+        android:icon="@drawable/icon"
+        android:label="@string/app_name">
+        <activity
+            android:name=".DetailControl"
+            android:label="@string/detail_title"
+            android:theme="@android:style/Theme.Dialog"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation" />
+
+        <activity
+            android:name=".Prefs"
+            android:label="@string/settings_title" />
+
+        <activity
+            android:name=".FractalActivity"
+            android:label="Mandelbrot Maps"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-              
-        <activity android:name = ".UIMockup"
-        		android:label="UIMockup"
-        		android:screenOrientation="landscape"
-        		android:configChanges="orientation"/>
-        		
-        <activity android:name = ".BitmapActivity"
-        		android:label="BitmapActivity"
-        		android:screenOrientation="landscape"
-        		android:configChanges="orientation"/>
     </application>
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="8" />
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="8" />
 </manifest>

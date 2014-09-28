@@ -9,11 +9,10 @@ import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 
 public class MandelbrotFractalView extends AbstractFractalView {
-
     public float lastTouchX = 0;
     public float lastTouchY = 0;
 
-    public double[] currentJuliaParams = null;//new double[2];
+    public double[] currentJuliaParams = null;
     private float[] pinCoords = new float[2];
 
     Paint outerPinPaint;
@@ -29,12 +28,10 @@ public class MandelbrotFractalView extends AbstractFractalView {
     public float smallPinRadius = 5.0f;
     public float largePinRadius = 20.0f;
 
-
     public MandelbrotFractalView(Context context, FractalViewSize size) {
         super(context, size);
 
-        setColouringScheme(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("MANDELBROT_COLOURS", "MandelbrotDefault")
-                , false);
+        setColouringScheme(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("MANDELBROT_COLOURS", "MandelbrotDefault"), false);
 
         for (int i = 0; i < noOfThreads; i++) {
             renderThreadList.get(i).setName("Mandelbrot thread " + i);
@@ -50,7 +47,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
 
         // How deep a zoom do we allow?
         MAXZOOM_LN_PIXEL = -31; // Beyond -31, "double"s break down(!).
-
 
         int pinColour = Color.parseColor(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("PIN_COLOUR", "blue"));
 
@@ -72,7 +68,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
         selectedPinPaint.setColor(pinColour);
         selectedPinPaint.setAlpha(selectedPinAlpha);
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -97,7 +92,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
         }
     }
 
-
     /* Runs when the view changes size.
      * Sets the size of the pin based on screen size. */
     @Override
@@ -115,7 +109,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
         }
     }
 
-
     // Load a location
     void loadLocation(MandelbrotJuliaLocation _mjLocation) {
         //setScaledIterationCount(mjLocation.getMandelbrotContrast());
@@ -125,7 +118,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
         setGraphArea(_mjLocation.getMandelbrotGraphArea(), true);
         currentJuliaParams = _mjLocation.getJuliaParam();
     }
-
 
     int pixelInSet(int xPixel, int yPixel, int maxIterations) {
         boolean inside = true;
@@ -163,7 +155,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
             return colourer.colourOutsidePoint(iterationNr, maxIterations);
     }
 
-
     public double[] getJuliaParams(float touchX, float touchY) {
         lastTouchX = touchX;
         lastTouchY = touchY;
@@ -182,7 +173,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
         return juliaParams;
     }
 
-
     public float[] getPinCoords() {
         float[] pinCoords = new float[2];
         double pixelSize = getPixelSize();
@@ -196,7 +186,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
 
         return pinCoords;
     }
-
 
     public void setPinColour(int newColour) {
         outerPinPaint.setColor(newColour);

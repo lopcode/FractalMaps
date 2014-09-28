@@ -1,20 +1,4 @@
-/*
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package uk.ac.ed.inf.mandelbrotmaps.colouring;
-
 
 /**
  * Defines a colour scheme that moves from black to blue, cyan, green, yellow,
@@ -23,13 +7,11 @@ package uk.ac.ed.inf.mandelbrotmaps.colouring;
  * @author mallia
  */
 public class DefaultColouringScheme implements ColouringScheme {
-
     /**
      * The spacing of the colours.  For example, when creating blue colours, the
      * next blue colour will be new = old + COLOUR_SPACING.
      */
     private static final int COLOUR_SPACING = 30;
-
 
     /**
      * The colouring algorithm colours in the following manner (values in brackets are RGB values):
@@ -75,7 +57,5 @@ public class DefaultColouringScheme implements ColouringScheme {
     public int colourInsidePoint() {
         return 0xFFFFFFFF;
     }
-
-
 }
 

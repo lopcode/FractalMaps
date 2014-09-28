@@ -1,6 +1,5 @@
 package uk.ac.ed.inf.mandelbrotmaps;
 
-
 class RenderThread extends Thread {
     private AbstractFractalView mjCanvas;
     private volatile boolean abortThisRendering = false;

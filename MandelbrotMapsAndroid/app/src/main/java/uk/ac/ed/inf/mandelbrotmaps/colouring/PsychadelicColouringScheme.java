@@ -1,21 +1,4 @@
-/*
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
 package uk.ac.ed.inf.mandelbrotmaps.colouring;
-
 
 /**
  * A colouring scheme based on a conical spiral function.  Recall that a conical
@@ -34,7 +17,6 @@ package uk.ac.ed.inf.mandelbrotmaps.colouring;
  * @author mallia
  */
 public class PsychadelicColouringScheme implements ColouringScheme {
-
     /**
      * Colours a point which is bound to the set.  All points are coloured white.
      *
@@ -96,7 +78,6 @@ public class PsychadelicColouringScheme implements ColouringScheme {
         return colourCodeHex;
     }
 
-
     /**
      * Bounds colour to a limit.  If that limit is reached the colour follows a path
      * back to 0 and then starts off again.
@@ -149,6 +130,5 @@ public class PsychadelicColouringScheme implements ColouringScheme {
     private double y(double t) {
         return t * (2.0 * (Math.sin(t) + 1));
     }
-
 }
 

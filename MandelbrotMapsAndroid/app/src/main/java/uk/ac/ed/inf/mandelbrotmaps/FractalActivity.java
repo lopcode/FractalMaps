@@ -55,14 +55,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     private final String PREVIOUS_SHOWING_LITTLE = "prevShowingLittle";
     private final String FIRST_TIME_KEY = "FirstTime";
 
-
-    // Type of fractal displayed in the main fractal view
-    public static enum FractalType {
-        MANDELBROT,
-        JULIA
-    }
-
-    public FractalType fractalType = FractalType.MANDELBROT;
+    public FractalTypeEnum fractalType = FractalTypeEnum.MANDELBROT;
 
     // Layout variables
     public AbstractFractalView fractalView;
@@ -88,7 +81,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     private Boolean cancelledSave = false;
 
     // Little fractal view tracking
-    public boolean showLittleAtStart = false;
+    public boolean showLittleAtStart = true;
     public boolean showingLittle = false;
     private boolean littleFractalSelected = false;
 
@@ -97,10 +90,9 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     private boolean showingSpinner = false;
     private boolean allowSpinner = false;
 
-
     /*-----------------------------------------------------------------------------------*/
-/*Android lifecycle handling*/
-/*-----------------------------------------------------------------------------------*/
+    /*Android lifecycle handling*/
+    /*-----------------------------------------------------------------------------------*/
     /* Sets up the activity, mostly creates the main fractal view.
 	 * (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -127,15 +119,15 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
         //Extract features from bundle, if there is one
         try {
-            fractalType = FractalType.valueOf(bundle.getString("FractalType"));
+            fractalType = FractalTypeEnum.valueOf(bundle.getString("FractalType"));
             littleMandelbrotLocation = bundle.getDoubleArray("LittleMandelbrotLocation");
             showLittleAtStart = bundle.getBoolean("ShowLittleAtStart");
         } catch (NullPointerException npe) {
         }
 
-        if (fractalType == FractalType.MANDELBROT) {
+        if (fractalType == FractalTypeEnum.MANDELBROT) {
             fractalView = new MandelbrotFractalView(this, FractalViewSize.LARGE);
-        } else if (fractalType == FractalType.JULIA) {
+        } else if (fractalType == FractalTypeEnum.JULIA) {
             fractalView = new JuliaFractalView(this, FractalViewSize.LARGE);
             juliaParams = bundle.getDoubleArray("JuliaParams");
             juliaGraphArea = bundle.getDoubleArray("JuliaGraphArea");
@@ -165,8 +157,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             littleFractalView.stopAllRendering();
             littleFractalView.interruptThreads();
         }
-
-
     }
 
     /* When paused, do the following, dismiss the saving dialog. Might be buggy if mid-save?
@@ -180,7 +170,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             savingDialog.dismiss();
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -188,7 +177,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
     }
-
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -200,7 +188,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             outState.putDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA, littleFractalView.graphArea);
         }
 
-        if (fractalType == FractalType.MANDELBROT) {
+        if (fractalType == FractalTypeEnum.MANDELBROT) {
             outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((MandelbrotFractalView) fractalView).currentJuliaParams);
         } else {
             outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((JuliaFractalView) fractalView).getJuliaParam());
@@ -208,7 +196,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
         outState.putBoolean(PREVIOUS_SHOWING_LITTLE, showingLittle);
     }
-
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -220,7 +207,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
         MandelbrotJuliaLocation restoredLoc;
 
-        if (fractalType == FractalType.MANDELBROT) {
+        if (fractalType == FractalTypeEnum.MANDELBROT) {
             restoredLoc = new MandelbrotJuliaLocation(mainGraphArea, littleGraphArea, juliaParams);
             ((MandelbrotFractalView) fractalView).currentJuliaParams = juliaParams;
         } else {
@@ -233,14 +220,13 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         showLittleAtStart = savedInstanceState.getBoolean(PREVIOUS_SHOWING_LITTLE);
     }
 
-
     /* Set the activity result when finishing, if needed
      * (non-Javadoc)
      * @see android.app.Activity#finish()
      */
     @Override
     public void finish() {
-        if (fractalType == FractalType.JULIA) {
+        if (fractalType == FractalTypeEnum.JULIA) {
             double[] juliaParams = ((JuliaFractalView) fractalView).getJuliaParam();
             double[] currentGraphArea = fractalView.graphArea;
 
@@ -253,7 +239,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
         super.finish();
     }
-
 
     //Get result of launched activity (only time used is after sharing, so delete temp. image)
     @Override
@@ -284,10 +269,9 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         }
     }
 
-
     /*-----------------------------------------------------------------------------------*/
-/*Dynamic UI creation*/
-/*-----------------------------------------------------------------------------------*/
+    /*Dynamic UI creation*/
+    /*-----------------------------------------------------------------------------------*/
    /* Adds the little fractal view and its border, if not showing
     * Also determines its height, width based on large fractal view's size
     */
@@ -298,9 +282,8 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             return;
         }
 
-
         //Show a little Julia next to a Mandelbrot and vice versa
-        if (fractalType == FractalType.MANDELBROT) {
+        if (fractalType == FractalTypeEnum.MANDELBROT) {
             littleFractalView = new JuliaFractalView(this, FractalViewSize.LITTLE);
         } else {
             littleFractalView = new MandelbrotFractalView(this, FractalViewSize.LITTLE);
@@ -326,7 +309,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         lp2.setMargins(borderwidth, borderwidth, borderwidth, borderwidth);
         relativeLayout.addView(littleFractalView, lp2);
 
-        if (fractalType == FractalType.MANDELBROT) {
+        if (fractalType == FractalTypeEnum.MANDELBROT) {
             littleFractalView.loadLocation(mjLocation);
 
             double[] jParams;
@@ -359,7 +342,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         showingLittle = false;
     }
 
-
     /* Shows the progress spinner. Never used because it causes slowdown,
      * leaving it in so I can demonstrate it with benchmarks.
      * Might adapt it to do a progress bar that updates less often.
@@ -388,10 +370,9 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         showingSpinner = false;
     }
 
-
     /*-----------------------------------------------------------------------------------*/
-/*Menu creation/handling*/
-/*-----------------------------------------------------------------------------------*/
+    /*Menu creation/handling*/
+    /*-----------------------------------------------------------------------------------*/
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -411,7 +392,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         else
             verb = "Remove";
 
-        if (fractalType == FractalType.MANDELBROT)
+        if (fractalType == FractalTypeEnum.MANDELBROT)
             fractal = "Julia";
         else
             fractal = "Mandelbrot";
@@ -472,10 +453,9 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         return false;
     }
 
-
     /*-----------------------------------------------------------------------------------*/
-/*Image saving/sharing*/
-/*-----------------------------------------------------------------------------------*/
+    /*Image saving/sharing*/
+    /*-----------------------------------------------------------------------------------*/
    /* TODO: Tidy up this code. Possibly switch to using Handlers and postDelayed.
    */
     //Wait for render to finish, then save the fractal image
@@ -526,7 +506,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             showToastOnUIThread(toastText, Toast.LENGTH_LONG);
         }
     }
-
 
     //Wait for the render to finish, then share the fractal image
     private void shareImage() {
@@ -587,10 +566,9 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         }
     }
 
-
     /*-----------------------------------------------------------------------------------*/
-/*Touch controls*/
-/*-----------------------------------------------------------------------------------*/
+    /*Touch controls*/
+    /*-----------------------------------------------------------------------------------*/
     public boolean onTouch(View v, MotionEvent evt) {
         gestureDetector.onTouchEvent(evt);
 
@@ -599,7 +577,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
                 if (showingLittle && evt.getX() <= borderView.getWidth() && evt.getY() <= borderView.getHeight()) {
                     borderView.setBackgroundColor(Color.DKGRAY);
                     littleFractalSelected = true;
-                } else if (showingLittle && fractalType == FractalType.MANDELBROT && !gestureDetector.isInProgress()
+                } else if (showingLittle && fractalType == FractalTypeEnum.MANDELBROT && !gestureDetector.isInProgress()
                         && !fractalView.holdingPin && (touchingPin(evt.getX(), evt.getY()))) {
                     // Take hold of the pin, reset the little fractal view.
                     fractalView.holdingPin = true;
@@ -610,18 +588,16 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
                 break;
 
-
             case MotionEvent.ACTION_MOVE:
                 if (!gestureDetector.isInProgress()) {
                     if (currentlyDragging) {
                         dragFractal(evt);
-                    } else if (showingLittle && !littleFractalSelected && fractalType == FractalType.MANDELBROT && fractalView.holdingPin) {
+                    } else if (showingLittle && !littleFractalSelected && fractalType == FractalTypeEnum.MANDELBROT && fractalView.holdingPin) {
                         updateLittleJulia(evt.getX(), evt.getY());
                     }
                 }
 
                 break;
-
 
             case MotionEvent.ACTION_POINTER_UP:
                 if (evt.getPointerCount() == 1)
@@ -635,7 +611,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
                 break;
 
-
             case MotionEvent.ACTION_UP:
                 if (currentlyDragging) {
                     stopDragging();
@@ -643,9 +618,9 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
                     borderView.setBackgroundColor(Color.GRAY);
                     littleFractalSelected = false;
                     if (evt.getX() <= borderView.getWidth() && evt.getY() <= borderView.getHeight()) {
-                        if (fractalType == FractalType.MANDELBROT) {
+                        if (fractalType == FractalTypeEnum.MANDELBROT) {
                             launchJulia(((JuliaFractalView) littleFractalView).getJuliaParam());
-                        } else if (fractalType == FractalType.JULIA) {
+                        } else if (fractalType == FractalTypeEnum.JULIA) {
                             finish();
                         }
                     }
@@ -663,9 +638,8 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         return false;
     }
 
-
     private boolean touchingPin(float x, float y) {
-        if (fractalType == FractalType.JULIA)
+        if (fractalType == FractalTypeEnum.JULIA)
             return false;
 
         boolean touchingPin = false;
@@ -705,6 +679,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             dragLastX = evt.getX(pointerIndex);
             dragLastY = evt.getY(pointerIndex);
         } catch (Exception iae) {
+            // TODO: Investigate why this is in a try-catch block
         }
     }
 
@@ -712,7 +687,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         currentlyDragging = false;
         fractalView.stopDragging(false);
     }
-
 
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         fractalView.stopDragging(true);
@@ -733,12 +707,11 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         fractalView.startDragging();
     }
 
-
     /* Detect a long click, place the Julia pin */
     public boolean onLongClick(View v) {
         // Check that it's not scaling, dragging (check for dragging is a little hacky, but seems to work), or already holding the pin
         if (!gestureDetector.isInProgress() && fractalView.totalDragX < 1 && fractalView.totalDragY < 1 && !fractalView.holdingPin) {
-            updateLittleJulia((float) dragLastX, (float) dragLastY);
+            updateLittleJulia(dragLastX, dragLastY);
             if (currentlyDragging) {
                 stopDragging();
             }
@@ -748,10 +721,9 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         return false;
     }
 
-
     /*-----------------------------------------------------------------------------------*/
-/*Utilities*/
-/*-----------------------------------------------------------------------------------*/
+    /*Utilities*/
+    /*-----------------------------------------------------------------------------------*/
 	/*A single method for running toasts on the UI thread, rather than 
    	creating new Runnables each time. */
     public void showToastOnUIThread(final String toastText, final int length) {
@@ -791,7 +763,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     private void launchJulia(double[] juliaParams) {
         Intent intent = new Intent(this, FractalActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putString("FractalType", FractalType.JULIA.toString());
+        bundle.putString("FractalType", FractalTypeEnum.JULIA.toString());
         bundle.putBoolean("ShowLittleAtStart", true);
         bundle.putDoubleArray("LittleMandelbrotLocation", fractalView.graphArea);
 
@@ -804,9 +776,8 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         startActivityForResult(intent, RETURN_FROM_JULIA);
     }
 
-
     private void updateLittleJulia(float x, float y) {
-        if (fractalType != FractalType.MANDELBROT)
+        if (fractalType != FractalTypeEnum.MANDELBROT)
             return;
 
         fractalView.invalidate();
@@ -818,16 +789,13 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             ((MandelbrotFractalView) fractalView).getJuliaParams(x, y);
             addLittleView(false);
         }
-
-        //fractalView.holdingPin = true;
     }
-
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String changedPref) {
         if (changedPref.equals("MANDELBROT_COLOURS")) {
             String mandelbrotScheme = prefs.getString(changedPref, "MandelbrotDefault");
 
-            if (fractalType == FractalType.MANDELBROT) {
+            if (fractalType == FractalTypeEnum.MANDELBROT) {
                 fractalView.setColouringScheme(mandelbrotScheme, true);
             } else if (showingLittle) {
                 littleFractalView.setColouringScheme(mandelbrotScheme, true);
@@ -835,7 +803,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         } else if (changedPref.equals("JULIA_COLOURS")) {
             String juliaScheme = prefs.getString(changedPref, "JuliaDefault");
 
-            if (fractalType == FractalType.JULIA) {
+            if (fractalType == FractalTypeEnum.JULIA) {
                 fractalView.setColouringScheme(juliaScheme, true);
             } else if (showingLittle) {
                 littleFractalView.setColouringScheme(juliaScheme, true);
@@ -843,7 +811,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         } else if (changedPref.equals("PIN_COLOUR")) {
             int newColour = Color.parseColor(prefs.getString(changedPref, "blue"));
 
-            if (fractalType == FractalType.MANDELBROT) {
+            if (fractalType == FractalTypeEnum.MANDELBROT) {
                 ((MandelbrotFractalView) fractalView).setPinColour(newColour);
             } else if (showingLittle) {
                 ((MandelbrotFractalView) littleFractalView).setPinColour(newColour);
@@ -851,12 +819,11 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         }
     }
 
-
     public double getDetailFromPrefs(FractalViewSize fractalViewSize) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String keyToUse = mandelbrotDetailKey;
 
-        if (fractalType == FractalType.MANDELBROT) {
+        if (fractalType == FractalTypeEnum.MANDELBROT) {
             if (fractalViewSize == FractalViewSize.LARGE)
                 keyToUse = mandelbrotDetailKey;
             else
@@ -871,13 +838,11 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         return (double) prefs.getFloat(keyToUse, (float) AbstractFractalView.DEFAULT_DETAIL_LEVEL);
     }
 
-
     /* Show the short tutorial/intro dialog */
     private void showIntro() {
         TextView text = new TextView(this);
         text.setMovementMethod(LinkMovementMethod.getInstance());
         text.setText(Html.fromHtml(getString(R.string.intro_text)));
-
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setCancelable(true)
@@ -890,12 +855,10 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         ;
         builder.create().show();
 
-
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
         editor.putBoolean(FIRST_TIME_KEY, false);
         editor.commit();
     }
-
 
     /* Show the large help dialog */
     private void showHelpDialog() {
@@ -913,17 +876,16 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
                         dialog.cancel();
                     }
                 });
-        ;
+
         builder.create().show();
     }
-
 
     /* Set the bookmark location in Prefs to the current location
      * (Proof-of-concept, currently unused)
      */
     private void setBookmark() {
         MandelbrotJuliaLocation bookmark;
-        if (fractalType == FractalType.MANDELBROT) {
+        if (fractalType == FractalTypeEnum.MANDELBROT) {
             if (littleFractalView != null) {
                 Log.d(TAG, "Showing little...");
                 bookmark = new MandelbrotJuliaLocation(fractalView.graphArea, littleFractalView.graphArea,
@@ -942,7 +904,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         editor.putString("BOOKMARK", bookmark.toString());
         editor.commit();
     }
-
 
     /* Set the current location to the bookmark
      * (Proof-of-concept, currently unused)

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 
 public class CubicMandelbrotFractalView extends AbstractFractalView {
-
-
     public CubicMandelbrotFractalView(Context context, FractalViewSize size) {
         super(context, size);
 
@@ -28,14 +26,12 @@ public class CubicMandelbrotFractalView extends AbstractFractalView {
         MAXZOOM_LN_PIXEL = -31; // Beyond -31, "double"s break down(!).
     }
 
-
     // Load a location
     void loadLocation(MandelbrotJuliaLocation _mjLocation) {
         if (pixelSizes != null)
             clearPixelSizes();
         setGraphArea(_mjLocation.getMandelbrotGraphArea(), true);
     }
-
 
     int pixelInSet(int xPixel, int yPixel, int maxIterations) {
         boolean inside = true;
@@ -74,5 +70,4 @@ public class CubicMandelbrotFractalView extends AbstractFractalView {
         else
             return colourer.colourOutsidePoint(iterationNr, maxIterations);
     }
-
 }
