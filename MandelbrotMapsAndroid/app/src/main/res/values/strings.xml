@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Mandelbrot Maps</string>
-	<string name="main_title">Mandelbrot Maps</string>
-	<string name="continue_label">Continue</string>
-	<string name="fractal_label">Fractal - single thread</string>
-	<string name="bitmap_test_label">Fractal - dual threads</string>
-	<string name="exit_label">Exit</string>
-	
-	<string name="settings_label">Settings...</string>
-	<string name="settings_title">Mandelbrot Maps settings</string>
-	<string name="settings_shortcut">s</string>
-	
-	<string name="mmaps_title">Mandelbrot Maps</string>
-	
-	<string name="detail_title">Detail</string>
+    <string name="app_name">Mandelbrot Maps</string>
+    <string name="main_title">Mandelbrot Maps</string>
+    <string name="continue_label">Continue</string>
+    <string name="fractal_label">Fractal - single thread</string>
+    <string name="bitmap_test_label">Fractal - dual threads</string>
+    <string name="exit_label">Exit</string>
+
+    <string name="settings_label">Settings...</string>
+    <string name="settings_title">Mandelbrot Maps settings</string>
+    <string name="settings_shortcut">s</string>
+
+    <string name="mmaps_title">Mandelbrot Maps</string>
+
+    <string name="detail_title">Detail</string>
 	
    	<string name="about_text">\
 	An Android port of Mandelbrot Maps,
@@ -80,7 +80,7 @@
 	]]>
 	</string>
 
-	<string name="about_label">About</string>
-	<string name="bitmap_label">Bitmap (not implemented)</string>
-	<string name="side_by_side_label">Side-by-side fractals</string>
+    <string name="about_label">About</string>
+    <string name="bitmap_label">Bitmap (not implemented)</string>
+    <string name="side_by_side_label">Side-by-side fractals</string>
 </resources>

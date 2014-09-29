@@ -23,8 +23,6 @@ import android.view.ScaleGestureDetector.OnScaleGestureListener;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
@@ -90,19 +88,21 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     private boolean showingSpinner = false;
     private boolean allowSpinner = false;
 
+    private boolean actionBarShown = true;
+
     /*-----------------------------------------------------------------------------------*/
     /*Android lifecycle handling*/
     /*-----------------------------------------------------------------------------------*/
     /* Sets up the activity, mostly creates the main fractal view.
-	 * (non-Javadoc)
+     * (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
         // If first time launch, show the tutorial/intro
@@ -135,7 +135,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             fractalView = new CubicMandelbrotFractalView(this, FractalViewSize.LARGE);
         }
 
-        LayoutParams lp = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+        LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         relativeLayout.addView(fractalView, lp);
         setContentView(relativeLayout);
 
@@ -399,6 +399,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
         MenuItem showLittle = menu.findItem(R.id.toggleLittle);
         showLittle.setTitle(verb + " " + fractal);
+        showLittle.setChecked(showingLittle);
 
         return true;
     }
@@ -431,7 +432,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
                 return true;
 
             case R.id.preferences:
-                startActivity(new Intent(this, Prefs.class));
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
 
             case R.id.details:
@@ -724,7 +725,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     /*-----------------------------------------------------------------------------------*/
     /*Utilities*/
     /*-----------------------------------------------------------------------------------*/
-	/*A single method for running toasts on the UI thread, rather than 
+    /*A single method for running toasts on the UI thread, rather than
    	creating new Runnables each time. */
     public void showToastOnUIThread(final String toastText, final int length) {
         runOnUiThread(new Runnable() {

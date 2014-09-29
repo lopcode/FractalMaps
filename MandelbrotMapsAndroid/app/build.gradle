@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "uk.ac.ed.inf.mandelbrotmaps"
-        minSdkVersion 10
+        minSdkVersion 15
         targetSdkVersion 18
     }
 
@@ -19,5 +19,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:18.0.+'
+    compile 'com.android.support:appcompat-v7:20.0.0'
+    compile 'com.android.support:support-v4:20.0.0'
 }

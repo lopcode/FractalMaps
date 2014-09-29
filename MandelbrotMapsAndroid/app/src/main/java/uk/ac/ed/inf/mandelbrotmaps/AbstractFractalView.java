@@ -130,7 +130,7 @@ abstract class AbstractFractalView extends View {
     /*Constructor*/
     /*-----------------------------------------------------------------------------------*/
     /* Constructor for the view, assigns the parent activity and size and
-	 * launches the render threads. */
+     * launches the render threads. */
     public AbstractFractalView(Context context, FractalViewSize size) {
         super(context);
         setFocusable(true);
@@ -146,7 +146,7 @@ abstract class AbstractFractalView extends View {
         fractalViewSize = size;
 
         //Up the iteration count a bit for the little view (decent value, seems to work)
-      	/*if (fractalViewSize == FractalViewSize.LITTLE) {
+          /*if (fractalViewSize == FractalViewSize.LITTLE) {
       		iterationScaling *= 1.5;
       	}*/
 
@@ -288,7 +288,7 @@ abstract class AbstractFractalView extends View {
         renderStartTime = System.currentTimeMillis();
 
         //Schedule a crude rendering if needed (not the small view, not a small zoom)
-        if (Prefs.performCrude(getContext()) && fractalViewSize != FractalViewSize.LITTLE &&
+        if (SettingsActivity.performCrude(getContext()) && fractalViewSize != FractalViewSize.LITTLE &&
                 (totalScaleFactor < 0.6f || totalScaleFactor == 1.0f || totalScaleFactor > 3.5f || !completedLastRender)) {
             scheduleRendering(CRUDE_PIXEL_BLOCK);
         }

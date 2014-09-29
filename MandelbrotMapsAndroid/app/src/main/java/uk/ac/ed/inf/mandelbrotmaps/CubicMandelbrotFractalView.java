@@ -51,7 +51,7 @@ public class CubicMandelbrotFractalView extends AbstractFractalView {
         for (iterationNr = 0; iterationNr < maxIterations; iterationNr++) {
             // z^2 + c
             /*newx = (x*x) - (y*y) + x0;
-			newy = (2 * x * y) + y0;*/
+            newy = (2 * x * y) + y0;*/
             newx = (x * x * x) - (y * y * x) - (2 * x * y * y) + x0;
             newy = (2 * x * x * y + y * x * x - y * y * y) + y0;
 

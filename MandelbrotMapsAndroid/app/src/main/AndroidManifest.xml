@@ -1,34 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="uk.ac.ed.inf.mandelbrotmaps"
     android:versionCode="2"
-    android:versionName="1.01"
-    package="uk.ac.ed.inf.mandelbrotmaps">
+    android:versionName="1.01" >
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:icon="@drawable/icon"
-        android:label="@string/app_name">
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
         <activity
             android:name=".DetailControl"
+            android:configChanges="orientation"
             android:label="@string/detail_title"
-            android:theme="@android:style/Theme.Dialog"
             android:screenOrientation="landscape"
-            android:configChanges="orientation" />
-
+            android:theme="@android:style/Theme.Dialog" />
         <activity
-            android:name=".Prefs"
+            android:name=".SettingsActivity"
             android:label="@string/settings_title" />
-
         <activity
             android:name=".FractalActivity"
+            android:configChanges="orientation"
             android:label="Mandelbrot Maps"
-            android:screenOrientation="landscape"
-            android:configChanges="orientation">
+            android:screenOrientation="landscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
-    
+
 </manifest>
