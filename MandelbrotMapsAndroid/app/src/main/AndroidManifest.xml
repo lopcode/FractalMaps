@@ -15,7 +15,7 @@
             android:configChanges="orientation"
             android:label="@string/detail_title"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Dialog" />
+            android:theme="@android:style/Theme.Holo.Dialog" />
         <activity
             android:name=".SettingsActivity"
             android:label="@string/settings_title" />
