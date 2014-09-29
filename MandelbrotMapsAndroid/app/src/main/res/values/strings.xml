@@ -8,7 +8,7 @@
     <string name="exit_label">Exit</string>
 
     <string name="settings_label">Settings...</string>
-    <string name="settings_title">Mandelbrot Maps settings</string>
+    <string name="settings_title">Settings</string>
     <string name="settings_shortcut">s</string>
 
     <string name="mmaps_title">Mandelbrot Maps</string>

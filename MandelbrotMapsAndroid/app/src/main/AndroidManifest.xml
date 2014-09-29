@@ -18,7 +18,8 @@
             android:theme="@android:style/Theme.Holo.Dialog" />
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/settings_title" />
+            android:label="@string/settings_title"
+            android:theme="@style/AppTheme"/>
         <activity
             android:name=".FractalActivity"
             android:configChanges="orientation"
