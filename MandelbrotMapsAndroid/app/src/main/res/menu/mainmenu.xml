@@ -12,6 +12,12 @@
         android:checked="true"
         android:title="Add Julia"></item>
     <item
+        android:checkable="true"
+        android:visible="false"
+        android:id="@+id/toggleActionBar"
+        android:checked="true"
+        android:title="Show Action Bar"></item>
+    <item
         android:id="@+id/printbookmark"
         android:title="Set bookmark"
         android:visible="false"></item>

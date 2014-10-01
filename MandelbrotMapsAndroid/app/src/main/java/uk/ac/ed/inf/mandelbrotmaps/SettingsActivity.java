@@ -21,6 +21,7 @@ public class SettingsActivity extends Activity {
                 .replace(android.R.id.content, new SettingsFragment())
                 .commit();
 
+        getActionBar().show();
         getActionBar().setDisplayHomeAsUpEnabled(true);
     }
 

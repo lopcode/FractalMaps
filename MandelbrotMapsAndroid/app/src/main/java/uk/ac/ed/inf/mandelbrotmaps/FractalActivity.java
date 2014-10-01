@@ -23,6 +23,8 @@ import android.view.ScaleGestureDetector.OnScaleGestureListener;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
@@ -51,6 +53,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     private final String PREVIOUS_LITTLE_GRAPH_AREA = "prevLittleGraphArea";
     private final String PREVIOUS_JULIA_PARAMS = "prevJuliaParams";
     private final String PREVIOUS_SHOWING_LITTLE = "prevShowingLittle";
+    private final String PREVIOUS_SHOWING_ACTION_BAR = "prevShowingActionBar";
     private final String FIRST_TIME_KEY = "FirstTime";
 
     public FractalTypeEnum fractalType = FractalTypeEnum.MANDELBROT;
@@ -88,7 +91,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     private boolean showingSpinner = false;
     private boolean allowSpinner = false;
 
-    private boolean actionBarShown = true;
+    public boolean showingActionBar = true;
 
     /*-----------------------------------------------------------------------------------*/
     /*Android lifecycle handling*/
@@ -101,8 +104,8 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //requestWindowFeature(Window.FEATURE_NO_TITLE);
-        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
         // If first time launch, show the tutorial/intro
@@ -110,6 +113,12 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         if (prefs.getBoolean(FIRST_TIME_KEY, true)) showIntro();
 
         Bundle bundle = getIntent().getExtras();
+
+//        if (showingActionBar) {
+//            getActionBar().show();
+//        } else {
+//            getActionBar().hide();
+//        }
 
         mjLocation = new MandelbrotJuliaLocation();
         double[] juliaParams = mjLocation.defaultJuliaParams;
@@ -176,6 +185,12 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
+
+//        if (showingActionBar) {
+//            getActionBar().show();
+//        } else {
+//            getActionBar().hide();
+//        }
     }
 
     @Override
@@ -195,6 +210,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         }
 
         outState.putBoolean(PREVIOUS_SHOWING_LITTLE, showingLittle);
+        outState.putBoolean(PREVIOUS_SHOWING_ACTION_BAR, showingActionBar);
     }
 
     @Override
@@ -386,6 +402,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     public boolean onPrepareOptionsMenu(Menu menu) {
         String verb;
         String fractal;
+        String actionBar;
 
         if (!showingLittle)
             verb = "Add";
@@ -397,9 +414,18 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         else
             fractal = "Mandelbrot";
 
+        if (!showingActionBar)
+            actionBar = "Show";
+        else
+            actionBar = "Hide";
+
         MenuItem showLittle = menu.findItem(R.id.toggleLittle);
         showLittle.setTitle(verb + " " + fractal);
         showLittle.setChecked(showingLittle);
+
+        MenuItem showActionBar = menu.findItem(R.id.toggleActionBar);
+        showActionBar.setTitle(actionBar + " Action Bar");
+        showActionBar.setChecked(showingActionBar);
 
         return true;
     }
@@ -416,6 +442,14 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
                     removeLittleView();
                 } else {
                     addLittleView(true);
+                }
+                return true;
+
+            case R.id.toggleActionBar:
+                if (showingActionBar) {
+                    hideActionBar();
+                } else {
+                    showActionBar();
                 }
                 return true;
 
@@ -790,6 +824,16 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             ((MandelbrotFractalView) fractalView).getJuliaParams(x, y);
             addLittleView(false);
         }
+    }
+
+    public void showActionBar() {
+        showingActionBar = true;
+        getActionBar().show();
+    }
+
+    public void hideActionBar() {
+        showingActionBar = false;
+        getActionBar().hide();
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String changedPref) {
