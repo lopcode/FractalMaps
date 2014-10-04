@@ -25,7 +25,7 @@ import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaDefaultColouringScheme;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.PsychadelicColouringScheme;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.RGBWalkColouringScheme;
 
-abstract class AbstractFractalView extends View {
+public abstract class AbstractFractalView extends View {
     // How many different discrete zoom levels?
     public final int ZOOM_SLIDER_SCALING = 300;
 
