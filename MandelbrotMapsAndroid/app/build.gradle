@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "20.0.0"
+    compileSdkVersion 21
+    buildToolsVersion "21.0.0"
 
     defaultConfig {
         applicationId "uk.ac.ed.inf.mandelbrotmaps"
         minSdkVersion 15
-        targetSdkVersion 18
+        targetSdkVersion 21
     }
 
     buildTypes {

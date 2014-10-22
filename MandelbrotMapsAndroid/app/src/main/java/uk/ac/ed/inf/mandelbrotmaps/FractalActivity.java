@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -104,7 +105,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
@@ -114,8 +115,11 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
         Bundle bundle = getIntent().getExtras();
 
+        getActionBar().setDisplayShowTitleEnabled(false);
+        getActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 //        if (showingActionBar) {
-//            getActionBar().show();
+        getActionBar().show();
+         //   getActionBar().show();
 //        } else {
 //            getActionBar().hide();
 //        }
