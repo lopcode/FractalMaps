@@ -2,6 +2,7 @@ package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,6 +36,7 @@ import android.widget.Toast;
 import java.io.File;
 
 import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView.FractalViewSize;
+import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 
 public class FractalActivity extends Activity implements OnTouchListener, OnScaleGestureListener,
         OnSharedPreferenceChangeListener, OnLongClickListener {
@@ -156,6 +158,8 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         fractalView.loadLocation(mjLocation);
 
         gestureDetector = new ScaleGestureDetector(this, this);
+
+        this.showMenuDialog();
     }
 
     /* When destroyed, stop rendering and kill all the threads,
@@ -965,5 +969,11 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
             MandelbrotJuliaLocation newLocation = new MandelbrotJuliaLocation(bookmark);
             fractalView.loadLocation(newLocation);
         }
+    }
+
+    private void showMenuDialog() {
+        FragmentManager fm = getFragmentManager();
+        MenuDialog menuDialog = new MenuDialog();
+        menuDialog.show(fm, "menu_dialog");
     }
 }
