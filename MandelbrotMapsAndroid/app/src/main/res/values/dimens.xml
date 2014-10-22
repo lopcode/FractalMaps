@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="menu_button_width">156dp</dimen>
-    <dimen name="menu_button_height">128dp</dimen>
-    <dimen name="menu_inner_padding">16dp</dimen>
+    <dimen name="menu_button_width">136dp</dimen>
+    <dimen name="menu_button_height">108dp</dimen>
+    <dimen name="menu_inner_padding">12dp</dimen>
 </resources>

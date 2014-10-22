@@ -2,6 +2,8 @@ package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -16,6 +18,7 @@ import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,10 +39,11 @@ import android.widget.Toast;
 import java.io.File;
 
 import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView.FractalViewSize;
+import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 
 public class FractalActivity extends Activity implements OnTouchListener, OnScaleGestureListener,
-        OnSharedPreferenceChangeListener, OnLongClickListener {
+        OnSharedPreferenceChangeListener, OnLongClickListener, MenuClickDelegate {
     private final String TAG = "MMaps";
 
     // Constants
@@ -94,6 +98,8 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     private boolean allowSpinner = false;
 
     public boolean showingActionBar = true;
+
+    public static final String FRAGMENT_DIALOG_NAME = "menuDialog";
 
     /*-----------------------------------------------------------------------------------*/
     /*Android lifecycle handling*/
@@ -158,8 +164,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         fractalView.loadLocation(mjLocation);
 
         gestureDetector = new ScaleGestureDetector(this, this);
-
-        this.showMenuDialog();
     }
 
     /* When destroyed, stop rendering and kill all the threads,
@@ -394,9 +398,20 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         showingSpinner = false;
     }
 
-    /*-----------------------------------------------------------------------------------*/
-    /*Menu creation/handling*/
-    /*-----------------------------------------------------------------------------------*/
+    // Menu creation and handling
+
+    // Listen for hardware menu presses on older phones, show the menu dialog
+    @Override
+    public boolean onKeyDown(int keycode, KeyEvent e) {
+        switch(keycode) {
+            case KeyEvent.KEYCODE_MENU:
+                this.showMenuDialog();
+                return true;
+        }
+
+        return super.onKeyDown(keycode, e);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -407,93 +422,15 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        String verb;
-        String fractal;
-        String actionBar;
-
-        if (!showingLittle)
-            verb = "Add";
-        else
-            verb = "Remove";
-
-        if (fractalType == FractalTypeEnum.MANDELBROT)
-            fractal = "Julia";
-        else
-            fractal = "Mandelbrot";
-
-        if (!showingActionBar)
-            actionBar = "Show";
-        else
-            actionBar = "Hide";
-
-        MenuItem showLittle = menu.findItem(R.id.toggleLittle);
-        showLittle.setTitle(verb + " " + fractal);
-        showLittle.setChecked(showingLittle);
-
-        MenuItem showActionBar = menu.findItem(R.id.toggleActionBar);
-        showActionBar.setTitle(actionBar + " Action Bar");
-        showActionBar.setChecked(showingActionBar);
-
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.testlocation:
-                fractalView.setToTestLocation();
+            case R.id.showMenu:
+                this.showMenuDialog();
                 return true;
 
-            case R.id.toggleLittle:
-                if (showingLittle) {
-                    removeLittleView();
-                } else {
-                    addLittleView(true);
-                }
-                return true;
-
-            case R.id.toggleActionBar:
-                if (showingActionBar) {
-                    hideActionBar();
-                } else {
-                    showActionBar();
-                }
-                return true;
-
-            case R.id.resetFractal:
-                fractalView.reset();
-                return true;
-
-            case R.id.saveImage:
-                saveImage();
-                return true;
-
-            case R.id.shareImage:
-                shareImage();
-                return true;
-
-            case R.id.preferences:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-
-            case R.id.details:
-                startActivityForResult(new Intent(this, DetailControl.class), RETURN_FROM_DETAIL_CHANGE);
-                return true;
-
-            case R.id.help:
-                showHelpDialog();
-                return true;
-
-            case R.id.printbookmark:
-                setBookmark();
-                return true;
-
-            case R.id.loadbookmark:
-                loadBookmark();
-                return true;
+            default:
+                return false;
         }
-        return false;
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -974,6 +911,63 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     private void showMenuDialog() {
         FragmentManager fm = getFragmentManager();
         MenuDialog menuDialog = new MenuDialog();
-        menuDialog.show(fm, "menu_dialog");
+        menuDialog.show(fm, FRAGMENT_DIALOG_NAME);
+    }
+
+    private void dismissMenuDialog() {
+        Fragment dialog = getFragmentManager().findFragmentByTag(FRAGMENT_DIALOG_NAME);
+        if (dialog != null) {
+            DialogFragment df = (DialogFragment) dialog;
+            df.dismiss();
+        }
+    }
+
+    // Menu Delegate
+
+    @Override
+    public void onResetClicked() {
+        this.fractalView.reset();
+        this.dismissMenuDialog();
+    }
+
+    @Override
+    public void onToggleSmallClicked() {
+        if (showingLittle) {
+            removeLittleView();
+        } else {
+            addLittleView(true);
+        }
+
+        this.dismissMenuDialog();
+    }
+
+    @Override
+    public void onSettingsClicked() {
+        this.startActivity(new Intent(this, SettingsActivity.class));
+        this.dismissMenuDialog();
+    }
+
+    @Override
+    public void onDetailClicked() {
+        this.startActivityForResult(new Intent(this, DetailControl.class), RETURN_FROM_DETAIL_CHANGE);
+        this.dismissMenuDialog();
+    }
+
+    @Override
+    public void onSaveClicked() {
+        this.saveImage();
+        this.dismissMenuDialog();
+    }
+
+    @Override
+    public void onShareClicked() {
+        this.shareImage();
+        this.dismissMenuDialog();
+    }
+
+    @Override
+    public void onHelpClicked() {
+        this.showHelpDialog();
+        this.dismissMenuDialog();
     }
 }

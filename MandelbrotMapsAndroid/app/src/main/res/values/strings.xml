@@ -88,6 +88,7 @@
     <string name="menu_little">Toggle Small</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_detail">Detail Level</string>
-    <string name="menu_save_share">Save / Share</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_share">Share</string>
     <string name="menu_help">Help</string>
 </resources>
