@@ -147,7 +147,7 @@ public abstract class AbstractFractalView extends View {
 
         //Up the iteration count a bit for the little view (decent value, seems to work)
           /*if (fractalViewSize == FractalViewSize.LITTLE) {
-      		iterationScaling *= 1.5;
+              iterationScaling *= 1.5;
       	}*/
 
         matrix = new Matrix();

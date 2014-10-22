@@ -24,7 +24,6 @@ import android.view.ScaleGestureDetector.OnScaleGestureListener;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -117,9 +116,10 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
         getActionBar().setDisplayShowTitleEnabled(false);
         getActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
+        getActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 //        if (showingActionBar) {
         getActionBar().show();
-         //   getActionBar().show();
+        //   getActionBar().show();
 //        } else {
 //            getActionBar().hide();
 //        }
@@ -764,7 +764,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     /*Utilities*/
     /*-----------------------------------------------------------------------------------*/
     /*A single method for running toasts on the UI thread, rather than
-   	creating new Runnables each time. */
+       creating new Runnables each time. */
     public void showToastOnUIThread(final String toastText, final int length) {
         runOnUiThread(new Runnable() {
             public void run() {
