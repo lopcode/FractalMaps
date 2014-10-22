@@ -169,7 +169,7 @@ public abstract class AbstractFractalView extends View {
     /*-----------------------------------------------------------------------------------*/
     /*Android life-cycle handling*/
     /*-----------------------------------------------------------------------------------*/
-	/* Runs when the view changes size. 
+    /* Runs when the view changes size.
 	 * Used to set the little fractal view once large fractal view size has first been determined. 
 	 * Also sets linesToDrawAfter to 1/12th of the screen size. */
     @Override

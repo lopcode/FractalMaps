@@ -403,7 +403,7 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     // Listen for hardware menu presses on older phones, show the menu dialog
     @Override
     public boolean onKeyDown(int keycode, KeyEvent e) {
-        switch(keycode) {
+        switch (keycode) {
             case KeyEvent.KEYCODE_MENU:
                 this.showMenuDialog();
                 return true;
