@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minWidth="@dimen/detail_control_min_width">
+
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:padding="10dip"
         android:layout_height="wrap_content"
+        android:layout_width="match_parent"
         android:orientation="vertical"
         android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:layout_width="match_parent">
+        android:focusableInTouchMode="true">
 
         <TextView
             android:layout_width="wrap_content"
@@ -18,14 +23,14 @@
             android:layout_height="wrap_content" />
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:orientation="horizontal"
             android:layout_height="wrap_content"
             android:paddingBottom="10dip">
 
             <SeekBar
                 android:layout_weight="1"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:max="100"
                 android:layout_height="wrap_content"
                 android:id="@+id/mandelbrot_seekbar"
@@ -49,14 +54,14 @@
 
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:orientation="horizontal"
             android:layout_height="wrap_content"
             android:paddingBottom="30dip">
 
             <SeekBar
                 android:layout_weight="1"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:max="100"
                 android:layout_height="wrap_content"
                 android:id="@+id/julia_seekbar"
@@ -94,3 +99,4 @@
     </LinearLayout>
 
 </ScrollView>
+</RelativeLayout>

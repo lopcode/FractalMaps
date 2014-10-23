@@ -1,25 +1,33 @@
 package uk.ac.ed.inf.mandelbrotmaps;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
-public class SettingsActivity extends Activity {
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
+public class SettingsActivity extends ActionBarActivity {
     private static final String CRUDE_OPTION = "CRUDE";
     private static final boolean CRUDE_OPT_DEFAULT = true;
 
     private static final String SHOW_TIMES_OPTION = "SHOW_TIMES";
     private static final boolean SHOW_TIMES_OPT_DEFAULT = true;
 
+    @InjectView(R.id.mainToolbar)
+    Toolbar mainToolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings);
+        ButterKnife.inject(this);
 
-        getActionBar().show();
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        setSupportActionBar(mainToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override

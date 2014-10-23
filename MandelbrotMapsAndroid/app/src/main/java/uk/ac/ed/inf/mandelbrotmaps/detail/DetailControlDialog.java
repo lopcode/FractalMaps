@@ -1,20 +1,27 @@
-package uk.ac.ed.inf.mandelbrotmaps;
+package uk.ac.ed.inf.mandelbrotmaps.detail;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView;
+import uk.ac.ed.inf.mandelbrotmaps.FractalActivity;
+import uk.ac.ed.inf.mandelbrotmaps.R;
 
-public class DetailControl extends Activity implements OnSeekBarChangeListener {
+public class DetailControlDialog extends DialogFragment implements SeekBar.OnSeekBarChangeListener {
+    private DetailControlDelegate delegate;
+
     @InjectView(R.id.detail_apply_button)
     Button applyButton;
 
@@ -36,27 +43,42 @@ public class DetailControl extends Activity implements OnSeekBarChangeListener {
     @InjectView(R.id.juliaText)
     TextView juliaText;
 
-    boolean changed = false;
+    public DetailControlDialog() {
+
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.detailcontrol);
-        ButterKnife.inject(this);
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            delegate = (DetailControlDelegate) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement DetailControlDelegate");
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle state) {
+        View view = inflater.inflate(R.layout.detailcontrol, container);
+        ButterKnife.inject(this, view);
+
+        getDialog().setTitle(R.string.detail_title);
 
         // Get references to SeekBars, set their value from the prefs
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         mandelbrotBar.setOnSeekBarChangeListener(this);
         mandelbrotBar.setProgress((int) prefs.getFloat(FractalActivity.mandelbrotDetailKey, (float) AbstractFractalView.DEFAULT_DETAIL_LEVEL));
 
         juliaBar.setOnSeekBarChangeListener(this);
         juliaBar.setProgress((int) prefs.getFloat(FractalActivity.juliaDetailKey, (float) AbstractFractalView.DEFAULT_DETAIL_LEVEL));
+
+        return view;
     }
 
     @OnClick(R.id.detail_cancel_button)
     public void onDetailCancelButtonClicked() {
-        this.finish();
+        this.delegate.onCancelClicked();
     }
 
     @OnClick(R.id.default_detail_button)
@@ -68,25 +90,12 @@ public class DetailControl extends Activity implements OnSeekBarChangeListener {
     @OnClick(R.id.detail_apply_button)
     public void onDetailApplyButtonClicked() {
         //Set shared prefs and return value (to indicate if shared prefs have changed)
-        SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
+        SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
         prefsEditor.putFloat(FractalActivity.mandelbrotDetailKey, (float) mandelbrotBar.getProgress());
         prefsEditor.putFloat(FractalActivity.juliaDetailKey, (float) juliaBar.getProgress());
 
         prefsEditor.commit();
-
-        changed = true;
-
-        finish();
-    }
-
-    @Override
-    public void finish() {
-        Intent result = new Intent();
-        result.putExtra(FractalActivity.DETAIL_CHANGED_KEY, changed);
-
-        setResult(Activity.RESULT_OK, result);
-
-        super.finish();
+        this.delegate.onApplyChangesClicked();
     }
 
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -106,4 +115,3 @@ public class DetailControl extends Activity implements OnSeekBarChangeListener {
 
     }
 }
- 

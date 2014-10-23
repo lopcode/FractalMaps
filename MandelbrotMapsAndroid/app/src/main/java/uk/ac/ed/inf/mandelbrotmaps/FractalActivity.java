@@ -2,9 +2,6 @@ package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,6 +12,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -39,17 +41,18 @@ import android.widget.Toast;
 import java.io.File;
 
 import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView.FractalViewSize;
+import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 
-public class FractalActivity extends Activity implements OnTouchListener, OnScaleGestureListener,
-        OnSharedPreferenceChangeListener, OnLongClickListener, MenuClickDelegate {
+public class FractalActivity extends ActionBarActivity implements OnTouchListener, OnScaleGestureListener,
+        OnSharedPreferenceChangeListener, OnLongClickListener, MenuClickDelegate, DetailControlDelegate {
     private final String TAG = "MMaps";
 
     // Constants
     private final int SHARE_IMAGE_REQUEST = 0;
     private final int RETURN_FROM_JULIA = 1;
-    private final int RETURN_FROM_DETAIL_CHANGE = 2;
 
     // Shared pref keys
     public static final String mandelbrotDetailKey = "MANDELBROT_DETAIL";
@@ -99,7 +102,8 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
     public boolean showingActionBar = true;
 
-    public static final String FRAGMENT_DIALOG_NAME = "menuDialog";
+    public static final String FRAGMENT_MENU_DIALOG_NAME = "menuDialog";
+    public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
 
     /*-----------------------------------------------------------------------------------*/
     /*Android lifecycle handling*/
@@ -121,16 +125,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
         if (prefs.getBoolean(FIRST_TIME_KEY, true)) showIntro();
 
         Bundle bundle = getIntent().getExtras();
-
-        getActionBar().setDisplayShowTitleEnabled(false);
-        getActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
-        getActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
-//        if (showingActionBar) {
-        getActionBar().show();
-        //   getActionBar().show();
-//        } else {
-//            getActionBar().hide();
-//        }
 
         mjLocation = new MandelbrotJuliaLocation();
         double[] juliaParams = mjLocation.defaultJuliaParams;
@@ -158,7 +152,16 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
         LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         relativeLayout.addView(fractalView, lp);
+
+        Toolbar toolbar = new Toolbar(this);
+        relativeLayout.addView(toolbar, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
         setContentView(relativeLayout);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 
         mjLocation = new MandelbrotJuliaLocation(juliaGraphArea, juliaParams);
         fractalView.loadLocation(mjLocation);
@@ -283,15 +286,6 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
                     double[] juliaGraphArea = data.getDoubleArrayExtra("JuliaGraphArea");
                     double[] juliaParams = data.getDoubleArrayExtra("JuliaParams");
                     littleFractalView.loadLocation(new MandelbrotJuliaLocation(juliaGraphArea, juliaParams));
-                }
-                break;
-
-            case RETURN_FROM_DETAIL_CHANGE:
-                boolean changed = data.getBooleanExtra(DETAIL_CHANGED_KEY, false);
-                if (changed) {
-                    fractalView.reloadCurrentLocation();
-                    if (showingLittle)
-                        littleFractalView.reloadCurrentLocation();
                 }
                 break;
         }
@@ -773,12 +767,12 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
     public void showActionBar() {
         showingActionBar = true;
-        getActionBar().show();
+        getSupportActionBar().show();
     }
 
     public void hideActionBar() {
         showingActionBar = false;
-        getActionBar().hide();
+        getSupportActionBar().hide();
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String changedPref) {
@@ -909,18 +903,33 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     }
 
     private void showMenuDialog() {
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         MenuDialog menuDialog = new MenuDialog();
-        menuDialog.show(fm, FRAGMENT_DIALOG_NAME);
+        menuDialog.show(fm, FRAGMENT_MENU_DIALOG_NAME);
     }
 
     private void dismissMenuDialog() {
-        Fragment dialog = getFragmentManager().findFragmentByTag(FRAGMENT_DIALOG_NAME);
+        Fragment dialog = getSupportFragmentManager().findFragmentByTag(FRAGMENT_MENU_DIALOG_NAME);
         if (dialog != null) {
             DialogFragment df = (DialogFragment) dialog;
             df.dismiss();
         }
     }
+
+    private void showDetailDialog() {
+        FragmentManager fm = getSupportFragmentManager();
+        DetailControlDialog detailControlDialog = new DetailControlDialog();
+        detailControlDialog.show(fm, FRAGMENT_DETAIL_DIALOG_NAME);
+    }
+
+    private void dismissDetailDialog() {
+        Fragment dialog = getSupportFragmentManager().findFragmentByTag(FRAGMENT_DETAIL_DIALOG_NAME);
+        if (dialog != null) {
+            DialogFragment df = (DialogFragment) dialog;
+            df.dismiss();
+        }
+    }
+
 
     // Menu Delegate
 
@@ -949,8 +958,8 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
 
     @Override
     public void onDetailClicked() {
-        this.startActivityForResult(new Intent(this, DetailControl.class), RETURN_FROM_DETAIL_CHANGE);
         this.dismissMenuDialog();
+        this.showDetailDialog();
     }
 
     @Override
@@ -969,5 +978,21 @@ public class FractalActivity extends Activity implements OnTouchListener, OnScal
     public void onHelpClicked() {
         this.showHelpDialog();
         this.dismissMenuDialog();
+    }
+
+    // Detail control delegate
+
+    @Override
+    public void onApplyChangesClicked() {
+        this.dismissDetailDialog();
+
+        fractalView.reloadCurrentLocation();
+        if (showingLittle)
+            littleFractalView.reloadCurrentLocation();
+    }
+
+    @Override
+    public void onCancelClicked() {
+        this.dismissDetailDialog();
     }
 }

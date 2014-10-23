@@ -7,57 +7,5 @@
         android:visible="true"
         android:title="Show Menu"
         android:icon="@drawable/ic_action_overflow"
-        android:showAsAction="always"></item>
-    <!--<item-->
-        <!--android:id="@+id/resetFractal"-->
-        <!--android:enabled="true"-->
-        <!--android:visible="true"-->
-        <!--android:title="Reset"></item>-->
-    <!--<item-->
-        <!--android:checkable="true"-->
-        <!--android:visible="true"-->
-        <!--android:id="@+id/toggleLittle"-->
-        <!--android:checked="true"-->
-        <!--android:title="Add Julia"></item>-->
-    <!--<item-->
-        <!--android:checkable="true"-->
-        <!--android:visible="false"-->
-        <!--android:id="@+id/toggleActionBar"-->
-        <!--android:checked="true"-->
-        <!--android:title="Show Action Bar"></item>-->
-    <!--<item-->
-        <!--android:id="@+id/printbookmark"-->
-        <!--android:title="Set bookmark"-->
-        <!--android:visible="false"></item>-->
-
-    <!--<item-->
-        <!--android:id="@+id/loadbookmark"-->
-        <!--android:title="Load Bookmark"-->
-        <!--android:visible="false"></item>-->
-    <!--<item-->
-        <!--android:id="@+id/testlocation"-->
-        <!--android:title="Speed test location"-->
-        <!--android:visible="false"></item>-->
-
-    <!--<item-->
-        <!--android:id="@+id/details"-->
-        <!--android:title="Detail level"></item>-->
-    <!--<item-->
-        <!--android:id="@+id/preferences"-->
-        <!--android:title="Preferences"></item>-->
-    <!--<item-->
-        <!--android:id="@+id/saveShare"-->
-        <!--android:title="Save/Share">-->
-        <!--<menu>-->
-            <!--<item-->
-                <!--android:id="@+id/saveImage"-->
-                <!--android:title="Save image"></item>-->
-            <!--<item-->
-                <!--android:id="@+id/shareImage"-->
-                <!--android:title="Share image"></item>-->
-        <!--</menu>-->
-    <!--</item>-->
-    <!--<item-->
-        <!--android:id="@+id/help"-->
-        <!--android:title="Help"></item>-->
+        app:showAsAction="always"></item>
 </menu>
