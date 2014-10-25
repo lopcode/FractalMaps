@@ -8,6 +8,7 @@ import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -63,6 +64,9 @@ public class DetailControlDialog extends DialogFragment implements SeekBar.OnSee
         ButterKnife.inject(this, view);
 
         getDialog().setTitle(R.string.detail_title);
+        getDialog().getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         // Get references to SeekBars, set their value from the prefs
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());

@@ -189,7 +189,7 @@ public abstract class AbstractFractalView extends View {
     /*-----------------------------------------------------------------------------------*/
     /* Fractal drawing */
     /*-----------------------------------------------------------------------------------*/
-	/* Draw the fractal Bitmap to the screen, updating it if not dragging or zooming */
+    /* Draw the fractal Bitmap to the screen, updating it if not dragging or zooming */
     @Override
     protected void onDraw(Canvas canvas) {
         // (Re)create pixel grid, if not initialised - or if wrong size.

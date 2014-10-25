@@ -3,13 +3,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/mainToolbar"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:minHeight="?attr/actionBarSize"
-        android:background="?attr/colorPrimary" />
-
     <uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView
         android:id="@+id/mainFractalView"
         android:layout_width="fill_parent"

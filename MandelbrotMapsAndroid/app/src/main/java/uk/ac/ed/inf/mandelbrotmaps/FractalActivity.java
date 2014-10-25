@@ -30,7 +30,9 @@ import android.view.ScaleGestureDetector.OnScaleGestureListener;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
@@ -114,9 +116,9 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 	 */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
 
-        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
@@ -152,6 +154,22 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
         LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         relativeLayout.addView(fractalView, lp);
+
+        ImageButton button = new ImageButton(this);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMenuDialog();
+            }
+        });
+
+//        button.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_action_overflow));
+//        button.setPadding(0, getResources().getDimensionPixelOffset(R.dimen.menu_button_top_padding), getResources().getDimensionPixelOffset(R.dimen.menu_button_right_padding), 0);
+//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+//        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+//        params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+
+//        relativeLayout.addView(button, params);
 
         Toolbar toolbar = new Toolbar(this);
         relativeLayout.addView(toolbar, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -861,7 +879,12 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                     }
                 });
 
-        builder.create().show();
+        AlertDialog helpDialog = builder.create();
+        helpDialog.getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        helpDialog.show();
     }
 
     /* Set the bookmark location in Prefs to the current location
