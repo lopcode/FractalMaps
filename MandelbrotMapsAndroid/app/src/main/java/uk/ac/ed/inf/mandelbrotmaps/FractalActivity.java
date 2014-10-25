@@ -32,7 +32,6 @@ import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
@@ -64,7 +63,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     private final String PREVIOUS_LITTLE_GRAPH_AREA = "prevLittleGraphArea";
     private final String PREVIOUS_JULIA_PARAMS = "prevJuliaParams";
     private final String PREVIOUS_SHOWING_LITTLE = "prevShowingLittle";
-    private final String PREVIOUS_SHOWING_ACTION_BAR = "prevShowingActionBar";
     private final String FIRST_TIME_KEY = "FirstTime";
 
     public FractalTypeEnum fractalType = FractalTypeEnum.MANDELBROT;
@@ -102,18 +100,11 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     private boolean showingSpinner = false;
     private boolean allowSpinner = false;
 
-    public boolean showingActionBar = true;
-
     public static final String FRAGMENT_MENU_DIALOG_NAME = "menuDialog";
     public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
 
-    /*-----------------------------------------------------------------------------------*/
-    /*Android lifecycle handling*/
-    /*-----------------------------------------------------------------------------------*/
-    /* Sets up the activity, mostly creates the main fractal view.
-     * (non-Javadoc)
-	 * @see android.app.Activity#onCreate(android.os.Bundle)
-	 */
+    // Android lifecycle
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -155,22 +146,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         relativeLayout.addView(fractalView, lp);
 
-        ImageButton button = new ImageButton(this);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showMenuDialog();
-            }
-        });
-
-//        button.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_action_overflow));
-//        button.setPadding(0, getResources().getDimensionPixelOffset(R.dimen.menu_button_top_padding), getResources().getDimensionPixelOffset(R.dimen.menu_button_right_padding), 0);
-//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-//        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-//        params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-
-//        relativeLayout.addView(button, params);
-
         Toolbar toolbar = new Toolbar(this);
         relativeLayout.addView(toolbar, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
@@ -187,9 +162,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         gestureDetector = new ScaleGestureDetector(this, this);
     }
 
-    /* When destroyed, stop rendering and kill all the threads,
-        * so references aren't kept.
-        */
+    // When destroyed, kill all render threads
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -218,12 +191,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
-
-//        if (showingActionBar) {
-//            getActionBar().show();
-//        } else {
-//            getActionBar().hide();
-//        }
     }
 
     @Override
@@ -243,7 +210,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         }
 
         outState.putBoolean(PREVIOUS_SHOWING_LITTLE, showingLittle);
-        outState.putBoolean(PREVIOUS_SHOWING_ACTION_BAR, showingActionBar);
     }
 
     @Override
@@ -269,10 +235,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         showLittleAtStart = savedInstanceState.getBoolean(PREVIOUS_SHOWING_LITTLE);
     }
 
-    /* Set the activity result when finishing, if needed
-     * (non-Javadoc)
-     * @see android.app.Activity#finish()
-     */
+    // Set activity result when finishing
+
     @Override
     public void finish() {
         if (fractalType == FractalTypeEnum.JULIA) {
@@ -370,7 +334,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         showingLittle = true;
     }
 
-    /* Hides the little fractal view, if showing */
+    // Hides the little fractal view, if showing
     public void removeLittleView() {
         if (!showingLittle) return;
 
@@ -558,9 +522,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         }
     }
 
-    /*-----------------------------------------------------------------------------------*/
-    /*Touch controls*/
-    /*-----------------------------------------------------------------------------------*/
+    // Touch controls
+
     public boolean onTouch(View v, MotionEvent evt) {
         gestureDetector.onTouchEvent(evt);
 
@@ -783,16 +746,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         }
     }
 
-    public void showActionBar() {
-        showingActionBar = true;
-        getSupportActionBar().show();
-    }
-
-    public void hideActionBar() {
-        showingActionBar = false;
-        getSupportActionBar().hide();
-    }
-
     public void onSharedPreferenceChanged(SharedPreferences prefs, String changedPref) {
         if (changedPref.equals("MANDELBROT_COLOURS")) {
             String mandelbrotScheme = prefs.getString(changedPref, "MandelbrotDefault");
@@ -925,6 +878,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         }
     }
 
+    // Dialogs
+
     private void showMenuDialog() {
         FragmentManager fm = getSupportFragmentManager();
         MenuDialog menuDialog = new MenuDialog();
@@ -952,7 +907,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             df.dismiss();
         }
     }
-
 
     // Menu Delegate
 

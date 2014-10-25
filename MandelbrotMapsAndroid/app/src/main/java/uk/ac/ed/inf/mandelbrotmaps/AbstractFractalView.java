@@ -237,7 +237,7 @@ public abstract class AbstractFractalView extends View {
         int yStart = (getHeight() / 2) + (threadID * pixelBlockSize);
         int yEnd = getHeight() - (noOfThreads - (threadID + 1));
         boolean showRenderProgress = (threadID == 0);
-		
+
 		/*if(fractalViewSize == FractalViewSize.LARGE)
 			Log.d("ThreadEnding", "Thread " + threadID + " ending at " + yEnd + "/" + getHeight());*/
 
