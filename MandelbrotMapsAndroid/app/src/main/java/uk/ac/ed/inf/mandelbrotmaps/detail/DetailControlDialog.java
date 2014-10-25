@@ -60,7 +60,7 @@ public class DetailControlDialog extends DialogFragment implements SeekBar.OnSee
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle state) {
-        View view = inflater.inflate(R.layout.detailcontrol, container);
+        View view = inflater.inflate(R.layout.detail_control_dialog, container);
         ButterKnife.inject(this, view);
 
         getDialog().setTitle(R.string.detail_title);
