@@ -8,6 +8,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Toast;
 
@@ -125,20 +126,27 @@ public abstract class AbstractFractalView extends View {
     // Render calculating variables
     double xMin, yMax, pixelSize;
 
+    public AbstractFractalView(Context context) {
+        super(context);
+
+        //this(context, FractalViewSize.LARGE);
+    }
 
     /*-----------------------------------------------------------------------------------*/
     /*Constructor*/
     /*-----------------------------------------------------------------------------------*/
     /* Constructor for the view, assigns the parent activity and size and
      * launches the render threads. */
-    public AbstractFractalView(Context context, FractalViewSize size) {
-        super(context);
+    public AbstractFractalView(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
         setFocusable(true);
         setFocusableInTouchMode(true);
-        setId(0);
+        //setId(0);
         setBackgroundColor(Color.BLACK);
+    }
 
-        parentActivity = (FractalActivity) context;
+    public void initialise(FractalActivity parentActivity, FractalViewSize size) {
+        this.parentActivity = parentActivity;
         setOnTouchListener(parentActivity);
         setOnLongClickListener(parentActivity);
         setLongClickable(true);
@@ -153,6 +161,10 @@ public abstract class AbstractFractalView extends View {
         matrix = new Matrix();
         matrix.reset();
 
+        this.initialiseRenderThreads();
+    }
+
+    public void initialiseRenderThreads() {
         // Create the render threads
         noOfThreads = Runtime.getRuntime().availableProcessors();
         //Log.d(TAG, "Using " + noOfThreads + " cores");
@@ -164,7 +176,6 @@ public abstract class AbstractFractalView extends View {
             renderThreadList.get(i).start();
         }
     }
-
 
     /*-----------------------------------------------------------------------------------*/
     /*Android life-cycle handling*/

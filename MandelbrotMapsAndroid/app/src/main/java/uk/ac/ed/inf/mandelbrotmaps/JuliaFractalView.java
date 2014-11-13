@@ -2,14 +2,20 @@ package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.content.Context;
 import android.preference.PreferenceManager;
+import android.util.AttributeSet;
 
 public class JuliaFractalView extends AbstractFractalView {
     // Point paramaterising this Julia set
     private double juliaX = 0;
     private double juliaY = 0;
 
-    public JuliaFractalView(Context context, FractalViewSize size) {
-        super(context, size);
+    public JuliaFractalView(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
+    }
+
+    @Override
+    public void initialise(FractalActivity parentActivity, FractalViewSize size) {
+        super.initialise(parentActivity, size);
 
         setColouringScheme(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("JULIA_COLOURS", "JuliaDefault"), false);
 

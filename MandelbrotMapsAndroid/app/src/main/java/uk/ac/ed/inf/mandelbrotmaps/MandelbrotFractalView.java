@@ -6,7 +6,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.preference.PreferenceManager;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+
+import java.text.AttributedCharacterIterator;
 
 public class MandelbrotFractalView extends AbstractFractalView {
     public float lastTouchX = 0;
@@ -28,8 +31,17 @@ public class MandelbrotFractalView extends AbstractFractalView {
     public float smallPinRadius = 5.0f;
     public float largePinRadius = 20.0f;
 
-    public MandelbrotFractalView(Context context, FractalViewSize size) {
-        super(context, size);
+    public MandelbrotFractalView(Context context) {
+        super(context);
+    }
+
+    public MandelbrotFractalView(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
+    }
+
+    @Override
+    public void initialise(FractalActivity parentActivity, FractalViewSize size) {
+        super.initialise(parentActivity, size);
 
         setColouringScheme(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("MANDELBROT_COLOURS", "MandelbrotDefault"), false);
 
@@ -178,7 +190,7 @@ public class MandelbrotFractalView extends AbstractFractalView {
         double pixelSize = getPixelSize();
 
         if (fractalViewSize == FractalViewSize.LITTLE) {
-            currentJuliaParams = ((JuliaFractalView) parentActivity.fractalView).getJuliaParam();
+            //currentJuliaParams = ((JuliaFractalView) parentActivity.fractalView).getJuliaParam();
         }
 
         pinCoords[0] = (float) ((currentJuliaParams[0] - graphArea[0]) / pixelSize);

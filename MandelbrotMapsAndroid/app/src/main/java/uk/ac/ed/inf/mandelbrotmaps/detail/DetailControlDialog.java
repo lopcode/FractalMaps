@@ -103,7 +103,6 @@ public class DetailControlDialog extends DialogFragment implements SeekBar.OnSee
     }
 
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
         if (seekBar.getId() == R.id.mandelbrot_seekbar) {
             mandelbrotText.setText(Integer.toString(seekBar.getProgress()));
         } else if (seekBar.getId() == R.id.julia_seekbar) {

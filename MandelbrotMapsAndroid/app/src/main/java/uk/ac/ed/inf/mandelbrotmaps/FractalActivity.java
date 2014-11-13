@@ -41,6 +41,8 @@ import android.widget.Toast;
 
 import java.io.File;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView.FractalViewSize;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
@@ -68,10 +70,17 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public FractalTypeEnum fractalType = FractalTypeEnum.MANDELBROT;
 
     // Layout variables
-    public AbstractFractalView fractalView;
-    private AbstractFractalView littleFractalView;
+    @InjectView(R.id.toolbar)
+    Toolbar toolbar;
+
+    @InjectView(R.id.firstFractalView)
+    MandelbrotFractalView fractalView;
+
+    @InjectView(R.id.secondFractalView)
+    JuliaFractalView littleFractalView;
+
     private View borderView;
-    private RelativeLayout relativeLayout;
+    //private RelativeLayout relativeLayout;
 
     // Fractal locations
     private MandelbrotJuliaLocation mjLocation;
@@ -108,7 +117,11 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+
         super.onCreate(savedInstanceState);
+
+        this.setContentView(R.layout.fractals_side_by_side);
+        ButterKnife.inject(this);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
@@ -123,7 +136,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         double[] juliaParams = mjLocation.defaultJuliaParams;
         double[] juliaGraphArea = mjLocation.defaultJuliaGraphArea;
 
-        relativeLayout = new RelativeLayout(this);
+        //relativeLayout = new RelativeLayout(this);
 
         //Extract features from bundle, if there is one
         try {
@@ -134,23 +147,21 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         }
 
         if (fractalType == FractalTypeEnum.MANDELBROT) {
-            fractalView = new MandelbrotFractalView(this, FractalViewSize.LARGE);
+            fractalView.initialise(this, FractalViewSize.LARGE);
         } else if (fractalType == FractalTypeEnum.JULIA) {
-            fractalView = new JuliaFractalView(this, FractalViewSize.LARGE);
+            fractalView.initialise(this, FractalViewSize.LARGE);
             juliaParams = bundle.getDoubleArray("JuliaParams");
             juliaGraphArea = bundle.getDoubleArray("JuliaGraphArea");
         } else {
-            fractalView = new CubicMandelbrotFractalView(this, FractalViewSize.LARGE);
+            fractalView.initialise(this, FractalViewSize.LARGE);
         }
 
+
+
         LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        relativeLayout.addView(fractalView, lp);
+        //relativeLayout.addView(fractalView, lp);
 
-        Toolbar toolbar = new Toolbar(this);
-        relativeLayout.addView(toolbar, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-
-        setContentView(relativeLayout);
-
+//        toolbar = new Toolbar(this);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
@@ -206,7 +217,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         if (fractalType == FractalTypeEnum.MANDELBROT) {
             outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((MandelbrotFractalView) fractalView).currentJuliaParams);
         } else {
-            outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((JuliaFractalView) fractalView).getJuliaParam());
+            //outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((JuliaFractalView) fractalView).getJuliaParam());
         }
 
         outState.putBoolean(PREVIOUS_SHOWING_LITTLE, showingLittle);
@@ -240,11 +251,11 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     @Override
     public void finish() {
         if (fractalType == FractalTypeEnum.JULIA) {
-            double[] juliaParams = ((JuliaFractalView) fractalView).getJuliaParam();
+            //double[] juliaParams = ((JuliaFractalView) fractalView).getJuliaParam();
             double[] currentGraphArea = fractalView.graphArea;
 
             Intent result = new Intent();
-            result.putExtra("JuliaParams", juliaParams);
+            //result.putExtra("JuliaParams", juliaParams);
             result.putExtra("JuliaGraphArea", currentGraphArea);
 
             setResult(Activity.RESULT_OK, result);
@@ -282,15 +293,15 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public void addLittleView(boolean centre) {
         //Check to see if view has already or should never be included
         if (showingLittle) {
-            relativeLayout.bringChildToFront(littleFractalView);
+            //relativeLayout.bringChildToFront(littleFractalView);
             return;
         }
 
         //Show a little Julia next to a Mandelbrot and vice versa
         if (fractalType == FractalTypeEnum.MANDELBROT) {
-            littleFractalView = new JuliaFractalView(this, FractalViewSize.LITTLE);
+            littleFractalView.initialise(this, FractalViewSize.LITTLE);
         } else {
-            littleFractalView = new MandelbrotFractalView(this, FractalViewSize.LITTLE);
+            littleFractalView.initialise(this, FractalViewSize.LITTLE);
         }
 
         //Set size of border, little view proportional to screen size
@@ -306,12 +317,12 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         borderView = new View(this);
         borderView.setBackgroundColor(Color.GRAY);
         LayoutParams borderLayout = new LayoutParams(width + 2 * borderwidth, height + 2 * borderwidth);
-        relativeLayout.addView(borderView, borderLayout);
+        //relativeLayout.addView(borderView, borderLayout);
 
         //Add little fractal view
         LayoutParams lp2 = new LayoutParams(width, height);
         lp2.setMargins(borderwidth, borderwidth, borderwidth, borderwidth);
-        relativeLayout.addView(littleFractalView, lp2);
+        //relativeLayout.addView(littleFractalView, lp2);
 
         if (fractalType == FractalTypeEnum.MANDELBROT) {
             littleFractalView.loadLocation(mjLocation);
@@ -329,7 +340,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             littleFractalView.loadLocation(mjLocation);
         }
 
-        setContentView(relativeLayout);
+        //setContentView(relativeLayout);
 
         showingLittle = true;
     }
@@ -338,8 +349,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public void removeLittleView() {
         if (!showingLittle) return;
 
-        relativeLayout.removeView(borderView);
-        relativeLayout.removeView(littleFractalView);
+        //relativeLayout.removeView(borderView);
+        //relativeLayout.removeView(littleFractalView);
 
         littleFractalView.interruptThreads();
 
@@ -356,7 +367,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         LayoutParams progressBarParams = new LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         progressBarParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         progressBar = new ProgressBar(getApplicationContext());
-        relativeLayout.addView(progressBar, progressBarParams);
+        //relativeLayout.addView(progressBar, progressBarParams);
         showingSpinner = true;
     }
 
@@ -368,7 +379,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         runOnUiThread(new Runnable() {
 
             public void run() {
-                relativeLayout.removeView(progressBar);
+            //    relativeLayout.removeView(progressBar);
             }
         });
         showingSpinner = false;
@@ -769,7 +780,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             if (fractalType == FractalTypeEnum.MANDELBROT) {
                 ((MandelbrotFractalView) fractalView).setPinColour(newColour);
             } else if (showingLittle) {
-                ((MandelbrotFractalView) littleFractalView).setPinColour(newColour);
+                //((MandelbrotFractalView) littleFractalView).setPinColour(newColour);
             }
         }
     }
@@ -854,14 +865,14 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                 bookmark = new MandelbrotJuliaLocation(fractalView.graphArea);
             }
         } else {
-            bookmark = new MandelbrotJuliaLocation(littleFractalView.graphArea, fractalView.graphArea,
-                    ((MandelbrotFractalView) littleFractalView).currentJuliaParams);
+            //bookmark = new MandelbrotJuliaLocation(littleFractalView.graphArea, fractalView.graphArea,
+            //        ((MandelbrotFractalView) littleFractalView).currentJuliaParams);
         }
 
-        Log.d(TAG, bookmark.toString());
+        //Log.d(TAG, bookmark.toString());
 
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
-        editor.putString("BOOKMARK", bookmark.toString());
+        //editor.putString("BOOKMARK", bookmark.toString());
         editor.commit();
     }
 
