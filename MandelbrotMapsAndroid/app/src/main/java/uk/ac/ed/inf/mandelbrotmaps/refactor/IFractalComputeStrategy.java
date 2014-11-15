@@ -21,4 +21,6 @@ public interface IFractalComputeStrategy {
     public void clearPixelSizes();
 
     public void translateFractal(int x, int y);
+
+    public boolean shouldPerformCrudeFirst();
 }

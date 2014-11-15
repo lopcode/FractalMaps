@@ -4,6 +4,8 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 
+import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
+
 public class JuliaFractalView extends AbstractFractalView {
     // Point paramaterising this Julia set
     private double juliaX = 0;
@@ -39,6 +41,9 @@ public class JuliaFractalView extends AbstractFractalView {
         //stopAllRendering();
         juliaX = newJuliaX;
         juliaY = newJuliaY;
+
+        ((JuliaCPUFractalComputeStrategy) this.strategy).setJuliaSeed(juliaX, juliaY);
+
         setGraphArea(graphArea, true);
     }
 
@@ -54,38 +59,9 @@ public class JuliaFractalView extends AbstractFractalView {
         //setScaledIterationCount(mjLocation.getJuliaContrast());
         double[] juliaParam = mjLocation.getJuliaParam();
         setGraphArea(mjLocation.getJuliaGraphArea(), true);
+
         setJuliaParameter(juliaParam[0], juliaParam[1]);
 
         //mandelbrotStrategy.setGraphArea(mjLocation.getJuliaGraphArea());
-    }
-
-    int pixelInSet(int xPixel, int yPixel, int maxIterations) {
-        boolean inside = true;
-        int iterationNr;
-        double newx, newy;
-        double x, y;
-
-        x = xMin + ((double) xPixel * pixelSize);
-        y = yMax - ((double) yPixel * pixelSize);
-
-        for (iterationNr = 0; iterationNr < maxIterations; iterationNr++) {
-            // z^2 + c
-            newx = (x * x) - (y * y) + juliaX;
-            newy = (2 * x * y) + juliaY;
-
-            x = newx;
-            y = newy;
-
-            // Well known result: if distance is >2, escapes to infinity...
-            if ((x * x + y * y) > 4) {
-                inside = false;
-                break;
-            }
-        }
-
-        if (inside)
-            return colourer.colourInsidePoint();
-        else
-            return colourer.colourOutsidePoint(iterationNr, maxIterations);
     }
 }

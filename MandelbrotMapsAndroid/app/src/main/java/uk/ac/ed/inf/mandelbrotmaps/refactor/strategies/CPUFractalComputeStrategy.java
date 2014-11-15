@@ -35,6 +35,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
             //If we've exceeded the bounds of the image (as can happen with many threads), exit the loop.
             if (((imgWidth * (yPixel + pixelBlockSize - 1)) + xPixelMax) > pixelSizes.length ||
                     yPixel < 0) {
+                int q = 1;
                 continue;
             }
 
@@ -48,6 +49,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
 
             for (xPixel = xPixelMin; xPixel < xPixelMax + 1 - pixelBlockSize; xPixel += pixelBlockSize) {
                 //Check to see if this pixel is already iterated to the necessary block size
+
                 if (pixelSizes[(imgWidth * yPixel) + xPixel] <= pixelBlockSize) {
                     continue;
                 }

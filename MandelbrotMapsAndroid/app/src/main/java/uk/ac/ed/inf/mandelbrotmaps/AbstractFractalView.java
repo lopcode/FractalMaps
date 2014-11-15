@@ -27,7 +27,7 @@ import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.PsychadelicColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.RGBWalkColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.FractalComputeStrategy;
 
 public abstract class AbstractFractalView extends View implements IFractalComputeDelegate {
     // How many different discrete zoom levels?
@@ -129,7 +129,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     // Render calculating variables
     double xMin, yMax, pixelSize;
 
-    MandelbrotCPUFractalComputeStrategy mandelbrotStrategy;
+    FractalComputeStrategy strategy;
 
     public AbstractFractalView(Context context) {
         super(context);
@@ -193,18 +193,13 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
-        // Show the little view at the start, if allowed.
-        if (fractalViewSize == FractalViewSize.LARGE && parentActivity.showLittleAtStart) {
-            parentActivity.addLittleView(true);
-        }
-
         // Set linesToDrawAfter to a reasonable portion of size (1/12th works nicely).
         linesToDrawAfter = getHeight() / 12;
         //Log.d(TAG, "Drawing every " + linesToDrawAfter + " lines.");
 
 
-        mandelbrotStrategy.initialise(w, h, this);
-        mandelbrotStrategy.setFractalDetail(parentActivity.getDetailFromPrefs(fractalViewSize));
+        strategy.initialise(w, h, this);
+        strategy.setFractalDetail(parentActivity.getDetailFromPrefs(fractalViewSize));
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -238,7 +233,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
         //Create new image only if not dragging, zooming, or moving the Julia pin
         if (controlmode == ControlMode.STATIC && !holdingPin && getWidth() > 0) {
             bitmapCreations++;
-            fractalBitmap = Bitmap.createBitmap(mandelbrotStrategy.getFractalResult(), 0, getWidth(), getWidth(), getHeight(), Bitmap.Config.RGB_565);
+            fractalBitmap = Bitmap.createBitmap(this.fractalPixels, 0, getWidth(), getWidth(), getHeight(), Bitmap.Config.RGB_565);
         }
 
         //Draw fractal image on screen
@@ -268,10 +263,13 @@ public abstract class AbstractFractalView extends View implements IFractalComput
         // Don't bother showing render progress on little views
 //        if (fractalViewSize == FractalViewSize.LITTLE) showRenderProgress = false;
 //
-        mandelbrotStrategy.setGraphArea(this.graphArea);
+        strategy.setGraphArea(this.graphArea);
         Log.i("AFV", "Starting new style render " + fractalViewSize.toString() + " " + threadID);
         Log.i("AFV", "Graph area before: " + graphArea[0] + " " + graphArea[1] + " " + graphArea[2]);
-        mandelbrotStrategy.computeFractal(pixelBlockSize,
+
+        Log.i("AFV", "Starting render for thread " + this.renderThreadList.get(0).getName());
+
+        strategy.computeFractal(pixelBlockSize,
                 showRenderProgress,
                 100,
                 0,
@@ -281,6 +279,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
                 graphArea[0],
                 graphArea[1],
                 getPixelSize());
+
         Log.i("AFV", "Graph area after: " + graphArea[0] + " " + graphArea[1] + " " + graphArea[2]);
 //        Log.i("AFV", "Starting new old style render " + fractalViewSize.toString() + " " + threadID);
 //        computePixels(
@@ -304,7 +303,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /*-----------------------------------------------------------------------------------*/
     /* Render scheduling/tracking */
     /*-----------------------------------------------------------------------------------*/
-	/* Adds renders to queues for each thread */
+    /* Adds renders to queues for each thread */
     void scheduleNewRenders() {
         // Abort current and future renders
         stopAllRendering();
@@ -324,7 +323,8 @@ public abstract class AbstractFractalView extends View implements IFractalComput
         renderStartTime = System.currentTimeMillis();
 
         //Schedule a crude rendering if needed (not the small view, not a small zoom)
-        if (SettingsActivity.performCrude(getContext()) && fractalViewSize != FractalViewSize.LITTLE &&
+
+        if (SettingsActivity.performCrude(getContext()) && this.strategy.shouldPerformCrudeFirst() &&
                 (totalScaleFactor < 0.6f || totalScaleFactor == 1.0f || totalScaleFactor > 3.5f || !completedLastRender)) {
             scheduleRendering(CRUDE_PIXEL_BLOCK);
         }
@@ -371,7 +371,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
         }
 
         // If all threads are done and you're the main view, show time.
-        if (!(isRendering()) && fractalViewSize == FractalViewSize.LARGE) {
+        if (!(isRendering()) && fractalViewSize == FractalViewSize.LARGE && strategy.shouldPerformCrudeFirst()) {
             completedLastRender = true;
 
             //Show time in seconds
@@ -455,9 +455,9 @@ public abstract class AbstractFractalView extends View implements IFractalComput
 
     /* Shift values in pixel array to keep pixels that have already been calculated */
     public void shiftPixels(int shiftX, int shiftY) {
-        mandelbrotStrategy.translateFractal(shiftX, shiftY);
-        this.fractalPixels = mandelbrotStrategy.getFractalResult();
-        this.pixelSizes = mandelbrotStrategy.getPixelSizes();
+        strategy.translateFractal(shiftX, shiftY);
+        this.fractalPixels = strategy.getFractalResult();
+        this.pixelSizes = strategy.getPixelSizes();
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -737,7 +737,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
             pixelSizes[i] = 1000;
         }
 
-        mandelbrotStrategy.clearPixelSizes();
+        strategy.clearPixelSizes();
     }
 
     /* Stop any rendering and return to "home" position */
@@ -798,101 +798,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /*-----------------------------------------------------------------------------------*/
     abstract void loadLocation(MandelbrotJuliaLocation mjLocation);
 
-    void computePixels(
-            int pixelBlockSize,  // Pixel "blockiness"
-            final boolean showRenderingProgress,  // Call newPixels() on outputMIS as we go?
-            final int xPixelMin,
-            final int xPixelMax,
-            final int yPixelMin,
-            final int yPixelMax,
-            final double xMin,
-            final double yMax,
-            final double pixelSize,
-            final boolean allowInterruption,  // Shall we abort if renderThread signals an abort?
-            final int threadID,
-            final int noOfThreads
-    ) {
-        RenderThread callingThread = renderThreadList.get(threadID);
-
-        int maxIterations = getMaxIterations();
-        int imgWidth = xPixelMax - xPixelMin;
-
-        int xPixel = 0, yPixel = 0, yIncrement = 0;
-        int colourCodeHex;
-        int pixelBlockA, pixelBlockB;
-
-        this.xMin = xMin;
-        this.yMax = yMax;
-        this.pixelSize = pixelSize;
-
-        double x0 = 0, y0 = 0;
-
-        int pixelIncrement = pixelBlockSize * noOfThreads;
-        int originalIncrement = pixelIncrement;
-
-        int loopCount = 0;
-
-
-        for (yIncrement = yPixelMin; yPixel < yPixelMax + (noOfThreads * pixelBlockSize); yIncrement += pixelIncrement) {
-            yPixel = yIncrement;
-
-            pixelIncrement = (loopCount * originalIncrement);
-            if (loopCount % 2 == 0)
-                pixelIncrement *= -1;
-            loopCount++;
-
-            //If we've exceeded the bounds of the image (as can happen with many threads), exit the loop.
-            if (((imgWidth * (yPixel + pixelBlockSize - 1)) + xPixelMax) > pixelSizes.length ||
-                    yPixel < 0) {
-                continue;
-            }
-
-            // Detect rendering abortion.
-            if (allowInterruption && (callingThread.abortSignalled())) {
-                return;
-            }
-
-            // Set y0 (im part of c)
-            //y0 = yMax - ( (double)yPixel * pixelSize );
-
-            for (xPixel = xPixelMin; xPixel < xPixelMax + 1 - pixelBlockSize; xPixel += pixelBlockSize) {
-                //Check to see if this pixel is already iterated to the necessary block size
-                if (fractalViewSize == FractalViewSize.LARGE && pixelSizes[(imgWidth * yPixel) + xPixel] <= pixelBlockSize) {
-                    continue;
-                }
-
-                colourCodeHex = pixelInSet(xPixel, yPixel, maxIterations);
-
-                //Note that the pixel being calculated has been calculated in full (upper right of a block)
-                if (fractalViewSize == FractalViewSize.LARGE)
-                    pixelSizes[(imgWidth * yPixel) + (xPixel)] = DEFAULT_PIXEL_SIZE;
-
-                // Save colour info for this pixel. int, interpreted: 0xAARRGGBB
-                int p = 0;
-                for (pixelBlockA = 0; pixelBlockA < pixelBlockSize; pixelBlockA++) {
-                    for (pixelBlockB = 0; pixelBlockB < pixelBlockSize; pixelBlockB++) {
-                        if (fractalViewSize == FractalViewSize.LARGE) {
-                            if (p != 0) {
-                                pixelSizes[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = pixelBlockSize;
-                            }
-                            p++;
-                        }
-                        if (fractalPixels == null) return;
-                        fractalPixels[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = colourCodeHex;
-                    }
-                }
-            }
-            // Show thread's work in progress
-            if ((showRenderingProgress) && (loopCount % linesToDrawAfter == 0)) {
-                postInvalidate();
-            }
-        }
-
-        postInvalidate();
-        notifyCompleteRender(threadID, pixelBlockSize);
-    }
-
-    abstract int pixelInSet(int xPixel, int yPixel, int maxIterations);
+    // IFractalComputeDelegate
 
     @Override
     public void postUpdate(int[] pixels, int[] pixelSizes) {
@@ -903,6 +809,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
 
     @Override
     public void postFinished(int[] pixels, int[] pixelSizes, int pixelBlockSize) {
+        Log.i("AFV", "Render finished for thread " + this.renderThreadList.get(0).getName());
         this.postUpdate(pixels, pixelSizes);
 
         this.notifyCompleteRender(0, pixelBlockSize);

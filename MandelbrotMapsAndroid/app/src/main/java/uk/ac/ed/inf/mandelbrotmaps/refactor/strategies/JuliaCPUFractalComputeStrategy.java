@@ -1,25 +1,28 @@
 package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
 
-public class MandelbrotCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
+public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
+    private double juliaX = 0;
+    private double juliaY = 0;
+
+    public void setJuliaSeed(double juliaX, double juliaY) {
+        this.juliaX = juliaX;
+        this.juliaY = juliaY;
+    }
+
+    @Override
     int pixelInSet(int xPixel, int yPixel, int maxIterations) {
         boolean inside = true;
         int iterationNr;
         double newx, newy;
         double x, y;
 
-        // Set x0 (real part of c)
-        double x0 = xMin + ((double) xPixel * pixelSize);
-        double y0 = yMax - ((double) yPixel * pixelSize); //TODO This shouldn't be calculated every time
+        x = xMin + ((double) xPixel * pixelSize);
+        y = yMax - ((double) yPixel * pixelSize);
 
-        // Start at x0, y0
-        x = x0;
-        y = y0;
-
-        //Run iterations over this point
         for (iterationNr = 0; iterationNr < maxIterations; iterationNr++) {
             // z^2 + c
-            newx = (x * x) - (y * y) + x0;
-            newy = (2 * x * y) + y0;
+            newx = (x * x) - (y * y) + juliaX;
+            newy = (2 * x * y) + juliaY;
 
             x = newx;
             y = newy;
@@ -39,6 +42,6 @@ public class MandelbrotCPUFractalComputeStrategy extends CPUFractalComputeStrate
 
     @Override
     public boolean shouldPerformCrudeFirst() {
-        return true;
+        return false;
     }
 }

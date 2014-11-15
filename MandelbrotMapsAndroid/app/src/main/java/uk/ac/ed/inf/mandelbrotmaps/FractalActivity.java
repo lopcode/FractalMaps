@@ -45,10 +45,12 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView.FractalViewSize;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
 
 public class FractalActivity extends ActionBarActivity implements OnTouchListener, OnScaleGestureListener,
@@ -100,7 +102,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
     // Little fractal view tracking
     public boolean showLittleAtStart = true;
-    public boolean showingLittle = false;
+    public boolean showingLittle = true;
     private boolean littleFractalSelected = false;
 
     // Loading spinner (currently all disabled due to slowdown)
@@ -119,7 +121,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
         super.onCreate(savedInstanceState);
 
-        this.setContentView(R.layout.fractals_large_small);
+        this.setContentView(R.layout.fractals_side_by_side);
         ButterKnife.inject(this);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -143,26 +145,24 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         } catch (NullPointerException npe) {
         }
 
-        if (fractalType == FractalTypeEnum.MANDELBROT) {
-            fractalView.initialise(this, FractalViewSize.LARGE);
-        } else if (fractalType == FractalTypeEnum.JULIA) {
-            fractalView.initialise(this, FractalViewSize.LARGE);
-            juliaParams = bundle.getDoubleArray("JuliaParams");
-            juliaGraphArea = bundle.getDoubleArray("JuliaGraphArea");
-        } else {
-            fractalView.initialise(this, FractalViewSize.LARGE);
-        }
+
+        fractalView.initialise(this, FractalViewSize.LARGE);
+        littleFractalView.initialise(this, FractalViewSize.LARGE);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 
-        fractalView.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
-        fractalView.mandelbrotStrategy.setColourStrategy(new DefaultColourStrategy());
+        fractalView.strategy = new MandelbrotCPUFractalComputeStrategy();
+        fractalView.strategy.setColourStrategy(new DefaultColourStrategy());
+
+        littleFractalView.strategy = new JuliaCPUFractalComputeStrategy();
+        littleFractalView.strategy.setColourStrategy(new JuliaColourStrategy());
 
         mjLocation = new MandelbrotJuliaLocation(juliaGraphArea, juliaParams);
         fractalView.loadLocation(mjLocation);
+        littleFractalView.loadLocation(mjLocation);
 
         gestureDetector = new ScaleGestureDetector(this, this);
     }
@@ -276,79 +276,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                 }
                 break;
         }
-    }
-
-    /*-----------------------------------------------------------------------------------*/
-    /*Dynamic UI creation*/
-    /*-----------------------------------------------------------------------------------*/
-   /* Adds the little fractal view and its border, if not showing
-    * Also determines its height, width based on large fractal view's size
-    */
-    public void addLittleView(boolean centre) {
-        //Check to see if view has already or should never be included
-        if (showingLittle) {
-            //relativeLayout.bringChildToFront(littleFractalView);
-            return;
-        }
-
-        //Show a little Julia next to a Mandelbrot and vice versa
-        if (fractalType == FractalTypeEnum.MANDELBROT) {
-            littleFractalView.initialise(this, FractalViewSize.LITTLE);
-        } else {
-            littleFractalView.initialise(this, FractalViewSize.LITTLE);
-        }
-
-        //Set size of border, little view proportional to screen size
-        int width = fractalView.getWidth();
-        int height = fractalView.getHeight();
-        int borderwidth = Math.max(1, (int) (width / 300.0));
-
-        double ratio = (double) width / (double) height;
-        width /= 7;
-        height = (int) (width / ratio);
-
-        //Add border view (behind little view, slightly larger)
-//        borderView = new View(this);
-//        borderView.setBackgroundColor(Color.GRAY);
-        LayoutParams borderLayout = new LayoutParams(width + 2 * borderwidth, height + 2 * borderwidth);
-        //relativeLayout.addView(borderView, borderLayout);
-
-        //Add little fractal view
-        LayoutParams lp2 = new LayoutParams(width, height);
-        lp2.setMargins(borderwidth, borderwidth, borderwidth, borderwidth);
-        //relativeLayout.addView(littleFractalView, lp2);
-
-        if (fractalType == FractalTypeEnum.MANDELBROT) {
-            littleFractalView.loadLocation(mjLocation);
-
-            double[] jParams;
-            if (!centre) {
-                jParams = ((MandelbrotFractalView) fractalView).currentJuliaParams;
-            } else {
-                jParams = ((MandelbrotFractalView) fractalView).getJuliaParams(fractalView.getWidth() / 2, fractalView.getHeight() / 2);
-            }
-
-            ((JuliaFractalView) littleFractalView).setJuliaParameter(jParams[0], jParams[1]);
-        } else {
-            mjLocation.setMandelbrotGraphArea(littleMandelbrotLocation);
-            littleFractalView.loadLocation(mjLocation);
-        }
-
-        //setContentView(relativeLayout);
-
-        showingLittle = true;
-    }
-
-    // Hides the little fractal view, if showing
-    public void removeLittleView() {
-        if (!showingLittle) return;
-
-        //relativeLayout.removeView(borderView);
-        //relativeLayout.removeView(littleFractalView);
-
-        littleFractalView.interruptThreads();
-
-        showingLittle = false;
     }
 
     /* Shows the progress spinner. Never used because it causes slowdown,
@@ -744,13 +671,12 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
         fractalView.invalidate();
 
-        if (showingLittle) {
-            double[] juliaParams = ((MandelbrotFractalView) fractalView).getJuliaParams(x, y);
-            ((JuliaFractalView) littleFractalView).setJuliaParameter(juliaParams[0], juliaParams[1]);
-        } else {
-            ((MandelbrotFractalView) fractalView).getJuliaParams(x, y);
-            addLittleView(false);
-        }
+        littleFractalView.strategy.clearPixelSizes();
+        double[] juliaParams = ((MandelbrotFractalView) fractalView).getJuliaParams(x, y);
+        ((JuliaFractalView) littleFractalView).setJuliaParameter(juliaParams[0], juliaParams[1]);
+
+
+        Log.i("FA", "Setting julia params to " + juliaParams[0] + " " + juliaParams[1]);
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String changedPref) {
@@ -925,11 +851,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
     @Override
     public void onToggleSmallClicked() {
-        if (showingLittle) {
-            removeLittleView();
-        } else {
-            addLittleView(true);
-        }
+        Log.e("FA", "No-op on toggle small clicked");
 
         this.dismissMenuDialog();
     }
