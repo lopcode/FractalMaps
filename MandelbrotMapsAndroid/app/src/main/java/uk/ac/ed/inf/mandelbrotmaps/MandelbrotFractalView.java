@@ -9,8 +9,6 @@ import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 
-import java.text.AttributedCharacterIterator;
-
 public class MandelbrotFractalView extends AbstractFractalView {
     public float lastTouchX = 0;
     public float lastTouchY = 0;

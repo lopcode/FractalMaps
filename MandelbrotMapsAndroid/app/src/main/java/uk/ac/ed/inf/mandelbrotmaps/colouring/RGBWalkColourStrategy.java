@@ -6,7 +6,7 @@ package uk.ac.ed.inf.mandelbrotmaps.colouring;
  *
  * @author mallia
  */
-public class RGBWalkColouringScheme implements ColouringScheme {
+public class RGBWalkColourStrategy implements IColourStrategy {
     /**
      * The spacing of the colours.  For example, when creating blue colours, the
      * next blue colour will be new = old + COLOUR_SPACING.

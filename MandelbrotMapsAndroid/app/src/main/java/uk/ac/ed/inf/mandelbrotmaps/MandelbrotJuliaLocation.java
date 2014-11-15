@@ -2,7 +2,7 @@ package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.util.Log;
 
-class MandelbrotJuliaLocation {
+public class MandelbrotJuliaLocation {
     private double[] mandelbrotGraphArea;
     private double[] juliaGraphArea;
     private double[] juliaParams;

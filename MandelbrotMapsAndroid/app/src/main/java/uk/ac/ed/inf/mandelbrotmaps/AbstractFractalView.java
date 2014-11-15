@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -20,13 +21,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import uk.ac.ed.inf.mandelbrotmaps.colouring.ColouringScheme;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColouringScheme;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaDefaultColouringScheme;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.PsychadelicColouringScheme;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.RGBWalkColouringScheme;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.PsychadelicColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.RGBWalkColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
 
-public abstract class AbstractFractalView extends View {
+public abstract class AbstractFractalView extends View implements IFractalComputeDelegate {
     // How many different discrete zoom levels?
     public final int ZOOM_SLIDER_SCALING = 300;
 
@@ -119,12 +122,14 @@ public abstract class AbstractFractalView extends View {
 
     boolean drawPin = true;
 
-    public ColouringScheme colourer = new DefaultColouringScheme();
+    public IColourStrategy colourer = new DefaultColourStrategy();
 
     boolean completedLastRender = false;
 
     // Render calculating variables
     double xMin, yMax, pixelSize;
+
+    MandelbrotCPUFractalComputeStrategy mandelbrotStrategy;
 
     public AbstractFractalView(Context context) {
         super(context);
@@ -166,7 +171,8 @@ public abstract class AbstractFractalView extends View {
 
     public void initialiseRenderThreads() {
         // Create the render threads
-        noOfThreads = Runtime.getRuntime().availableProcessors();
+        //noOfThreads = Runtime.getRuntime().availableProcessors();
+        noOfThreads = 1;
         //Log.d(TAG, "Using " + noOfThreads + " cores");
 
         for (int i = 0; i < noOfThreads; i++) {
@@ -195,6 +201,10 @@ public abstract class AbstractFractalView extends View {
         // Set linesToDrawAfter to a reasonable portion of size (1/12th works nicely).
         linesToDrawAfter = getHeight() / 12;
         //Log.d(TAG, "Drawing every " + linesToDrawAfter + " lines.");
+
+
+        mandelbrotStrategy.initialise(w, h, this);
+        mandelbrotStrategy.setFractalDetail(parentActivity.getDetailFromPrefs(fractalViewSize));
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -228,7 +238,7 @@ public abstract class AbstractFractalView extends View {
         //Create new image only if not dragging, zooming, or moving the Julia pin
         if (controlmode == ControlMode.STATIC && !holdingPin && getWidth() > 0) {
             bitmapCreations++;
-            fractalBitmap = Bitmap.createBitmap(fractalPixels, 0, getWidth(), getWidth(), getHeight(), Bitmap.Config.RGB_565);
+            fractalBitmap = Bitmap.createBitmap(mandelbrotStrategy.getFractalResult(), 0, getWidth(), getWidth(), getHeight(), Bitmap.Config.RGB_565);
         }
 
         //Draw fractal image on screen
@@ -236,7 +246,7 @@ public abstract class AbstractFractalView extends View {
             canvas.drawBitmap(fractalBitmap, matrix, new Paint());
 
         // Brings little view to front if it's hidden but shouldn't be, as can happen.
-        if (parentActivity.showingLittle) parentActivity.addLittleView(false);
+        //if (parentActivity.showingLittle) parentActivity.addLittleView(false);
     }
 
     /* Computes pixels of the fractal Bitmap, puts them in array (run by render thread) */
@@ -250,30 +260,45 @@ public abstract class AbstractFractalView extends View {
         boolean showRenderProgress = (threadID == 0);
 
 		/*if(fractalViewSize == FractalViewSize.LARGE)
-			Log.d("ThreadEnding", "Thread " + threadID + " ending at " + yEnd + "/" + getHeight());*/
+            Log.d("ThreadEnding", "Thread " + threadID + " ending at " + yEnd + "/" + getHeight());*/
 
         if (pixelSizes == null)
             pixelSizes = new int[getWidth() * getHeight()];
 
         // Don't bother showing render progress on little views
-        if (fractalViewSize == FractalViewSize.LITTLE) showRenderProgress = false;
-
-        computePixels(
-                pixelBlockSize,
+//        if (fractalViewSize == FractalViewSize.LITTLE) showRenderProgress = false;
+//
+        mandelbrotStrategy.setGraphArea(this.graphArea);
+        Log.i("AFV", "Starting new style render " + fractalViewSize.toString() + " " + threadID);
+        Log.i("AFV", "Graph area before: " + graphArea[0] + " " + graphArea[1] + " " + graphArea[2]);
+        mandelbrotStrategy.computeFractal(pixelBlockSize,
                 showRenderProgress,
+                100,
                 0,
                 getWidth(),
                 yStart,
                 yEnd,
                 graphArea[0],
                 graphArea[1],
-                getPixelSize(),
-                true,
-                threadID,
-                noOfThreads
-        );
+                getPixelSize());
+        Log.i("AFV", "Graph area after: " + graphArea[0] + " " + graphArea[1] + " " + graphArea[2]);
+//        Log.i("AFV", "Starting new old style render " + fractalViewSize.toString() + " " + threadID);
+//        computePixels(
+//                pixelBlockSize,
+//                showRenderProgress,
+//                0,
+//                getWidth(),
+//                yStart,
+//                yEnd,
+//                graphArea[0],
+//                graphArea[1],
+//                getPixelSize(),
+//                true,
+//                threadID,
+//                noOfThreads
+//        );
 
-        postInvalidate();
+        //postInvalidate();
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -430,39 +455,9 @@ public abstract class AbstractFractalView extends View {
 
     /* Shift values in pixel array to keep pixels that have already been calculated */
     public void shiftPixels(int shiftX, int shiftY) {
-        //Log.d(TAG, "Shifting pixels");
-
-        int height = getHeight();
-        int width = getWidth();
-        int[] newPixels = new int[height * width];
-        int[] newSizes = new int[height * width];
-        for (int i = 0; i < newSizes.length; i++) newSizes[i] = 1000;
-
-        //Choose rows to copy from
-        int rowNum = height - Math.abs(shiftY);
-        int origStartRow = (shiftY < 0 ? Math.abs(shiftY) : 0);
-
-        //Choose columns to copy from
-        int colNum = width - Math.abs(shiftX);
-        int origStartCol = (shiftX < 0 ? Math.abs(shiftX) : 0);
-
-        //Choose columns to copy to
-        int destStartCol = (shiftX < 0 ? 0 : shiftX);
-
-        //Copy useful parts into new array
-        for (int origY = origStartRow; origY < origStartRow + rowNum; origY++) {
-            int destY = origY + shiftY;
-            System.arraycopy(fractalPixels, (origY * width) + origStartCol,
-                    newPixels, (destY * width) + destStartCol,
-                    colNum);
-            System.arraycopy(pixelSizes, (origY * width) + origStartCol,
-                    newSizes, (destY * width) + destStartCol,
-                    colNum);
-        }
-
-        //Set values
-        fractalPixels = newPixels;
-        pixelSizes = newSizes;
+        mandelbrotStrategy.translateFractal(shiftX, shiftY);
+        this.fractalPixels = mandelbrotStrategy.getFractalResult();
+        this.pixelSizes = mandelbrotStrategy.getPixelSizes();
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -741,6 +736,8 @@ public abstract class AbstractFractalView extends View {
         for (int i = 0; i < pixelSizes.length; i++) {
             pixelSizes[i] = 1000;
         }
+
+        mandelbrotStrategy.clearPixelSizes();
     }
 
     /* Stop any rendering and return to "home" position */
@@ -784,13 +781,13 @@ public abstract class AbstractFractalView extends View {
     /* Change the colouring scheme */
     public void setColouringScheme(String newScheme, boolean reload) {
         if (newScheme.equals("MandelbrotDefault"))
-            colourer = new DefaultColouringScheme();
+            colourer = new DefaultColourStrategy();
         else if (newScheme.equals("JuliaDefault"))
-            colourer = new JuliaDefaultColouringScheme();
+            colourer = new JuliaColourStrategy();
         else if (newScheme.equals("RGBWalk"))
-            colourer = new RGBWalkColouringScheme();
+            colourer = new RGBWalkColourStrategy();
         else if (newScheme.equals("Psychadelic"))
-            colourer = new PsychadelicColouringScheme();
+            colourer = new PsychadelicColourStrategy();
 
         if (reload)
             reloadCurrentLocation();
@@ -896,6 +893,20 @@ public abstract class AbstractFractalView extends View {
     }
 
     abstract int pixelInSet(int xPixel, int yPixel, int maxIterations);
+
+    @Override
+    public void postUpdate(int[] pixels, int[] pixelSizes) {
+        this.fractalPixels = pixels;
+        this.pixelSizes = pixelSizes;
+        this.postInvalidate();
+    }
+
+    @Override
+    public void postFinished(int[] pixels, int[] pixelSizes, int pixelBlockSize) {
+        this.postUpdate(pixels, pixelSizes);
+
+        this.notifyCompleteRender(0, pixelBlockSize);
+    }
 }
 
 

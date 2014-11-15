@@ -1,11 +1,6 @@
 package uk.ac.ed.inf.mandelbrotmaps.colouring;
 
-/**
- * A colouring is used to dictate what colours the points on the screen will have.
- *
- * @author mallia
- */
-public interface ColouringScheme {
+public interface IColourStrategy {
 
     /**
      * Colours a point which escapes from the set

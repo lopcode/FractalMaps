@@ -16,7 +16,7 @@ package uk.ac.ed.inf.mandelbrotmaps.colouring;
  *
  * @author mallia
  */
-public class PsychadelicColouringScheme implements ColouringScheme {
+public class PsychadelicColourStrategy implements IColourStrategy {
     /**
      * Colours a point which is bound to the set.  All points are coloured white.
      *

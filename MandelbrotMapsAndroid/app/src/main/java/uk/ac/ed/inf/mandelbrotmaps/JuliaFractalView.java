@@ -55,6 +55,8 @@ public class JuliaFractalView extends AbstractFractalView {
         double[] juliaParam = mjLocation.getJuliaParam();
         setGraphArea(mjLocation.getJuliaGraphArea(), true);
         setJuliaParameter(juliaParam[0], juliaParam[1]);
+
+        //mandelbrotStrategy.setGraphArea(mjLocation.getJuliaGraphArea());
     }
 
     int pixelInSet(int xPixel, int yPixel, int maxIterations) {
