@@ -540,7 +540,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /*-----------------------------------------------------------------------------------*/
     /* File saving */
     /*-----------------------------------------------------------------------------------*/
-	/* Saves the current fractal image as an image file 
+    /* Saves the current fractal image as an image file
 	 * (Call in FractalActivity should ensure that image is done rendering) */
     public File saveImage() {
         //Check if external storage is available

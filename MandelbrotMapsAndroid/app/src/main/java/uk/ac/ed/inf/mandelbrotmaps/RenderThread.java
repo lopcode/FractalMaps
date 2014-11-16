@@ -1,13 +1,16 @@
 package uk.ac.ed.inf.mandelbrotmaps;
 
+import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
+
 public class RenderThread extends Thread {
-    private AbstractFractalView mjCanvas;
+    private IFractalComputeDelegate delegate;
+
     private volatile boolean abortThisRendering = false;
     public boolean isRunning = false;
     private int threadID = -1;
 
-    public RenderThread(AbstractFractalView mjCanvasHandle, int _threadID, int _noOfThreads) {
-        mjCanvas = mjCanvasHandle;
+    public RenderThread(IFractalComputeDelegate delegate, int _threadID, int _noOfThreads) {
+        this.delegate = delegate;
         threadID = _threadID;
         //setPriority(Thread.MAX_PRIORITY);
     }
@@ -25,14 +28,15 @@ public class RenderThread extends Thread {
     }
 
     public void run() {
-        while (true) {
-            try {
-                Rendering newRendering = mjCanvas.getNextRendering(threadID);
-//                mjCanvas.computeAllPixels(newRendering.getPixelBlockSize(), threadID);
-                abortThisRendering = false;
-            } catch (InterruptedException e) {
-                return;
-            }
-        }
+        return;
+//        while (true) {
+//            try {
+//                Rendering newRendering = mjCanvas.getNextRendering(threadID);
+////                mjCanvas.computeAllPixels(newRendering.getPixelBlockSize(), threadID);
+//                abortThisRendering = false;
+//            } catch (InterruptedException e) {
+//                return;
+//            }
+//        }
     }
 }
