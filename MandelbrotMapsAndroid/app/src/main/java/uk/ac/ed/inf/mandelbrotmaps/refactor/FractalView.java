@@ -26,6 +26,9 @@ public class FractalView extends View implements IFractalView {
 
     public void initialise() {
         this.fractalPaint = new Paint();
+
+        this.setFocusable(true);
+        this.setFocusableInTouchMode(true);
     }
 
     public void setResizeListener(IViewResizeListener resizeListener) {

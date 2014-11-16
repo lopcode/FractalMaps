@@ -370,7 +370,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /* Shift values in pixel array to keep pixels that have already been calculated */
     // PIXEL BUFFER ALTERATION
     public void shiftPixels(int shiftX, int shiftY) {
-//        strategy.translateFractal(shiftX, shiftY);
+//        strategy.translateFractalPixelBuffer(shiftX, shiftY);
 //        this.fractalPixels = strategy.getFractalResult();
 //        this.pixelSizes = strategy.getPixelSizes();
     }

@@ -86,8 +86,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     FractalPresenter firstFractalPresenter;
     FractalPresenter secondFractalPresenter;
 
-    IFractalTouchHandler touchHandler;
-
     // Fractal locations
     private MandelbrotJuliaLocation mjLocation;
     private double[] littleMandelbrotLocation;
@@ -173,6 +171,9 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         mjLocation = new MandelbrotJuliaLocation(juliaGraphArea, juliaParams);
         this.firstFractalPresenter.setGraphArea(mjLocation.defaultMandelbrotGraphArea);
         this.secondFractalPresenter.setGraphArea(mjLocation.defaultJuliaGraphArea);
+
+        this.firstFractalView.setOnTouchListener(this);
+
 
 //        this.firstFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
 //        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
@@ -476,12 +477,14 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 //                    fractalView.holdingPin = true;
 //                    updateLittleJulia(evt.getX(), evt.getY());
 //                } else {
+                Log.i("FA", "Touch down");
                 startDragging(evt);
+                return true;
 //                }
 
-                break;
 
             case MotionEvent.ACTION_MOVE:
+                Log.i("FA", "Touch moved");
                 if (!gestureDetector.isInProgress()) {
                     if (currentlyDragging) {
                         dragFractal(evt);
@@ -491,7 +494,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 //                    }
                 }
 
-                break;
+                return true;
+
 
             case MotionEvent.ACTION_POINTER_UP:
                 if (evt.getPointerCount() == 1)
@@ -506,6 +510,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                 break;
 
             case MotionEvent.ACTION_UP:
+                Log.i("FA", "Touch removed");
                 if (currentlyDragging) {
                     stopDragging();
                 }
@@ -557,7 +562,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         dragLastY = (int) evt.getY();
         dragID = evt.getPointerId(0);
 
-//        fractalView.startDragging();
+        this.firstFractalPresenter.startDragging();
         currentlyDragging = true;
     }
 
@@ -569,8 +574,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             float dragDiffPixelsY = evt.getY(pointerIndex) - dragLastY;
 
             // Move the canvas
-//            if (dragDiffPixelsX != 0.0f && dragDiffPixelsY != 0.0f)
-//                fractalView.dragFractal(dragDiffPixelsX, dragDiffPixelsY);
+            if (dragDiffPixelsX != 0.0f && dragDiffPixelsY != 0.0f)
+                this.firstFractalPresenter.dragFractal(dragDiffPixelsX, dragDiffPixelsY);
 
             // Update last mouse position
             dragLastX = evt.getX(pointerIndex);
@@ -582,7 +587,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
     private void stopDragging() {
         currentlyDragging = false;
-//        fractalView.stopDragging(false);
+        this.firstFractalPresenter.stopDragging();
     }
 
     public boolean onScaleBegin(ScaleGestureDetector detector) {

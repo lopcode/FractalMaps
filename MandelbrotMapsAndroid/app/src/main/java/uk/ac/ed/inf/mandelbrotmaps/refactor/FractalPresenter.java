@@ -4,6 +4,7 @@ import android.graphics.Matrix;
 import android.util.Log;
 import android.view.View;
 
+import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.IFractalComputeStrategy;
 
 public class FractalPresenter implements IFractalPresenter, IFractalComputeDelegate, IFractalTouchDelegate, IViewResizeListener {
@@ -19,8 +20,15 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     private int viewWidth;
     private int viewHeight;
 
-
     protected double detail;
+
+    // Touch
+
+    public float totalDragX = 0;
+    public float totalDragY = 0;
+
+
+
 
     // Default pixel block sizes for crude, detailed renders
     public static final int CRUDE_PIXEL_BLOCK = 3;
@@ -129,7 +137,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         }
     }
 
-    public void translateFractal(int x, int y) {
+    public void translateFractalPixelBuffer(int x, int y) {
         int[] newPixels = new int[this.viewWidth * this.viewHeight];
         int[] newSizes = new int[this.viewWidth * this.viewHeight];
         for (int i = 0; i < newSizes.length; i++) newSizes[i] = 1000;
@@ -160,6 +168,20 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.pixelBufferSizes = newSizes;
     }
 
+    public void moveFractal(int dragDiffPixelsX, int dragDiffPixelsY) {
+        //Log.d(TAG, "moveFractal()");
+
+        // What does each pixel correspond to, on the complex plane?
+        double pixelSize = getPixelSize();
+
+        // Adjust the Graph Area
+        double[] newGraphArea = graphArea;
+        newGraphArea[0] -= (dragDiffPixelsX * pixelSize);
+        newGraphArea[1] -= -(dragDiffPixelsY * pixelSize);
+        this.setGraphArea(newGraphArea);
+    }
+
+
     public void setGraphArea(double[] graphArea) {
         this.graphArea = graphArea;
     }
@@ -185,8 +207,42 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     // IFractalTouchDelegate
 
     @Override
-    public void dragFractal(int x, int y) {
+    public void startDragging() {
+        Log.i("FP", "Started dragging");
+        
+        //Stop current rendering (to not render areas that are offscreen afterwards)
+//        stopAllRendering();
 
+        this.totalDragX = 0;
+        this.totalDragY = 0;
+
+        this.transformMatrix.reset();
+        this.view.setFractalTransformMatrix(this.transformMatrix);
+    }
+
+    public void stopDragging() {
+        Log.i("FP", "Stopped dragging: " + totalDragX + " " + totalDragY);
+        this.translateFractalPixelBuffer((int) totalDragX, (int) totalDragY);
+
+        //Set the new location for the fractals
+        this.moveFractal((int) totalDragX, (int) totalDragY);
+
+        this.setGraphArea(graphArea);
+        this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+
+        this.transformMatrix.reset();
+        this.view.setFractalTransformMatrix(this.transformMatrix);
+
+        this.view.redraw();
+    }
+
+    @Override
+    public void dragFractal(float x, float y) {
+        totalDragX += x;
+        totalDragY += y;
+
+        this.transformMatrix.postTranslate(x, y);
+        this.view.redraw();
     }
 
     @Override
