@@ -14,6 +14,10 @@ public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
         return 6.46D;
     }
 
+    public double[] getJuliaSeed() {
+        return new double[] { this.juliaX, this.juliaY };
+    }
+
     public void setJuliaSeed(double juliaX, double juliaY) {
         this.juliaX = juliaX;
         this.juliaY = juliaY;

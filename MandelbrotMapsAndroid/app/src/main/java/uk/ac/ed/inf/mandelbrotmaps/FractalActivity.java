@@ -85,6 +85,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     FractalPresenter firstFractalPresenter;
     FractalPresenter secondFractalPresenter;
 
+    JuliaCPUFractalComputeStrategy juliaStrategy;
+
     // Fractal locations
     private MandelbrotJuliaLocation mjLocation;
     private double[] littleMandelbrotLocation;
@@ -160,7 +162,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         this.firstFractalPresenter.view.setFractalTransformMatrix(new Matrix());
         this.firstFractalPresenter.view.setResizeListener(this.firstFractalPresenter);
 
-        JuliaCPUFractalComputeStrategy juliaStrategy = new JuliaCPUFractalComputeStrategy();
+        juliaStrategy = new JuliaCPUFractalComputeStrategy();
         juliaStrategy.setJuliaSeed(juliaParams[0], juliaParams[1]);
         this.secondFractalPresenter = new FractalPresenter(juliaStrategy);
         this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
@@ -574,8 +576,16 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             float dragDiffPixelsY = evt.getY(pointerIndex) - dragLastY;
 
             // Move the canvas
-            if (dragDiffPixelsX != 0.0f && dragDiffPixelsY != 0.0f)
+            if (dragDiffPixelsX != 0.0f && dragDiffPixelsY != 0.0f) {
                 this.firstFractalPresenter.dragFractal(dragDiffPixelsX, dragDiffPixelsY);
+
+//                // Proof of concept julia changing
+//                double[] juliaSeed = juliaStrategy.getJuliaSeed();
+//                Log.i("FA", "Julia seed " + juliaSeed[0] + " " + juliaSeed[1]);
+//                juliaStrategy.setJuliaSeed(juliaSeed[0] + 0.01, juliaSeed[1] + 0.01);
+//                this.secondFractalPresenter.clearPixelSizes();
+//                this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+            }
 
             // Update last mouse position
             dragLastX = evt.getX(pointerIndex);
@@ -860,6 +870,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     @Override
     public void onResetClicked() {
         this.firstFractalPresenter.setGraphArea(new MandelbrotJuliaLocation().defaultMandelbrotGraphArea);
+        this.firstFractalPresenter.clearPixelSizes();
         this.firstFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
         this.dismissMenuDialog();
     }
