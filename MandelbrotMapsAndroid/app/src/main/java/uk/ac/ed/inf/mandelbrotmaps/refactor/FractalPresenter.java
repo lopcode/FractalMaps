@@ -40,13 +40,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     protected static final double DETAIL_DIVISOR = 50;
     public static final double DEFAULT_DETAIL_LEVEL = 15;
 
-    // Level of detail (abstracted for convenience - dividing by 100 gets the useful number).
-    protected double detailLevel = 30;
-
-    // How often to redraw fractal when rendering. Set to 1/12th screen size in onSizeChanged()
-    protected int linesToDrawAfter = 20; // This default value normally isn't used.
-
-
     public FractalPresenter(IFractalComputeStrategy fractalStrategy) {
         this.fractalStrategy = fractalStrategy;
 
@@ -126,7 +119,16 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void translateGraphArea(int dx, int dy) {
+        //Log.d(TAG, "moveFractal()");
 
+        // What does each pixel correspond to, on the complex plane?
+        double pixelSize = getPixelSize();
+
+        // Adjust the Graph Area
+        double[] newGraphArea = graphArea;
+        newGraphArea[0] -= (dx * pixelSize);
+        newGraphArea[1] -= -(dy * pixelSize);
+        this.setGraphArea(newGraphArea);
     }
 
     @Override
@@ -199,20 +201,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         }
     }
 
-    public void moveFractal(int dragDiffPixelsX, int dragDiffPixelsY) {
-        //Log.d(TAG, "moveFractal()");
-
-        // What does each pixel correspond to, on the complex plane?
-        double pixelSize = getPixelSize();
-
-        // Adjust the Graph Area
-        double[] newGraphArea = graphArea;
-        newGraphArea[0] -= (dragDiffPixelsX * pixelSize);
-        newGraphArea[1] -= -(dragDiffPixelsY * pixelSize);
-        this.setGraphArea(newGraphArea);
-    }
-
-
     public void setGraphArea(double[] graphArea) {
         this.graphArea = graphArea;
     }
@@ -259,7 +247,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         if (!hasZoomed && !stoppedOnZoom) {
             //Set the new location for the fractals
-            this.moveFractal((int) totalDragX, (int) totalDragY);
+            this.translateGraphArea((int) totalDragX, (int) totalDragY);
         }
 
         this.setGraphArea(graphArea);
@@ -289,6 +277,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public void stopScaling() {
         Log.i("FP", "Stopped scaling");
         this.clearPixelSizes();
+
+        this.view.cacheCurrentBitmap(this.pixelBuffer);
 
         totalDragX = 0;
         totalDragY = 0;

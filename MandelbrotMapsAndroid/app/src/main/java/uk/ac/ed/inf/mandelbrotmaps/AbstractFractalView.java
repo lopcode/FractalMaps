@@ -488,7 +488,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /*-----------------------------------------------------------------------------------*/
     /* Graph area */
     /*-----------------------------------------------------------------------------------*/
-	/* Set a new graph area, if valid */
+    /* Set a new graph area, if valid */
     // GRAPH AREA
     void setGraphArea(double[] newGraphArea, boolean newRender) {
 

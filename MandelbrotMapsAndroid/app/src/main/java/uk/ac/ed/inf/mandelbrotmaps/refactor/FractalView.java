@@ -44,6 +44,14 @@ public class FractalView extends View implements IFractalView {
     }
 
     @Override
+    public void cacheCurrentBitmap(int[] pixelBuffer) {
+        setDrawingCacheEnabled(true);
+        fractalBitmap = Bitmap.createBitmap(getDrawingCache());
+        fractalBitmap.getPixels(pixelBuffer, 0, getWidth(), 0, 0, getWidth(), getHeight());
+        setDrawingCacheEnabled(false);
+    }
+
+    @Override
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
 
@@ -68,4 +76,6 @@ public class FractalView extends View implements IFractalView {
     public void redraw() {
         this.postInvalidate();
     }
+
+
 }
