@@ -49,7 +49,6 @@ import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalView;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
 
@@ -585,25 +584,28 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
     private void stopDragging() {
         currentlyDragging = false;
-        this.firstFractalPresenter.stopDragging();
+        this.firstFractalPresenter.stopDragging(false);
     }
 
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-//        fractalView.stopDragging(true);
-//        fractalView.startZooming(detector.getFocusX(), detector.getFocusY());
+        this.firstFractalPresenter.stopDragging(true);
+        this.firstFractalPresenter.startScaling(detector.getFocusX(), detector.getFocusY());
 
         currentlyDragging = false;
         return true;
     }
 
     public boolean onScale(ScaleGestureDetector detector) {
-//        fractalView.zoomImage(detector.getFocusX(), detector.getFocusY(), detector.getScaleFactor());
+        this.firstFractalPresenter.scaleFractal(detector.getScaleFactor(), detector.getFocusX(), detector.getFocusY());
         return true;
     }
 
     public void onScaleEnd(ScaleGestureDetector detector) {
+        this.firstFractalPresenter.stopScaling();
 //        fractalView.stopZooming();
         currentlyDragging = true;
+
+        this.firstFractalPresenter.startDragging();
 //        fractalView.startDragging();
     }
 
@@ -902,6 +904,10 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public void onApplyChangesClicked() {
         this.dismissDetailDialog();
 
+        this.firstFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
+        this.secondFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.JULIA));
+        this.firstFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
 //        fractalView.reloadCurrentLocation();
 //        if (showingLittle)
 //            littleFractalView.reloadCurrentLocation();

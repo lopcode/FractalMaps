@@ -378,7 +378,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /*-----------------------------------------------------------------------------------*/
     /* Zooming */
     /*-----------------------------------------------------------------------------------*/
-	/* Adjust zoom, centred on pixel (xPixel, yPixel) */
+    /* Adjust zoom, centred on pixel (xPixel, yPixel) */
     // GRAPH AREA ALTERATION
     public void zoomChange(int xPixel, int yPixel, float scale) {
         stopAllRendering();

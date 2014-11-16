@@ -4,7 +4,6 @@ import android.graphics.Matrix;
 import android.util.Log;
 import android.view.View;
 
-import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.IFractalComputeStrategy;
 
 public class FractalPresenter implements IFractalPresenter, IFractalComputeDelegate, IFractalTouchDelegate, IViewResizeListener {
@@ -24,11 +23,10 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     // Touch
 
+    boolean hasZoomed;
+
     public float totalDragX = 0;
     public float totalDragY = 0;
-
-
-
 
     // Default pixel block sizes for crude, detailed renders
     public static final int CRUDE_PIXEL_BLOCK = 3;
@@ -111,7 +109,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         Log.i("AFV", "Starting new style render");
 
         this.fractalStrategy.computeFractal(pixelBlockSize,
-                showRenderProgress,
+                false,
                 this.getMaxIterations(),
                 12,
                 DEFAULT_PIXEL_SIZE,
@@ -133,6 +131,37 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void zoomGraphArea(int x, int y, double scale) {
+
+        double pixelSize = getPixelSize();
+
+        double[] oldGraphArea = graphArea;
+        double[] newGraphArea = new double[3];
+
+        double zoomPercentChange = (double) scale; //= (double)(100 + (zoomAmount)) / 100;
+
+        // What is the zoom centre?
+        double zoomCentreX = oldGraphArea[0] + ((double) x * pixelSize);
+        double zoomCentreY = oldGraphArea[1] - ((double) y * pixelSize);
+
+        // Since we're zooming in on a point (the "zoom centre"),
+        // let's now shrink each of the distances from the zoom centre
+        // to the edges of the picture by a constant percentage.
+        double newMinX = zoomCentreX - (zoomPercentChange * (zoomCentreX - oldGraphArea[0]));
+        double newMaxY = zoomCentreY - (zoomPercentChange * (zoomCentreY - oldGraphArea[1]));
+
+        double oldMaxX = oldGraphArea[0] + oldGraphArea[2];
+        double newMaxX = zoomCentreX - (zoomPercentChange * (zoomCentreX - oldMaxX));
+
+        double leftWidthDiff = newMinX - oldGraphArea[0];
+        double rightWidthDiff = oldMaxX - newMaxX;
+
+        newGraphArea[0] = newMinX;
+        newGraphArea[1] = newMaxY;
+        newGraphArea[2] = oldGraphArea[2] - leftWidthDiff - rightWidthDiff;
+
+        //Log.d(TAG, "Just zoomed - zoom level is " + getZoomLevel());
+
+        setGraphArea(newGraphArea);
 
     }
 
@@ -220,21 +249,58 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         this.transformMatrix.reset();
         this.view.setFractalTransformMatrix(this.transformMatrix);
+
+        this.hasZoomed = false;
     }
 
-    public void stopDragging() {
+    public void stopDragging(boolean stoppedOnZoom) {
         Log.i("FP", "Stopped dragging: " + totalDragX + " " + totalDragY);
         this.translatePixelBuffer((int) totalDragX, (int) totalDragY);
 
-        //Set the new location for the fractals
-        this.moveFractal((int) totalDragX, (int) totalDragY);
+        if (!hasZoomed && !stoppedOnZoom) {
+            //Set the new location for the fractals
+            this.moveFractal((int) totalDragX, (int) totalDragY);
+        }
 
         this.setGraphArea(graphArea);
-        this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+        if (!stoppedOnZoom)
+            this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
 
         this.transformMatrix.reset();
         this.view.setFractalTransformMatrix(this.transformMatrix);
 
+        // Reset all the variables (possibly paranoid)
+        if (!hasZoomed && !stoppedOnZoom) {
+            this.transformMatrix.reset();
+            this.view.setFractalTransformMatrix(this.transformMatrix);
+        }
+
+        this.hasZoomed = false;
+
+        this.view.redraw();
+    }
+
+    public void startScaling(float x, float y) {
+        Log.i("FP", "Started scaling");
+        hasZoomed = true;
+        this.clearPixelSizes();
+    }
+
+    public void stopScaling() {
+        Log.i("FP", "Stopped scaling");
+        this.clearPixelSizes();
+
+        totalDragX = 0;
+        totalDragY = 0;
+        this.transformMatrix.reset();
+    }
+
+    @Override
+    public void scaleFractal(float scaleFactor, float midX, float midY) {
+        this.zoomGraphArea((int) midX, (int) midY, 1 / scaleFactor);
+
+        this.transformMatrix.postScale(scaleFactor, scaleFactor, midX, midY);
+        this.view.setFractalTransformMatrix(this.transformMatrix);
         this.view.redraw();
     }
 
@@ -244,12 +310,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         totalDragY += y;
 
         this.transformMatrix.postTranslate(x, y);
+        this.view.setFractalTransformMatrix(this.transformMatrix);
         this.view.redraw();
-    }
-
-    @Override
-    public void scaleFractal(float scaleFactor, float midX, float midY) {
-
     }
 
     // IViewResizeListener
