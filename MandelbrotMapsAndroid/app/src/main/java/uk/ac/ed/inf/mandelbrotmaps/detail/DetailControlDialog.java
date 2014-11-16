@@ -16,9 +16,9 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView;
 import uk.ac.ed.inf.mandelbrotmaps.FractalActivity;
 import uk.ac.ed.inf.mandelbrotmaps.R;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalPresenter;
 
 public class DetailControlDialog extends DialogFragment implements SeekBar.OnSeekBarChangeListener {
     private DetailControlDelegate delegate;
@@ -72,10 +72,10 @@ public class DetailControlDialog extends DialogFragment implements SeekBar.OnSee
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         mandelbrotBar.setOnSeekBarChangeListener(this);
-        mandelbrotBar.setProgress((int) prefs.getFloat(FractalActivity.mandelbrotDetailKey, (float) AbstractFractalView.DEFAULT_DETAIL_LEVEL));
+        mandelbrotBar.setProgress((int) prefs.getFloat(FractalActivity.mandelbrotDetailKey, (float) FractalPresenter.DEFAULT_DETAIL_LEVEL));
 
         juliaBar.setOnSeekBarChangeListener(this);
-        juliaBar.setProgress((int) prefs.getFloat(FractalActivity.juliaDetailKey, (float) AbstractFractalView.DEFAULT_DETAIL_LEVEL));
+        juliaBar.setProgress((int) prefs.getFloat(FractalActivity.juliaDetailKey, (float) FractalPresenter.DEFAULT_DETAIL_LEVEL));
 
         return view;
     }
@@ -87,8 +87,8 @@ public class DetailControlDialog extends DialogFragment implements SeekBar.OnSee
 
     @OnClick(R.id.default_detail_button)
     public void onDefaultDetailButtonClicked() {
-        juliaBar.setProgress((int) AbstractFractalView.DEFAULT_DETAIL_LEVEL);
-        mandelbrotBar.setProgress((int) AbstractFractalView.DEFAULT_DETAIL_LEVEL);
+        juliaBar.setProgress((int) FractalPresenter.DEFAULT_DETAIL_LEVEL);
+        mandelbrotBar.setProgress((int) FractalPresenter.DEFAULT_DETAIL_LEVEL);
     }
 
     @OnClick(R.id.detail_apply_button)

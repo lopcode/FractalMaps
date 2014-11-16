@@ -1,6 +1,26 @@
 package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
 
+import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
+
 public class MandelbrotCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
+    // Set the "maximum iteration" calculation constants
+    // Empirically determined values for Mandelbrot set.
+    public double getIterationBase() {
+        return 1.24D;
+    }
+
+    public double getIterationConstantFactor() {
+        return 54.0D;
+    }
+
+    @Override
+    public void initialise(int width, int height, IFractalComputeDelegate delegate) {
+        super.initialise(width, height, delegate);
+
+//        Set home area
+//        homeGraphArea = new MandelbrotJuliaLocation().getMandelbrotGraphArea();
+    }
+
     int pixelInSet(int xPixel, int yPixel, int maxIterations) {
         boolean inside = true;
         int iterationNr;

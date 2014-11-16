@@ -16,22 +16,14 @@ public class JuliaFractalView extends AbstractFractalView {
     }
 
     @Override
-    public void initialise(FractalActivity parentActivity, FractalViewSize size) {
-        super.initialise(parentActivity, size);
+    public void initialise(FractalActivity parentActivity) {
+        super.initialise(parentActivity);
 
         setColouringScheme(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("JULIA_COLOURS", "JuliaDefault"), false);
 
         for (int i = 0; i < noOfThreads; i++) {
             renderThreadList.get(i).setName("Julia thread " + i);
         }
-
-        // Set the "maximum iteration" calculation constants
-        // Empirically determined values for Julia sets.
-        ITERATION_BASE = 1.58;
-        ITERATION_CONSTANT_FACTOR = 6.46;
-
-        // Set home area
-        homeGraphArea = new MandelbrotJuliaLocation().getJuliaGraphArea();
 
         // How deep a zoom do we allow?
         MAXZOOM_LN_PIXEL = -20; // Beyond -21, "double"s break down(!).

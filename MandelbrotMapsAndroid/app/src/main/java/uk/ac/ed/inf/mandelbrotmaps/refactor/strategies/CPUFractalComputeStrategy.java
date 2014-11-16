@@ -3,8 +3,7 @@ package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
 public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
 
     @Override
-    public void computeFractal(int pixelBlockSize, boolean showRenderingProgress, int linesPerProgressUpdate, int xPixelMin, int xPixelMax, int yPixelMin, int yPixelMax, double xMin, double yMax, double pixelSize) {
-        int maxIterations = getMaxIterations();
+    public void computeFractal(int pixelBlockSize, boolean showRenderingProgress, int maxIterations, int linesPerProgressUpdate, int defaultPixelSize, int xPixelMin, int xPixelMax, int yPixelMin, int yPixelMax, double xMin, double yMax, double pixelSize, int[] pixelBuffer, int[] pixelBufferSizes) {
         int imgWidth = xPixelMax - xPixelMin;
         int noOfThreads = 1;
 
@@ -33,7 +32,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
             loopCount++;
 
             //If we've exceeded the bounds of the image (as can happen with many threads), exit the loop.
-            if (((imgWidth * (yPixel + pixelBlockSize - 1)) + xPixelMax) > pixelSizes.length ||
+            if (((imgWidth * (yPixel + pixelBlockSize - 1)) + xPixelMax) > pixelBufferSizes.length ||
                     yPixel < 0) {
                 int q = 1;
                 continue;
@@ -50,7 +49,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
             for (xPixel = xPixelMin; xPixel < xPixelMax + 1 - pixelBlockSize; xPixel += pixelBlockSize) {
                 //Check to see if this pixel is already iterated to the necessary block size
 
-                if (pixelSizes[(imgWidth * yPixel) + xPixel] <= pixelBlockSize) {
+                if (pixelBufferSizes[(imgWidth * yPixel) + xPixel] <= pixelBlockSize) {
                     continue;
                 }
 
@@ -58,7 +57,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
 
                 //Note that the pixel being calculated has been calculated in full (upper right of a block)
 //                if (fractalViewSize == FractalViewSize.LARGE)
-                pixelSizes[(imgWidth * yPixel) + (xPixel)] = DEFAULT_PIXEL_SIZE;
+                pixelBufferSizes[(imgWidth * yPixel) + (xPixel)] = defaultPixelSize;
 
                 // Save colour info for this pixel. int, interpreted: 0xAARRGGBB
                 int p = 0;
@@ -66,24 +65,22 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
                     for (pixelBlockB = 0; pixelBlockB < pixelBlockSize; pixelBlockB++) {
 //                        if (fractalViewSize == FractalViewSize.LARGE) {
                         if (p != 0) {
-                            pixelSizes[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = pixelBlockSize;
+                            pixelBufferSizes[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = pixelBlockSize;
                         }
                         p++;
 //                        }
-                        if (fractalPixels == null) return;
-                        fractalPixels[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = colourCodeHex;
+                        if (pixelBuffer == null) return;
+                        pixelBuffer[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = colourCodeHex;
                     }
                 }
             }
             // Show thread's work in progress
-            if ((showRenderingProgress) && (loopCount % linesToDrawAfter == 0)) {
-                this.delegate.postUpdate(this.fractalPixels, this.pixelSizes);
+            if ((showRenderingProgress) && (loopCount % linesPerProgressUpdate == 0)) {
+                this.delegate.postUpdate(pixelBuffer, pixelBufferSizes);
 
             }
         }
 
-        this.delegate.postFinished(this.fractalPixels, this.pixelSizes, pixelBlockSize);
-
-
+        this.delegate.postFinished(pixelBuffer, pixelBuffer, pixelBlockSize);
     }
 }

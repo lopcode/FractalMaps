@@ -38,22 +38,14 @@ public class MandelbrotFractalView extends AbstractFractalView {
     }
 
     @Override
-    public void initialise(FractalActivity parentActivity, FractalViewSize size) {
-        super.initialise(parentActivity, size);
+    public void initialise(FractalActivity parentActivity) {
+        super.initialise(parentActivity);
 
         setColouringScheme(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("MANDELBROT_COLOURS", "MandelbrotDefault"), false);
 
         for (int i = 0; i < noOfThreads; i++) {
             renderThreadList.get(i).setName("Mandelbrot thread " + i);
         }
-
-        // Set the "maximum iteration" calculation constants
-        // Empirically determined values for Mandelbrot set.
-        ITERATION_BASE = 1.24;
-        ITERATION_CONSTANT_FACTOR = 54;
-
-        // Set home area
-        homeGraphArea = new MandelbrotJuliaLocation().getMandelbrotGraphArea();
 
         // How deep a zoom do we allow?
         MAXZOOM_LN_PIXEL = -31; // Beyond -31, "double"s break down(!).
@@ -83,22 +75,20 @@ public class MandelbrotFractalView extends AbstractFractalView {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if (parentActivity.showingLittle && drawPin) {
+        if (drawPin) {
             if (controlmode != ControlMode.ZOOMING) pinCoords = getPinCoords();
             float[] mappedCoords = new float[2];
             matrix.mapPoints(mappedCoords, pinCoords);
 
-            if (fractalViewSize == FractalViewSize.LARGE) {
-                canvas.drawCircle(mappedCoords[0], mappedCoords[1], smallPinRadius, innerPinPaint);
 
-                //Draw larger outer circle if pin is held down.
-                if (!holdingPin)
-                    canvas.drawCircle(mappedCoords[0], mappedCoords[1], largePinRadius, outerPinPaint);
-                else
-                    canvas.drawCircle(mappedCoords[0], mappedCoords[1], largePinRadius * 2, selectedPinPaint);
-            } else if (fractalViewSize == FractalViewSize.LITTLE) {
-                canvas.drawCircle(mappedCoords[0], mappedCoords[1], smallPinRadius, littlePinPaint);
-            }
+            canvas.drawCircle(mappedCoords[0], mappedCoords[1], smallPinRadius, innerPinPaint);
+
+            //Draw larger outer circle if pin is held down.
+            if (!holdingPin)
+                canvas.drawCircle(mappedCoords[0], mappedCoords[1], largePinRadius, outerPinPaint);
+            else
+                canvas.drawCircle(mappedCoords[0], mappedCoords[1], largePinRadius * 2, selectedPinPaint);
+
         }
     }
 
@@ -109,14 +99,14 @@ public class MandelbrotFractalView extends AbstractFractalView {
         super.onSizeChanged(w, h, oldw, oldh);
 
         // Show the little view at the start, if allowed.
-        if (fractalViewSize == FractalViewSize.LARGE) {
-            DisplayMetrics currentDisplayMetrics = new DisplayMetrics();
-            parentActivity.getWindowManager().getDefaultDisplay().getMetrics(currentDisplayMetrics);
 
-            int dpi = currentDisplayMetrics.densityDpi;
-            largePinRadius = dpi / 6;
-            smallPinRadius = dpi / 30;
-        }
+        DisplayMetrics currentDisplayMetrics = new DisplayMetrics();
+        parentActivity.getWindowManager().getDefaultDisplay().getMetrics(currentDisplayMetrics);
+
+        int dpi = currentDisplayMetrics.densityDpi;
+        largePinRadius = dpi / 6;
+        smallPinRadius = dpi / 30;
+
     }
 
     // Load a location
@@ -127,42 +117,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
         //Log.d(TAG, ""+ _mjLocation.getMandelbrotGraphArea()[0]);
         setGraphArea(_mjLocation.getMandelbrotGraphArea(), true);
         currentJuliaParams = _mjLocation.getJuliaParam();
-    }
-
-    int pixelInSet(int xPixel, int yPixel, int maxIterations) {
-        boolean inside = true;
-        int iterationNr;
-        double newx, newy;
-        double x, y;
-
-        // Set x0 (real part of c)
-        double x0 = xMin + ((double) xPixel * pixelSize);
-        double y0 = yMax - ((double) yPixel * pixelSize); //TODO This shouldn't be calculated every time
-
-        // Start at x0, y0
-        x = x0;
-        y = y0;
-
-        //Run iterations over this point
-        for (iterationNr = 0; iterationNr < maxIterations; iterationNr++) {
-            // z^2 + c
-            newx = (x * x) - (y * y) + x0;
-            newy = (2 * x * y) + y0;
-
-            x = newx;
-            y = newy;
-
-            // Well known result: if distance is >2, escapes to infinity...
-            if ((x * x + y * y) > 4) {
-                inside = false;
-                break;
-            }
-        }
-
-        if (inside)
-            return colourer.colourInsidePoint();
-        else
-            return colourer.colourOutsidePoint(iterationNr, maxIterations);
     }
 
     public double[] getJuliaParams(float touchX, float touchY) {
@@ -186,10 +140,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
     public float[] getPinCoords() {
         float[] pinCoords = new float[2];
         double pixelSize = getPixelSize();
-
-        if (fractalViewSize == FractalViewSize.LITTLE) {
-            //currentJuliaParams = ((JuliaFractalView) parentActivity.fractalView).getJuliaParam();
-        }
 
         pinCoords[0] = (float) ((currentJuliaParams[0] - graphArea[0]) / pixelSize);
         pinCoords[1] = (float) (-(currentJuliaParams[1] - graphArea[1]) / pixelSize);

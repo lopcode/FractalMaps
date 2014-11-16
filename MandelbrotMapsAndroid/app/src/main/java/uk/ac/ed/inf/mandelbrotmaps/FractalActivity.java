@@ -1,15 +1,13 @@
 package uk.ac.ed.inf.mandelbrotmaps;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -43,13 +41,15 @@ import java.io.File;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import uk.ac.ed.inf.mandelbrotmaps.AbstractFractalView.FractalViewSize;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalPresenter;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalView;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
 
@@ -78,10 +78,15 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     Toolbar toolbar;
 
     @InjectView(R.id.firstFractalView)
-    AbstractFractalView fractalView;
+    FractalView firstFractalView;
 
     @InjectView(R.id.secondFractalView)
-    AbstractFractalView littleFractalView;
+    FractalView secondFractalView;
+
+    FractalPresenter firstFractalPresenter;
+    FractalPresenter secondFractalPresenter;
+
+    IFractalTouchHandler touchHandler;
 
     // Fractal locations
     private MandelbrotJuliaLocation mjLocation;
@@ -99,11 +104,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     private ProgressDialog savingDialog;
     private File imagefile;
     private Boolean cancelledSave = false;
-
-    // Little fractal view tracking
-    public boolean showLittleAtStart = true;
-    public boolean showingLittle = true;
-    private boolean littleFractalSelected = false;
 
     // Loading spinner (currently all disabled due to slowdown)
     private ProgressBar progressBar;
@@ -141,28 +141,41 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         try {
             fractalType = FractalTypeEnum.valueOf(bundle.getString("FractalType"));
             littleMandelbrotLocation = bundle.getDoubleArray("LittleMandelbrotLocation");
-            showLittleAtStart = bundle.getBoolean("ShowLittleAtStart");
+//            showLittleAtStart = bundle.getBoolean("ShowLittleAtStart");
         } catch (NullPointerException npe) {
         }
 
 
-        fractalView.initialise(this, FractalViewSize.LARGE);
-        littleFractalView.initialise(this, FractalViewSize.LARGE);
+        firstFractalView.initialise();
+        secondFractalView.initialise();
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 
-        fractalView.strategy = new MandelbrotCPUFractalComputeStrategy();
-        fractalView.strategy.setColourStrategy(new DefaultColourStrategy());
+        this.firstFractalPresenter = new FractalPresenter(new MandelbrotCPUFractalComputeStrategy());
+        this.firstFractalPresenter.fractalStrategy.setColourStrategy(new DefaultColourStrategy());
+        this.firstFractalView.setResizeListener(this.firstFractalPresenter);
 
-        littleFractalView.strategy = new JuliaCPUFractalComputeStrategy();
-        littleFractalView.strategy.setColourStrategy(new JuliaColourStrategy());
+        this.firstFractalPresenter.view = this.firstFractalView;
+        this.firstFractalPresenter.view.setFractalTransformMatrix(new Matrix());
+        this.firstFractalPresenter.view.setResizeListener(this.firstFractalPresenter);
+
+        this.secondFractalPresenter = new FractalPresenter(new JuliaCPUFractalComputeStrategy());
+        this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
+        this.secondFractalView.setResizeListener(this.secondFractalPresenter);
+
+        this.secondFractalPresenter.view = this.secondFractalView;
+        this.secondFractalPresenter.view.setFractalTransformMatrix(new Matrix());
+        this.secondFractalPresenter.view.setResizeListener(this.secondFractalPresenter);
 
         mjLocation = new MandelbrotJuliaLocation(juliaGraphArea, juliaParams);
-        fractalView.loadLocation(mjLocation);
-        littleFractalView.loadLocation(mjLocation);
+        this.firstFractalPresenter.setGraphArea(mjLocation.defaultMandelbrotGraphArea);
+        this.secondFractalPresenter.setGraphArea(mjLocation.defaultJuliaGraphArea);
+
+//        this.firstFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+//        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
 
         gestureDetector = new ScaleGestureDetector(this, this);
     }
@@ -171,18 +184,10 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        fractalView.stopAllRendering();
-        fractalView.interruptThreads();
-        if (littleFractalView != null) {
-            littleFractalView.stopAllRendering();
-            littleFractalView.interruptThreads();
-        }
+//        this.firstFractalPresenter.stopAllRendering();
+//        this.secondFractalPresenter.stopAllRendering();
     }
 
-    /* When paused, do the following, dismiss the saving dialog. Might be buggy if mid-save?
-     * (non-Javadoc)
-     * @see android.app.Activity#onPause()
-     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -202,19 +207,19 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putDoubleArray(PREVIOUS_MAIN_GRAPH_AREA, fractalView.graphArea);
-
-        if (showingLittle) {
-            outState.putDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA, littleFractalView.graphArea);
-        }
-
-        if (fractalType == FractalTypeEnum.MANDELBROT) {
-            outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((MandelbrotFractalView) fractalView).currentJuliaParams);
-        } else {
-            //outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((JuliaFractalView) fractalView).getJuliaParam());
-        }
-
-        outState.putBoolean(PREVIOUS_SHOWING_LITTLE, showingLittle);
+//        outState.putDoubleArray(PREVIOUS_MAIN_GRAPH_AREA, fractalView.graphArea);
+//
+//        if (showingLittle) {
+//            outState.putDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA, littleFractalView.graphArea);
+//        }
+//
+//        if (fractalType == FractalTypeEnum.MANDELBROT) {
+//            outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((MandelbrotFractalView) fractalView).currentJuliaParams);
+//        } else {
+//            //outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((JuliaFractalView) fractalView).getJuliaParam());
+//        }
+//
+//        outState.putBoolean(PREVIOUS_SHOWING_LITTLE, showingLittle);
     }
 
     @Override
@@ -225,35 +230,35 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         double[] littleGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA);
         double[] juliaParams = savedInstanceState.getDoubleArray(PREVIOUS_JULIA_PARAMS);
 
-        MandelbrotJuliaLocation restoredLoc;
-
-        if (fractalType == FractalTypeEnum.MANDELBROT) {
-            restoredLoc = new MandelbrotJuliaLocation(mainGraphArea, littleGraphArea, juliaParams);
-            ((MandelbrotFractalView) fractalView).currentJuliaParams = juliaParams;
-        } else {
-            restoredLoc = new MandelbrotJuliaLocation(littleGraphArea, mainGraphArea, juliaParams);
-        }
-
-        restoredLoc.setMandelbrotGraphArea(mainGraphArea);
-        fractalView.loadLocation(restoredLoc);
-
-        showLittleAtStart = savedInstanceState.getBoolean(PREVIOUS_SHOWING_LITTLE);
+//        MandelbrotJuliaLocation restoredLoc;
+//
+//        if (fractalType == FractalTypeEnum.MANDELBROT) {
+//            restoredLoc = new MandelbrotJuliaLocation(mainGraphArea, littleGraphArea, juliaParams);
+//            ((MandelbrotFractalView) fractalView).currentJuliaParams = juliaParams;
+//        } else {
+//            restoredLoc = new MandelbrotJuliaLocation(littleGraphArea, mainGraphArea, juliaParams);
+//        }
+//
+//        restoredLoc.setMandelbrotGraphArea(mainGraphArea);
+//        fractalView.loadLocation(restoredLoc);
+//
+//        showLittleAtStart = savedInstanceState.getBoolean(PREVIOUS_SHOWING_LITTLE);
     }
 
     // Set activity result when finishing
 
     @Override
     public void finish() {
-        if (fractalType == FractalTypeEnum.JULIA) {
-            //double[] juliaParams = ((JuliaFractalView) fractalView).getJuliaParam();
-            double[] currentGraphArea = fractalView.graphArea;
-
-            Intent result = new Intent();
-            //result.putExtra("JuliaParams", juliaParams);
-            result.putExtra("JuliaGraphArea", currentGraphArea);
-
-            setResult(Activity.RESULT_OK, result);
-        }
+//        if (fractalType == FractalTypeEnum.JULIA) {
+//            //double[] juliaParams = ((JuliaFractalView) fractalView).getJuliaParam();
+//            double[] currentGraphArea = fractalView.graphArea;
+//
+//            Intent result = new Intent();
+//            //result.putExtra("JuliaParams", juliaParams);
+//            result.putExtra("JuliaGraphArea", currentGraphArea);
+//
+//            setResult(Activity.RESULT_OK, result);
+//        }
 
         super.finish();
     }
@@ -269,11 +274,11 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                 break;
 
             case RETURN_FROM_JULIA:
-                if (showingLittle) {
-                    double[] juliaGraphArea = data.getDoubleArrayExtra("JuliaGraphArea");
-                    double[] juliaParams = data.getDoubleArrayExtra("JuliaParams");
-                    littleFractalView.loadLocation(new MandelbrotJuliaLocation(juliaGraphArea, juliaParams));
-                }
+//                if (showingLittle) {
+//                    double[] juliaGraphArea = data.getDoubleArrayExtra("JuliaGraphArea");
+//                    double[] juliaParams = data.getDoubleArrayExtra("JuliaParams");
+//                    littleFractalView.loadLocation(new MandelbrotJuliaLocation(juliaGraphArea, juliaParams));
+//                }
                 break;
         }
     }
@@ -348,110 +353,110 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
    */
     //Wait for render to finish, then save the fractal image
     private void saveImage() {
-        cancelledSave = false;
-
-        if (fractalView.isRendering()) {
-            savingDialog = new ProgressDialog(this);
-            savingDialog.setMessage("Waiting for render to finish...");
-            savingDialog.setCancelable(true);
-            savingDialog.setIndeterminate(true);
-            savingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                public void onCancel(DialogInterface dialog) {
-                    FractalActivity.this.cancelledSave = true;
-                }
-            });
-            savingDialog.show();
-
-            //Launch a thread to wait for completion
-            new Thread(new Runnable() {
-                public void run() {
-                    if (fractalView.isRendering()) {
-                        while (!cancelledSave && fractalView.isRendering()) {
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException e) {
-                            }
-                        }
-
-                        if (!cancelledSave) {
-                            savingDialog.dismiss();
-                            imagefile = fractalView.saveImage();
-                            String toastText;
-                            if (imagefile == null)
-                                toastText = "Unable to save fractal - filename already in use.";
-                            else toastText = "Saved fractal as " + imagefile.getAbsolutePath();
-                            showToastOnUIThread(toastText, Toast.LENGTH_LONG);
-                        }
-                    }
-                    return;
-                }
-            }).start();
-        } else {
-            imagefile = fractalView.saveImage();
-            String toastText;
-            if (imagefile == null) toastText = "Unable to save fractal - filename already in use.";
-            else toastText = "Saved fractal as " + imagefile.getAbsolutePath();
-            showToastOnUIThread(toastText, Toast.LENGTH_LONG);
-        }
+//        cancelledSave = false;
+//
+//        if (fractalView.isRendering()) {
+//            savingDialog = new ProgressDialog(this);
+//            savingDialog.setMessage("Waiting for render to finish...");
+//            savingDialog.setCancelable(true);
+//            savingDialog.setIndeterminate(true);
+//            savingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//                public void onCancel(DialogInterface dialog) {
+//                    FractalActivity.this.cancelledSave = true;
+//                }
+//            });
+//            savingDialog.show();
+//
+//            //Launch a thread to wait for completion
+//            new Thread(new Runnable() {
+//                public void run() {
+//                    if (fractalView.isRendering()) {
+//                        while (!cancelledSave && fractalView.isRendering()) {
+//                            try {
+//                                Thread.sleep(100);
+//                            } catch (InterruptedException e) {
+//                            }
+//                        }
+//
+//                        if (!cancelledSave) {
+//                            savingDialog.dismiss();
+//                            imagefile = fractalView.saveImage();
+//                            String toastText;
+//                            if (imagefile == null)
+//                                toastText = "Unable to save fractal - filename already in use.";
+//                            else toastText = "Saved fractal as " + imagefile.getAbsolutePath();
+//                            showToastOnUIThread(toastText, Toast.LENGTH_LONG);
+//                        }
+//                    }
+//                    return;
+//                }
+//            }).start();
+//        } else {
+//            imagefile = fractalView.saveImage();
+//            String toastText;
+//            if (imagefile == null) toastText = "Unable to save fractal - filename already in use.";
+//            else toastText = "Saved fractal as " + imagefile.getAbsolutePath();
+//            showToastOnUIThread(toastText, Toast.LENGTH_LONG);
+//        }
     }
 
     //Wait for the render to finish, then share the fractal image
     private void shareImage() {
-        cancelledSave = false;
-
-        if (fractalView.isRendering()) {
-            savingDialog = new ProgressDialog(this);
-            savingDialog.setMessage("Waiting for render to finish...");
-            savingDialog.setCancelable(true);
-            savingDialog.setIndeterminate(true);
-            savingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                public void onCancel(DialogInterface dialog) {
-                    FractalActivity.this.cancelledSave = true;
-                }
-            });
-            savingDialog.show();
-
-            //Launch a thread to wait for completion
-            new Thread(new Runnable() {
-                public void run() {
-                    if (fractalView.isRendering()) {
-                        while (!cancelledSave && fractalView.isRendering()) {
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException e) {
-                            }
-                        }
-
-                        if (!cancelledSave) {
-                            savingDialog.dismiss();
-                            imagefile = fractalView.saveImage();
-                            if (imagefile != null) {
-                                Intent imageIntent = new Intent(Intent.ACTION_SEND);
-                                imageIntent.setType("image/jpg");
-                                imageIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imagefile));
-
-                                startActivityForResult(Intent.createChooser(imageIntent, "Share picture using:"), SHARE_IMAGE_REQUEST);
-                            } else {
-                                showToastOnUIThread("Unable to share image - couldn't save temporary file", Toast.LENGTH_LONG);
-                            }
-                        }
-                    }
-                    return;
-                }
-            }).start();
-        } else {
-            imagefile = fractalView.saveImage();
-
-            if (imagefile != null) {
-                Intent imageIntent = new Intent(Intent.ACTION_SEND);
-                imageIntent.setType("image/png");
-                imageIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imagefile));
-
-                startActivityForResult(Intent.createChooser(imageIntent, "Share picture using:"), SHARE_IMAGE_REQUEST);
-            } else {
-                showToastOnUIThread("Unable to share image - couldn't save temporary file", Toast.LENGTH_LONG);
-            }
-        }
+//        cancelledSave = false;
+//
+//        if (fractalView.isRendering()) {
+//            savingDialog = new ProgressDialog(this);
+//            savingDialog.setMessage("Waiting for render to finish...");
+//            savingDialog.setCancelable(true);
+//            savingDialog.setIndeterminate(true);
+//            savingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//                public void onCancel(DialogInterface dialog) {
+//                    FractalActivity.this.cancelledSave = true;
+//                }
+//            });
+//            savingDialog.show();
+//
+//            //Launch a thread to wait for completion
+//            new Thread(new Runnable() {
+//                public void run() {
+//                    if (fractalView.isRendering()) {
+//                        while (!cancelledSave && fractalView.isRendering()) {
+//                            try {
+//                                Thread.sleep(100);
+//                            } catch (InterruptedException e) {
+//                            }
+//                        }
+//
+//                        if (!cancelledSave) {
+//                            savingDialog.dismiss();
+//                            imagefile = fractalView.saveImage();
+//                            if (imagefile != null) {
+//                                Intent imageIntent = new Intent(Intent.ACTION_SEND);
+//                                imageIntent.setType("image/jpg");
+//                                imageIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imagefile));
+//
+//                                startActivityForResult(Intent.createChooser(imageIntent, "Share picture using:"), SHARE_IMAGE_REQUEST);
+//                            } else {
+//                                showToastOnUIThread("Unable to share image - couldn't save temporary file", Toast.LENGTH_LONG);
+//                            }
+//                        }
+//                    }
+//                    return;
+//                }
+//            }).start();
+//        } else {
+//            imagefile = fractalView.saveImage();
+//
+//            if (imagefile != null) {
+//                Intent imageIntent = new Intent(Intent.ACTION_SEND);
+//                imageIntent.setType("image/png");
+//                imageIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imagefile));
+//
+//                startActivityForResult(Intent.createChooser(imageIntent, "Share picture using:"), SHARE_IMAGE_REQUEST);
+//            } else {
+//                showToastOnUIThread("Unable to share image - couldn't save temporary file", Toast.LENGTH_LONG);
+//            }
+//        }
     }
 
     // Touch controls
@@ -465,14 +470,14 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 //                    borderView.setBackgroundColor(Color.DKGRAY);
 //                    littleFractalSelected = true;
 //                } else
-                if (showingLittle && fractalType == FractalTypeEnum.MANDELBROT && !gestureDetector.isInProgress()
-                        && !fractalView.holdingPin && (touchingPin(evt.getX(), evt.getY()))) {
-                    // Take hold of the pin, reset the little fractal view.
-                    fractalView.holdingPin = true;
-                    updateLittleJulia(evt.getX(), evt.getY());
-                } else {
-                    startDragging(evt);
-                }
+//                if (!gestureDetector.isInProgress()
+//                        && !fractalView.holdingPin && (touchingPin(evt.getX(), evt.getY()))) {
+//                    // Take hold of the pin, reset the little fractal view.
+//                    fractalView.holdingPin = true;
+//                    updateLittleJulia(evt.getX(), evt.getY());
+//                } else {
+                startDragging(evt);
+//                }
 
                 break;
 
@@ -480,9 +485,10 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                 if (!gestureDetector.isInProgress()) {
                     if (currentlyDragging) {
                         dragFractal(evt);
-                    } else if (showingLittle && !littleFractalSelected && fractalType == FractalTypeEnum.MANDELBROT && fractalView.holdingPin) {
-                        updateLittleJulia(evt.getX(), evt.getY());
                     }
+//                    else if (fractalView.holdingPin) {
+//                        updateLittleJulia(evt.getX(), evt.getY());
+//                    }
                 }
 
                 break;
@@ -515,12 +521,12 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 //                    }
 //                }
                 // If holding the pin, drop it, update screen (render won't display while dragging, might've finished in background)
-                else if (fractalView.holdingPin) {
-                    fractalView.holdingPin = false;
-                    updateLittleJulia(evt.getX(), evt.getY());
-                }
-
-                fractalView.holdingPin = false;
+//                else if (fractalView.holdingPin) {
+//                    fractalView.holdingPin = false;
+//                    updateLittleJulia(evt.getX(), evt.getY());
+//                }
+//
+//                fractalView.holdingPin = false;
 
                 break;
         }
@@ -528,20 +534,22 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     }
 
     private boolean touchingPin(float x, float y) {
-        if (fractalType == FractalTypeEnum.JULIA)
-            return false;
+        return false;
 
-        boolean touchingPin = false;
-        float[] pinCoords = ((MandelbrotFractalView) fractalView).getPinCoords();
-        float pinX = pinCoords[0];
-        float pinY = pinCoords[1];
-
-        float radius = ((MandelbrotFractalView) fractalView).largePinRadius;
-
-        if (x <= pinX + radius && x >= pinX - radius && y <= pinY + radius && y >= pinY - radius)
-            touchingPin = true;
-
-        return touchingPin;
+//        if (fractalType == FractalTypeEnum.JULIA)
+//            return false;
+//
+//        boolean touchingPin = false;
+//        float[] pinCoords = ((MandelbrotFractalView) fractalView).getPinCoords();
+//        float pinX = pinCoords[0];
+//        float pinY = pinCoords[1];
+//
+//        float radius = ((MandelbrotFractalView) fractalView).largePinRadius;
+//
+//        if (x <= pinX + radius && x >= pinX - radius && y <= pinY + radius && y >= pinY - radius)
+//            touchingPin = true;
+//
+//        return touchingPin;
     }
 
     private void startDragging(MotionEvent evt) {
@@ -549,7 +557,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         dragLastY = (int) evt.getY();
         dragID = evt.getPointerId(0);
 
-        fractalView.startDragging();
+//        fractalView.startDragging();
         currentlyDragging = true;
     }
 
@@ -561,8 +569,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             float dragDiffPixelsY = evt.getY(pointerIndex) - dragLastY;
 
             // Move the canvas
-            if (dragDiffPixelsX != 0.0f && dragDiffPixelsY != 0.0f)
-                fractalView.dragFractal(dragDiffPixelsX, dragDiffPixelsY);
+//            if (dragDiffPixelsX != 0.0f && dragDiffPixelsY != 0.0f)
+//                fractalView.dragFractal(dragDiffPixelsX, dragDiffPixelsY);
 
             // Update last mouse position
             dragLastX = evt.getX(pointerIndex);
@@ -574,38 +582,38 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
     private void stopDragging() {
         currentlyDragging = false;
-        fractalView.stopDragging(false);
+//        fractalView.stopDragging(false);
     }
 
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        fractalView.stopDragging(true);
-        fractalView.startZooming(detector.getFocusX(), detector.getFocusY());
+//        fractalView.stopDragging(true);
+//        fractalView.startZooming(detector.getFocusX(), detector.getFocusY());
 
         currentlyDragging = false;
         return true;
     }
 
     public boolean onScale(ScaleGestureDetector detector) {
-        fractalView.zoomImage(detector.getFocusX(), detector.getFocusY(), detector.getScaleFactor());
+//        fractalView.zoomImage(detector.getFocusX(), detector.getFocusY(), detector.getScaleFactor());
         return true;
     }
 
     public void onScaleEnd(ScaleGestureDetector detector) {
-        fractalView.stopZooming();
+//        fractalView.stopZooming();
         currentlyDragging = true;
-        fractalView.startDragging();
+//        fractalView.startDragging();
     }
 
     /* Detect a long click, place the Julia pin */
     public boolean onLongClick(View v) {
         // Check that it's not scaling, dragging (check for dragging is a little hacky, but seems to work), or already holding the pin
-        if (!gestureDetector.isInProgress() && fractalView.totalDragX < 1 && fractalView.totalDragY < 1 && !fractalView.holdingPin) {
-            updateLittleJulia(dragLastX, dragLastY);
-            if (currentlyDragging) {
-                stopDragging();
-            }
-            return true;
-        }
+//        if (!gestureDetector.isInProgress() && fractalView.totalDragX < 1 && fractalView.totalDragY < 1 && !fractalView.holdingPin) {
+//            updateLittleJulia(dragLastX, dragLastY);
+//            if (currentlyDragging) {
+//                stopDragging();
+//            }
+//            return true;
+//        }
 
         return false;
     }
@@ -649,81 +657,79 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
 
     /* Launches a new Julia fractal activity with the given parameters */
-    private void launchJulia(double[] juliaParams) {
-        Intent intent = new Intent(this, FractalActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("FractalType", FractalTypeEnum.JULIA.toString());
-        bundle.putBoolean("ShowLittleAtStart", true);
-        bundle.putDoubleArray("LittleMandelbrotLocation", fractalView.graphArea);
-
-        bundle.putDouble("JULIA_X", juliaParams[0]);
-        bundle.putDouble("JULIA_Y", juliaParams[1]);
-        bundle.putDoubleArray("JuliaParams", juliaParams);
-        bundle.putDoubleArray("JuliaGraphArea", littleFractalView.graphArea);
-
-        intent.putExtras(bundle);
-        startActivityForResult(intent, RETURN_FROM_JULIA);
-    }
+//    private void launchJulia(double[] juliaParams) {
+//        Intent intent = new Intent(this, FractalActivity.class);
+//        Bundle bundle = new Bundle();
+//        bundle.putString("FractalType", FractalTypeEnum.JULIA.toString());
+//        bundle.putBoolean("ShowLittleAtStart", true);
+//        bundle.putDoubleArray("LittleMandelbrotLocation", fractalView.graphArea);
+//
+//        bundle.putDouble("JULIA_X", juliaParams[0]);
+//        bundle.putDouble("JULIA_Y", juliaParams[1]);
+//        bundle.putDoubleArray("JuliaParams", juliaParams);
+//        bundle.putDoubleArray("JuliaGraphArea", littleFractalView.graphArea);
+//
+//        intent.putExtras(bundle);
+//        startActivityForResult(intent, RETURN_FROM_JULIA);
+//    }
 
     private void updateLittleJulia(float x, float y) {
         if (fractalType != FractalTypeEnum.MANDELBROT)
             return;
 
-        fractalView.invalidate();
+//        fractalView.invalidate();
+//
+//        littleFractalView.strategy.clearPixelSizes();
+//        double[] juliaParams = ((MandelbrotFractalView) fractalView).getJuliaParams(x, y);
+//        ((JuliaFractalView) littleFractalView).setJuliaParameter(juliaParams[0], juliaParams[1]);
 
-        littleFractalView.strategy.clearPixelSizes();
-        double[] juliaParams = ((MandelbrotFractalView) fractalView).getJuliaParams(x, y);
-        ((JuliaFractalView) littleFractalView).setJuliaParameter(juliaParams[0], juliaParams[1]);
 
-
-        Log.i("FA", "Setting julia params to " + juliaParams[0] + " " + juliaParams[1]);
+//        Log.i("FA", "Setting julia params to " + juliaParams[0] + " " + juliaParams[1]);
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String changedPref) {
-        if (changedPref.equals("MANDELBROT_COLOURS")) {
-            String mandelbrotScheme = prefs.getString(changedPref, "MandelbrotDefault");
-
-            if (fractalType == FractalTypeEnum.MANDELBROT) {
-                fractalView.setColouringScheme(mandelbrotScheme, true);
-            } else if (showingLittle) {
-                littleFractalView.setColouringScheme(mandelbrotScheme, true);
-            }
-        } else if (changedPref.equals("JULIA_COLOURS")) {
-            String juliaScheme = prefs.getString(changedPref, "JuliaDefault");
-
-            if (fractalType == FractalTypeEnum.JULIA) {
-                fractalView.setColouringScheme(juliaScheme, true);
-            } else if (showingLittle) {
-                littleFractalView.setColouringScheme(juliaScheme, true);
-            }
-        } else if (changedPref.equals("PIN_COLOUR")) {
-            int newColour = Color.parseColor(prefs.getString(changedPref, "blue"));
-
-            if (fractalType == FractalTypeEnum.MANDELBROT) {
-                ((MandelbrotFractalView) fractalView).setPinColour(newColour);
-            } else if (showingLittle) {
-                //((MandelbrotFractalView) littleFractalView).setPinColour(newColour);
-            }
-        }
+//        if (changedPref.equals("MANDELBROT_COLOURS")) {
+//            String mandelbrotScheme = prefs.getString(changedPref, "MandelbrotDefault");
+//
+//            if (fractalType == FractalTypeEnum.MANDELBROT) {
+//                this.firstFractalPresenter.setColouringScheme(mandelbrotScheme, true);
+//            } else if (showingLittle) {
+//                littleFractalView.setColouringScheme(mandelbrotScheme, true);
+//            }
+//        } else if (changedPref.equals("JULIA_COLOURS")) {
+//            String juliaScheme = prefs.getString(changedPref, "JuliaDefault");
+//
+//            if (fractalType == FractalTypeEnum.JULIA) {
+//                fractalView.setColouringScheme(juliaScheme, true);
+//            } else if (showingLittle) {
+//                littleFractalView.setColouringScheme(juliaScheme, true);
+//            }
+//        } else if (changedPref.equals("PIN_COLOUR")) {
+//            int newColour = Color.parseColor(prefs.getString(changedPref, "blue"));
+//
+//            if (fractalType == FractalTypeEnum.MANDELBROT) {
+//                ((MandelbrotFractalView) fractalView).setPinColour(newColour);
+//            } else if (showingLittle) {
+//                //((MandelbrotFractalView) littleFractalView).setPinColour(newColour);
+//            }
+//        }
     }
 
-    public double getDetailFromPrefs(FractalViewSize fractalViewSize) {
+    public double getDetailFromPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String keyToUse = mandelbrotDetailKey;
 
         if (fractalType == FractalTypeEnum.MANDELBROT) {
-            if (fractalViewSize == FractalViewSize.LARGE)
-                keyToUse = mandelbrotDetailKey;
-            else
-                keyToUse = juliaDetailKey;
+
+            keyToUse = mandelbrotDetailKey;
+
         } else {
-            if (fractalViewSize == FractalViewSize.LARGE)
-                keyToUse = juliaDetailKey;
-            else
-                keyToUse = mandelbrotDetailKey;
+
+            keyToUse = juliaDetailKey;
+
         }
 
-        return (double) prefs.getFloat(keyToUse, (float) AbstractFractalView.DEFAULT_DETAIL_LEVEL);
+        return (double) prefs.getFloat(keyToUse, (float) FractalPresenter.DEFAULT_DETAIL_LEVEL);
     }
 
     /* Show the short tutorial/intro dialog */
@@ -777,38 +783,38 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
      * (Proof-of-concept, currently unused)
      */
     private void setBookmark() {
-        MandelbrotJuliaLocation bookmark;
-        if (fractalType == FractalTypeEnum.MANDELBROT) {
-            if (littleFractalView != null) {
-                Log.d(TAG, "Showing little...");
-                bookmark = new MandelbrotJuliaLocation(fractalView.graphArea, littleFractalView.graphArea,
-                        ((MandelbrotFractalView) fractalView).currentJuliaParams);
-            } else {
-                bookmark = new MandelbrotJuliaLocation(fractalView.graphArea);
-            }
-        } else {
-            //bookmark = new MandelbrotJuliaLocation(littleFractalView.graphArea, fractalView.graphArea,
-            //        ((MandelbrotFractalView) littleFractalView).currentJuliaParams);
-        }
-
-        //Log.d(TAG, bookmark.toString());
-
-        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
-        //editor.putString("BOOKMARK", bookmark.toString());
-        editor.commit();
+//        MandelbrotJuliaLocation bookmark;
+//        if (fractalType == FractalTypeEnum.MANDELBROT) {
+//            if (littleFractalView != null) {
+//                Log.d(TAG, "Showing little...");
+//                bookmark = new MandelbrotJuliaLocation(fractalView.graphArea, littleFractalView.graphArea,
+//                        ((MandelbrotFractalView) fractalView).currentJuliaParams);
+//            } else {
+//                bookmark = new MandelbrotJuliaLocation(fractalView.graphArea);
+//            }
+//        } else {
+//            //bookmark = new MandelbrotJuliaLocation(littleFractalView.graphArea, fractalView.graphArea,
+//            //        ((MandelbrotFractalView) littleFractalView).currentJuliaParams);
+//        }
+//
+//        //Log.d(TAG, bookmark.toString());
+//
+//        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
+//        //editor.putString("BOOKMARK", bookmark.toString());
+//        editor.commit();
     }
 
     /* Set the current location to the bookmark
      * (Proof-of-concept, currently unused)
      */
     private void loadBookmark() {
-        String bookmark = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("BOOKMARK", null);
-
-        if (bookmark != null) {
-            Log.d(TAG, "Loaded bookmark " + bookmark);
-            MandelbrotJuliaLocation newLocation = new MandelbrotJuliaLocation(bookmark);
-            fractalView.loadLocation(newLocation);
-        }
+//        String bookmark = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("BOOKMARK", null);
+//
+//        if (bookmark != null) {
+//            Log.d(TAG, "Loaded bookmark " + bookmark);
+//            MandelbrotJuliaLocation newLocation = new MandelbrotJuliaLocation(bookmark);
+//            fractalView.loadLocation(newLocation);
+//        }
     }
 
     // Dialogs
@@ -845,7 +851,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
     @Override
     public void onResetClicked() {
-        this.fractalView.reset();
+        this.firstFractalPresenter.setGraphArea(new MandelbrotJuliaLocation().defaultMandelbrotGraphArea);
+        this.firstFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
         this.dismissMenuDialog();
     }
 
@@ -892,9 +899,9 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public void onApplyChangesClicked() {
         this.dismissDetailDialog();
 
-        fractalView.reloadCurrentLocation();
-        if (showingLittle)
-            littleFractalView.reloadCurrentLocation();
+//        fractalView.reloadCurrentLocation();
+//        if (showingLittle)
+//            littleFractalView.reloadCurrentLocation();
     }
 
     @Override

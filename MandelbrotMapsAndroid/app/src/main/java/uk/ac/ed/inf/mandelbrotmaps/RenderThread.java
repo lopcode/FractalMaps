@@ -28,7 +28,7 @@ public class RenderThread extends Thread {
         while (true) {
             try {
                 Rendering newRendering = mjCanvas.getNextRendering(threadID);
-                mjCanvas.computeAllPixels(newRendering.getPixelBlockSize(), threadID);
+//                mjCanvas.computeAllPixels(newRendering.getPixelBlockSize(), threadID);
                 abortThisRendering = false;
             } catch (InterruptedException e) {
                 return;
