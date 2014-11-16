@@ -118,7 +118,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
         super.onCreate(savedInstanceState);
 
-        this.setContentView(R.layout.fractals_side_by_side);
+        this.setContentView(R.layout.fractals_large_small);
         ButterKnife.inject(this);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -160,7 +160,9 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         this.firstFractalPresenter.view.setFractalTransformMatrix(new Matrix());
         this.firstFractalPresenter.view.setResizeListener(this.firstFractalPresenter);
 
-        this.secondFractalPresenter = new FractalPresenter(new JuliaCPUFractalComputeStrategy());
+        JuliaCPUFractalComputeStrategy juliaStrategy = new JuliaCPUFractalComputeStrategy();
+        juliaStrategy.setJuliaSeed(juliaParams[0], juliaParams[1]);
+        this.secondFractalPresenter = new FractalPresenter(juliaStrategy);
         this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
         this.secondFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.JULIA));
         this.secondFractalView.setResizeListener(this.secondFractalPresenter);

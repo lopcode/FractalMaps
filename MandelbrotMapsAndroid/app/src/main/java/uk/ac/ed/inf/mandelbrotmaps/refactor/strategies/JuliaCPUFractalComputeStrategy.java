@@ -3,6 +3,9 @@ package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
 
 public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
+    private double juliaX = 0;
+    private double juliaY = 0;
+
     // Set the "maximum iteration" calculation constants
     // Empirically determined values for Julia sets.
     public double getIterationBase() {
@@ -16,13 +19,9 @@ public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
     @Override
     public void initialise(int width, int height, IFractalComputeDelegate delegate) {
         super.initialise(width, height, delegate);
-
 //        Set home area
 //        homeGraphArea = new MandelbrotJuliaLocation().getJuliaGraphArea();
     }
-
-    private double juliaX = 0;
-    private double juliaY = 0;
 
     public void setJuliaSeed(double juliaX, double juliaY) {
         this.juliaX = juliaX;

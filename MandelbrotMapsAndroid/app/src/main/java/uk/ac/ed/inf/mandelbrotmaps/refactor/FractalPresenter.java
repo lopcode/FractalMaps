@@ -164,7 +164,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         //Log.d(TAG, "Just zoomed - zoom level is " + getZoomLevel());
 
         setGraphArea(newGraphArea);
-
     }
 
     public int getMaxIterations() {
