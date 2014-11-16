@@ -11,6 +11,8 @@ public interface IFractalPresenter {
 
     public double getPixelSize();
 
+    public void setFractalDetail(double detail);
+
     // Graph area affecting
 
     public void translateGraphArea(int dx, int dy);

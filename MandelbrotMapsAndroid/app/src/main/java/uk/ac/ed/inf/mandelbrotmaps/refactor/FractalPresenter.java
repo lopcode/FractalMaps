@@ -58,13 +58,45 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     // IFractalPresenter
 
     @Override
+    public void setFractalDetail(double detail) {
+        this.detail = detail;
+    }
+
+    @Override
     public int[] getPixelBuffer() {
         return this.pixelBuffer;
     }
 
     @Override
-    public void translatePixelBuffer(int dx, int dy) {
+    public void translatePixelBuffer(int x, int y) {
+        int[] newPixels = new int[this.viewWidth * this.viewHeight];
+        int[] newSizes = new int[this.viewWidth * this.viewHeight];
+        for (int i = 0; i < newSizes.length; i++) newSizes[i] = 1000;
 
+        //Choose rows to copy from
+        int rowNum = this.viewHeight - Math.abs(y);
+        int origStartRow = (y < 0 ? Math.abs(y) : 0);
+
+        //Choose columns to copy from
+        int colNum = this.viewWidth - Math.abs(x);
+        int origStartCol = (x < 0 ? Math.abs(x) : 0);
+
+        //Choose columns to copy to
+        int destStartCol = (x < 0 ? 0 : x);
+
+        //Copy useful parts into new array
+        for (int origY = origStartRow; origY < origStartRow + rowNum; origY++) {
+            int destY = origY + y;
+            System.arraycopy(this.pixelBuffer, (origY * this.viewWidth) + origStartCol,
+                    newPixels, (destY * this.viewWidth) + destStartCol,
+                    colNum);
+            System.arraycopy(this.pixelBufferSizes, (origY * this.viewWidth) + origStartCol,
+                    newSizes, (destY * this.viewWidth) + destStartCol,
+                    colNum);
+        }
+
+        this.pixelBuffer = newPixels;
+        this.pixelBufferSizes = newSizes;
     }
 
     @Override
@@ -107,6 +139,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public int getMaxIterations() {
         double absLnPixelSize = Math.abs(Math.log(getPixelSize()));
 
+        Log.i("FP", "Max iterations: " + absLnPixelSize);
         double dblIterations = (this.detail / DETAIL_DIVISOR) * this.fractalStrategy.getIterationConstantFactor() * Math.pow(this.fractalStrategy.getIterationBase(), absLnPixelSize);
 
         int iterationsToPerform = (int) dblIterations;
@@ -135,37 +168,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         for (int i = 0; i < this.pixelBufferSizes.length; i++) {
             this.pixelBufferSizes[i] = 1000;
         }
-    }
-
-    public void translateFractalPixelBuffer(int x, int y) {
-        int[] newPixels = new int[this.viewWidth * this.viewHeight];
-        int[] newSizes = new int[this.viewWidth * this.viewHeight];
-        for (int i = 0; i < newSizes.length; i++) newSizes[i] = 1000;
-
-        //Choose rows to copy from
-        int rowNum = this.viewHeight - Math.abs(y);
-        int origStartRow = (y < 0 ? Math.abs(y) : 0);
-
-        //Choose columns to copy from
-        int colNum = this.viewWidth - Math.abs(x);
-        int origStartCol = (x < 0 ? Math.abs(x) : 0);
-
-        //Choose columns to copy to
-        int destStartCol = (x < 0 ? 0 : x);
-
-        //Copy useful parts into new array
-        for (int origY = origStartRow; origY < origStartRow + rowNum; origY++) {
-            int destY = origY + y;
-            System.arraycopy(this.pixelBuffer, (origY * this.viewWidth) + origStartCol,
-                    newPixels, (destY * this.viewWidth) + destStartCol,
-                    colNum);
-            System.arraycopy(this.pixelBufferSizes, (origY * this.viewWidth) + origStartCol,
-                    newSizes, (destY * this.viewWidth) + destStartCol,
-                    colNum);
-        }
-
-        this.pixelBuffer = newPixels;
-        this.pixelBufferSizes = newSizes;
     }
 
     public void moveFractal(int dragDiffPixelsX, int dragDiffPixelsY) {
@@ -209,7 +211,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void startDragging() {
         Log.i("FP", "Started dragging");
-        
+
         //Stop current rendering (to not render areas that are offscreen afterwards)
 //        stopAllRendering();
 
@@ -222,7 +224,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     public void stopDragging() {
         Log.i("FP", "Stopped dragging: " + totalDragX + " " + totalDragY);
-        this.translateFractalPixelBuffer((int) totalDragX, (int) totalDragY);
+        this.translatePixelBuffer((int) totalDragX, (int) totalDragY);
 
         //Set the new location for the fractals
         this.moveFractal((int) totalDragX, (int) totalDragY);

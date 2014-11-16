@@ -66,6 +66,6 @@ public class FractalView extends View implements IFractalView {
 
     @Override
     public void redraw() {
-        this.invalidate();
+        this.postInvalidate();
     }
 }

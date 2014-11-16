@@ -154,6 +154,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
         this.firstFractalPresenter = new FractalPresenter(new MandelbrotCPUFractalComputeStrategy());
         this.firstFractalPresenter.fractalStrategy.setColourStrategy(new DefaultColourStrategy());
+        this.firstFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
         this.firstFractalView.setResizeListener(this.firstFractalPresenter);
 
         this.firstFractalPresenter.view = this.firstFractalView;
@@ -162,6 +163,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
         this.secondFractalPresenter = new FractalPresenter(new JuliaCPUFractalComputeStrategy());
         this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
+        this.secondFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.JULIA));
         this.secondFractalView.setResizeListener(this.secondFractalPresenter);
 
         this.secondFractalPresenter.view = this.secondFractalView;
@@ -173,10 +175,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         this.secondFractalPresenter.setGraphArea(mjLocation.defaultJuliaGraphArea);
 
         this.firstFractalView.setOnTouchListener(this);
-
-
-//        this.firstFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
-//        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
 
         gestureDetector = new ScaleGestureDetector(this, this);
     }
@@ -720,11 +718,11 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 //        }
     }
 
-    public double getDetailFromPrefs() {
+    public double getDetailFromPrefs(FractalTypeEnum fractalTypeEnum) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String keyToUse = mandelbrotDetailKey;
 
-        if (fractalType == FractalTypeEnum.MANDELBROT) {
+        if (fractalTypeEnum == FractalTypeEnum.MANDELBROT) {
 
             keyToUse = mandelbrotDetailKey;
 
