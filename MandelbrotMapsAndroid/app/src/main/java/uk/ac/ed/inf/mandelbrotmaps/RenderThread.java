@@ -1,17 +1,18 @@
 package uk.ac.ed.inf.mandelbrotmaps;
 
-import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalComputeArguments;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.CPUFractalComputeStrategy;
 
 public class RenderThread extends Thread {
-    private IFractalComputeDelegate delegate;
+    private CPUFractalComputeStrategy strategy;
 
     private volatile boolean abortThisRendering = false;
     public boolean isRunning = false;
     private int threadID = -1;
 
-    public RenderThread(IFractalComputeDelegate delegate, int _threadID, int _noOfThreads) {
-        this.delegate = delegate;
-        threadID = _threadID;
+    public RenderThread(CPUFractalComputeStrategy strategy, int threadID) {
+        this.strategy = strategy;
+        this.threadID = threadID;
         //setPriority(Thread.MAX_PRIORITY);
     }
 
@@ -28,15 +29,14 @@ public class RenderThread extends Thread {
     }
 
     public void run() {
-        return;
-//        while (true) {
-//            try {
-//                Rendering newRendering = mjCanvas.getNextRendering(threadID);
-////                mjCanvas.computeAllPixels(newRendering.getPixelBlockSize(), threadID);
-//                abortThisRendering = false;
-//            } catch (InterruptedException e) {
-//                return;
-//            }
-//        }
+        while (true) {
+            try {
+                FractalComputeArguments arguments = this.strategy.getNextRendering(threadID);
+                this.strategy.computeFractalWithThreadID(arguments, threadID);
+                abortThisRendering = false;
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
     }
 }

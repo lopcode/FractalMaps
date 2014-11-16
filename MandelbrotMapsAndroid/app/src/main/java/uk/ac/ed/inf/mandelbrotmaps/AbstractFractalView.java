@@ -26,6 +26,7 @@ import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.PsychadelicColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.RGBWalkColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.FractalComputeStrategy;
@@ -45,7 +46,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
 
     // Lists for threads, their queues, and their status
     int noOfThreads = 1;
-    ArrayList<LinkedBlockingQueue<Rendering>> renderQueueList = new ArrayList<LinkedBlockingQueue<Rendering>>();
+    ArrayList<LinkedBlockingQueue<FractalComputeArguments>> renderQueueList = new ArrayList<LinkedBlockingQueue<FractalComputeArguments>>();
     ArrayList<RenderThread> renderThreadList = new ArrayList<RenderThread>();
     ArrayList<Boolean> rendersComplete = new ArrayList<Boolean>();
 
@@ -147,8 +148,8 @@ public abstract class AbstractFractalView extends View implements IFractalComput
 
         for (int i = 0; i < noOfThreads; i++) {
             rendersComplete.add(false);
-            renderQueueList.add(new LinkedBlockingQueue<Rendering>());
-            renderThreadList.add(new RenderThread(this, i, noOfThreads));
+//            renderQueueList.add(new LinkedBlockingQueue<Rendering>());
+            //renderThreadList.add(new RenderThread(this, i, noOfThreads));
             renderThreadList.get(i).start();
         }
     }
@@ -249,7 +250,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     void scheduleRendering(int pixelBlockSize) {
         for (int i = 0; i < noOfThreads; i++) {
             renderThreadList.get(i).allowRendering();
-            renderQueueList.get(i).add(new Rendering(pixelBlockSize));
+//            renderQueueList.get(i).add(new Rendering(pixelBlockSize));
         }
     }
 
@@ -541,7 +542,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /* File saving */
     /*-----------------------------------------------------------------------------------*/
     /* Saves the current fractal image as an image file
-	 * (Call in FractalActivity should ensure that image is done rendering) */
+     * (Call in FractalActivity should ensure that image is done rendering) */
     public File saveImage() {
         //Check if external storage is available
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
@@ -565,7 +566,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
 
                 //Open file output stream
                 FileOutputStream output = new FileOutputStream(imagefile);
-				
+
 				/*Recreate the bitmap - all the render thread completion guarantees is that the arrays
 				are full. onDraw() may not have run before saving.*/
                 fractalBitmap = Bitmap.createBitmap(fractalPixels, 0, getWidth(), getWidth(), getHeight(), Bitmap.Config.RGB_565);
@@ -612,7 +613,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     }
 
     /* Retrieve and remove the next rendering from a queue (used by render threads) */
-    public Rendering getNextRendering(int threadID) throws InterruptedException {
+    public FractalComputeArguments getNextRendering(int threadID) throws InterruptedException {
         return renderQueueList.get(threadID).take();
     }
 

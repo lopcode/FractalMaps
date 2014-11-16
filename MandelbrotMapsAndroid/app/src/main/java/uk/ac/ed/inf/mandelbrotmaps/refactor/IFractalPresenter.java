@@ -7,6 +7,8 @@ public interface IFractalPresenter {
 
     public void recomputeGraph(int pixelBlockSize);
 
+    public void notifyRecomputeComplete(int pixelBlockSize);
+
     public int getMaxIterations();
 
     public double getPixelSize();

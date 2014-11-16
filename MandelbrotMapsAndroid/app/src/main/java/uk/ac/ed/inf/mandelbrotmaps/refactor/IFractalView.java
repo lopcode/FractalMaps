@@ -11,5 +11,7 @@ public interface IFractalView {
 
     public void createNewFractalBitmap(int[] pixels);
 
+    public void setBitmapPixels(int[] pixels);
+
     public void cacheCurrentBitmap(int[] pixelBuffer);
 }

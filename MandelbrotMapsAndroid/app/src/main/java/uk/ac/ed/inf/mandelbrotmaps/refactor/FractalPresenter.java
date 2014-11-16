@@ -21,6 +21,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     protected double detail;
 
+    private long lastComputeStart;
+
     // Touch
 
     boolean hasZoomed;
@@ -92,29 +94,22 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void recomputeGraph(int pixelBlockSize) {
-        int threadID = 0;
-        int noOfThreads = 1;
-
-        int yStart = (this.viewHeight / 2) + (threadID * pixelBlockSize);
-        int yEnd = this.viewHeight - (noOfThreads - (threadID + 1));
-        boolean showRenderProgress = (threadID == 0);
-
         Log.i("AFV", "Starting new style render");
+        Log.i("AFV", "Notifying of update every " + this.viewHeight / 12 + " lines");
 
-        this.fractalStrategy.computeFractal(pixelBlockSize,
-                false,
+        this.lastComputeStart = System.currentTimeMillis();
+
+        this.fractalStrategy.computeFractal(new FractalComputeArguments(pixelBlockSize,
                 this.getMaxIterations(),
-                12,
+                this.viewHeight / 12,
                 DEFAULT_PIXEL_SIZE,
-                0,
                 this.viewWidth,
-                yStart,
-                yEnd,
+                this.viewHeight,
                 graphArea[0],
                 graphArea[1],
                 getPixelSize(),
                 this.pixelBuffer,
-                this.pixelBufferSizes);
+                this.pixelBufferSizes));
     }
 
     @Override
@@ -200,8 +195,15 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         }
     }
 
+    @Override
     public void setGraphArea(double[] graphArea) {
         this.graphArea = graphArea;
+    }
+
+    @Override
+    public void notifyRecomputeComplete(int pixelBlockSize) {
+        long timeDifference = System.currentTimeMillis() - this.lastComputeStart;
+        Log.i("FP", "Took " + timeDifference / 1000.0D + " seconds to finish render");
     }
 
     // IFractalComputeDelegate
@@ -210,7 +212,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public void postUpdate(int[] pixels, int[] pixelSizes) {
         this.pixelBuffer = pixels;
         this.pixelBufferSizes = pixelSizes;
-        this.view.createNewFractalBitmap(this.pixelBuffer);
+        this.view.setBitmapPixels(this.pixelBuffer);
         this.view.redraw();
     }
 
@@ -219,7 +221,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         Log.i("AFV", "Render finished");
         this.postUpdate(pixels, pixelSizes);
 
-//        this.notifyCompleteRender(0, pixelBlockSize);
+        this.notifyRecomputeComplete(pixelBlockSize);
     }
 
     // IFractalTouchDelegate
@@ -312,6 +314,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         this.initialisePixelBuffers();
         this.fractalStrategy.initialise(this.viewWidth, this.viewHeight, this);
+        this.view.createNewFractalBitmap(new int[this.viewWidth * this.viewHeight]);
         this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
     }
 }

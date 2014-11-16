@@ -40,14 +40,18 @@ public class FractalView extends View implements IFractalView {
     }
 
     public void createNewFractalBitmap(int[] pixels) {
-        this.fractalBitmap = Bitmap.createBitmap(pixels, 0, this.width, this.width, this.height, Bitmap.Config.RGB_565);
+        this.fractalBitmap = Bitmap.createBitmap(pixels, 0, this.width, this.width, this.height, Bitmap.Config.RGB_565).copy(Bitmap.Config.RGB_565, true);
+    }
+
+    public void setBitmapPixels(int[] pixels) {
+        this.fractalBitmap.setPixels(pixels, 0, this.width, 0, 0, this.width, this.height);
     }
 
     @Override
     public void cacheCurrentBitmap(int[] pixelBuffer) {
         setDrawingCacheEnabled(true);
-        fractalBitmap = Bitmap.createBitmap(getDrawingCache());
-        fractalBitmap.getPixels(pixelBuffer, 0, getWidth(), 0, 0, getWidth(), getHeight());
+        getDrawingCache().getPixels(pixelBuffer, 0, this.width, 0, 0, this.width, this.height);
+        this.setBitmapPixels(pixelBuffer);
         setDrawingCacheEnabled(false);
     }
 
@@ -74,6 +78,6 @@ public class FractalView extends View implements IFractalView {
 
     @Override
     public void redraw() {
-        this.invalidate();
+        this.postInvalidate();
     }
 }

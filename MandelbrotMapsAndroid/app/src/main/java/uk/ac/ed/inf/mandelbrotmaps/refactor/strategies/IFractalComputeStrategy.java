@@ -1,25 +1,15 @@
 package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
 
 import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
 
 public interface IFractalComputeStrategy {
     public void initialise(int width, int height, IFractalComputeDelegate delegate);
 
-    public void computeFractal(int pixelBlockSize,
-                               final boolean showRenderingProgress,
-                               final int maxIterations,
-                               final int linesPerProgressUpdate,
-                               final int defaultPixelSize,
-                               final int xPixelMin,
-                               final int xPixelMax,
-                               final int yPixelMin,
-                               final int yPixelMax,
-                               final double xMin,
-                               final double yMax,
-                               final double pixelSize,
-                               int[] pixelBuffer,
-                               int[] pixelBufferSizes);
+    public void tearDown();
+
+    public void computeFractal(FractalComputeArguments arguments);
 
     public boolean shouldPerformCrudeFirst();
 

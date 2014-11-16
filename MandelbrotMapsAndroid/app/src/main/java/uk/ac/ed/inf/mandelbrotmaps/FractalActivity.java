@@ -118,7 +118,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
         super.onCreate(savedInstanceState);
 
-        this.setContentView(R.layout.fractals_large_small);
+        this.setContentView(R.layout.fractals_side_by_side);
         ButterKnife.inject(this);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -184,8 +184,9 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        this.firstFractalPresenter.stopAllRendering();
-//        this.secondFractalPresenter.stopAllRendering();
+
+        this.firstFractalPresenter.fractalStrategy.tearDown();
+        this.secondFractalPresenter.fractalStrategy.tearDown();
     }
 
     @Override
