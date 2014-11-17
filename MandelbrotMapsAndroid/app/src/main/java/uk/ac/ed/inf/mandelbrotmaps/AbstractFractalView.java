@@ -568,7 +568,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
                 FileOutputStream output = new FileOutputStream(imagefile);
 
 				/*Recreate the bitmap - all the render thread completion guarantees is that the arrays
-				are full. onDraw() may not have run before saving.*/
+                are full. onDraw() may not have run before saving.*/
                 fractalBitmap = Bitmap.createBitmap(fractalPixels, 0, getWidth(), getWidth(), getHeight(), Bitmap.Config.RGB_565);
                 fractalBitmap.compress(Bitmap.CompressFormat.PNG, 90, output);
 

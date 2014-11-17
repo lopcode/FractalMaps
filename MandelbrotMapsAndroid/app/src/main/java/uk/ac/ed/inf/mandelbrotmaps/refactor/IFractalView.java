@@ -3,7 +3,9 @@ package uk.ac.ed.inf.mandelbrotmaps.refactor;
 import android.graphics.Matrix;
 
 public interface IFractalView {
-    public void redraw();
+    public void postUIThreadRedraw();
+
+    public void postThreadSafeRedraw();
 
     public void setResizeListener(IViewResizeListener resizeListener);
 

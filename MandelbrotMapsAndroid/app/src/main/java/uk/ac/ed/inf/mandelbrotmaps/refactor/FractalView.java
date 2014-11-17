@@ -77,7 +77,12 @@ public class FractalView extends View implements IFractalView {
     // IFractalView
 
     @Override
-    public void redraw() {
+    public void postUIThreadRedraw() {
+        this.invalidate();
+    }
+
+    @Override
+    public void postThreadSafeRedraw() {
         this.postInvalidate();
     }
 }

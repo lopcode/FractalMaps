@@ -57,7 +57,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     }
 
     /* Stop all rendering, including planned and current */
-    void stopAllRendering() {
+    public void stopAllRendering() {
         for (int i = 0; i < this.numberOfThreads; i++) {
             renderQueueList.get(i).clear();
             renderThreadList.get(i).abortRendering();

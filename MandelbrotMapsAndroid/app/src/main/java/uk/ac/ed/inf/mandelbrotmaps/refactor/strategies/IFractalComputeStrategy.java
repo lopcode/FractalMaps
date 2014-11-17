@@ -18,4 +18,6 @@ public interface IFractalComputeStrategy {
     public double getIterationBase();
 
     public double getIterationConstantFactor();
+
+    public void stopAllRendering();
 }

@@ -190,6 +190,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     // Reset pixel sizes to force a full render on the next pass
     public void clearPixelSizes() {
+        Log.i("FP", "Clearing pixel sizes");
         for (int i = 0; i < this.pixelBufferSizes.length; i++) {
             this.pixelBufferSizes[i] = 1000;
         }
@@ -210,10 +211,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void postUpdate(int[] pixels, int[] pixelSizes) {
+        Log.i("FP", "Got compute update");
         this.pixelBuffer = pixels;
         this.pixelBufferSizes = pixelSizes;
         this.view.setBitmapPixels(this.pixelBuffer);
-        this.view.redraw();
+        this.view.postThreadSafeRedraw();
     }
 
     @Override
@@ -230,8 +232,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public void startDragging() {
         Log.i("FP", "Started dragging");
 
-        //Stop current rendering (to not render areas that are offscreen afterwards)
-//        stopAllRendering();
+        this.fractalStrategy.stopAllRendering();
 
         this.totalDragX = 0;
         this.totalDragY = 0;
@@ -242,23 +243,33 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.hasZoomed = false;
     }
 
-    public void stopDragging(boolean stoppedOnZoom) {
-        Log.i("FP", "Stopped dragging: " + totalDragX + " " + totalDragY);
-        this.translatePixelBuffer((int) totalDragX, (int) totalDragY);
+    @Override
+    public void dragFractal(float x, float y) {
+        this.totalDragX += x;
+        this.totalDragY += y;
 
-        if (!hasZoomed && !stoppedOnZoom) {
-            //Set the new location for the fractals
-            this.translateGraphArea((int) totalDragX, (int) totalDragY);
-        }
-
-        this.setGraphArea(graphArea);
-        if (!stoppedOnZoom)
-            this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
-
-        this.transformMatrix.reset();
+        this.transformMatrix.postTranslate(x, y);
         this.view.setFractalTransformMatrix(this.transformMatrix);
 
-        // Reset all the variables (possibly paranoid)
+        this.view.postUIThreadRedraw();
+    }
+
+    public void stopDragging(boolean stoppedOnZoom) {
+        Log.i("FP", "Stopped dragging: " + totalDragX + " " + totalDragY);
+
+        if (!hasZoomed && !stoppedOnZoom) {
+            this.translatePixelBuffer((int) totalDragX, (int) totalDragY);
+            this.view.setBitmapPixels(this.pixelBuffer);
+        }
+
+        this.translateGraphArea((int) totalDragX, (int) totalDragY);
+
+        if (!stoppedOnZoom) {
+            this.clearPixelSizes();
+            this.setGraphArea(graphArea);
+            this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+        }
+
         if (!hasZoomed && !stoppedOnZoom) {
             this.transformMatrix.reset();
             this.view.setFractalTransformMatrix(this.transformMatrix);
@@ -266,7 +277,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         this.hasZoomed = false;
 
-        this.view.redraw();
+        this.view.postUIThreadRedraw();
     }
 
     public void startScaling(float x, float y) {
@@ -292,17 +303,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         this.transformMatrix.postScale(scaleFactor, scaleFactor, midX, midY);
         this.view.setFractalTransformMatrix(this.transformMatrix);
-        this.view.redraw();
-    }
 
-    @Override
-    public void dragFractal(float x, float y) {
-        totalDragX += x;
-        totalDragY += y;
-
-        this.transformMatrix.postTranslate(x, y);
-        this.view.setFractalTransformMatrix(this.transformMatrix);
-        this.view.redraw();
+        this.view.postUIThreadRedraw();
     }
 
     // IViewResizeListener

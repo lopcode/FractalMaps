@@ -486,7 +486,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
 
             case MotionEvent.ACTION_MOVE:
-                Log.i("FA", "Touch moved");
+                //Log.i("FA", "Touch moved");
                 if (!gestureDetector.isInProgress()) {
                     if (currentlyDragging) {
                         dragFractal(evt);
@@ -615,11 +615,9 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
     public void onScaleEnd(ScaleGestureDetector detector) {
         this.firstFractalPresenter.stopScaling();
-//        fractalView.stopZooming();
         currentlyDragging = true;
 
         this.firstFractalPresenter.startDragging();
-//        fractalView.startDragging();
     }
 
     /* Detect a long click, place the Julia pin */

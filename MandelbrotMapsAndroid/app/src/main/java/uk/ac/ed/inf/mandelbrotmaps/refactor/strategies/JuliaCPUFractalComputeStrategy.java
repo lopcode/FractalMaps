@@ -15,7 +15,7 @@ public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
     }
 
     public double[] getJuliaSeed() {
-        return new double[] { this.juliaX, this.juliaY };
+        return new double[]{this.juliaX, this.juliaY};
     }
 
     public void setJuliaSeed(double juliaX, double juliaY) {
