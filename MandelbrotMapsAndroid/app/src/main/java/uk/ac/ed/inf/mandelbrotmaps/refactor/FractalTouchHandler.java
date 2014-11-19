@@ -18,6 +18,9 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
     private ScaleGestureDetector gestureDetector;
 
+    private float totalDragX = 0;
+    private float totalDragY = 0;
+
     public FractalTouchHandler(Context context, IFractalTouchDelegate delegate) {
         this.setTouchDelegate(delegate);
         this.context = context;
@@ -47,7 +50,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 //                } else {
                 Log.i("FA", "Touch down");
                 startDragging(evt);
-                return true;
+                return false;
 //                }
 
 
@@ -107,6 +110,9 @@ public class FractalTouchHandler implements IFractalTouchHandler {
     }
 
     private void startDragging(MotionEvent evt) {
+        this.totalDragX = 0;
+        this.totalDragY = 0;
+
         dragLastX = (int) evt.getX();
         dragLastY = (int) evt.getY();
         dragID = evt.getPointerId(0);
@@ -124,7 +130,10 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
             // Move the canvas
             if (dragDiffPixelsX != 0.0f && dragDiffPixelsY != 0.0f) {
-                this.delegate.dragFractal(dragDiffPixelsX, dragDiffPixelsY);
+                this.totalDragX += dragDiffPixelsX;
+                this.totalDragY += dragDiffPixelsY;
+
+                this.delegate.dragFractal(dragDiffPixelsX, dragDiffPixelsY, this.totalDragX, this.totalDragY);
 
 //                // Proof of concept julia changing
 //                double[] juliaSeed = juliaStrategy.getJuliaSeed();
@@ -144,11 +153,11 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
     private void stopDragging() {
         currentlyDragging = false;
-        this.delegate.stopDragging(false);
+        this.delegate.stopDragging(false, this.totalDragX, this.totalDragY);
     }
 
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        this.delegate.stopDragging(true);
+        this.delegate.stopDragging(true, this.totalDragX, this.totalDragY);
         this.delegate.startScaling(detector.getFocusX(), detector.getFocusY());
 
         currentlyDragging = false;
@@ -161,6 +170,9 @@ public class FractalTouchHandler implements IFractalTouchHandler {
     }
 
     public void onScaleEnd(ScaleGestureDetector detector) {
+        this.totalDragX = 0;
+        this.totalDragY = 0;
+
         this.delegate.stopScaling();
         currentlyDragging = true;
 
@@ -170,13 +182,18 @@ public class FractalTouchHandler implements IFractalTouchHandler {
     /* Detect a long click, place the Julia pin */
     public boolean onLongClick(View v) {
         // Check that it's not scaling, dragging (check for dragging is a little hacky, but seems to work), or already holding the pin
-//        if (!gestureDetector.isInProgress() && fractalView.totalDragX < 1 && fractalView.totalDragY < 1 && !fractalView.holdingPin) {
+//        if (!gestureDetector.isInProgress() && this.totalDragX < 1 && this.totalDragY < 1 && !fractalView.holdingPin) {
 //            updateLittleJulia(dragLastX, dragLastY);
 //            if (currentlyDragging) {
 //                stopDragging();
 //            }
 //            return true;
 //        }
+
+        if (!gestureDetector.isInProgress() && this.totalDragX < 1 && this.totalDragY < 1) {
+            Log.i("FTH", "Long tap at " + this.dragLastX + " " + this.dragLastY);
+            return true;
+        }
 
         return false;
     }

@@ -22,6 +22,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
@@ -43,11 +44,12 @@ import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalView;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
 
 public class FractalActivity extends ActionBarActivity implements
-        OnSharedPreferenceChangeListener, MenuClickDelegate, DetailControlDelegate {
+        OnSharedPreferenceChangeListener, MenuClickDelegate, DetailControlDelegate, IFractalSceneDelegate {
     private final String TAG = "MMaps";
 
     // Constants
@@ -69,6 +71,9 @@ public class FractalActivity extends ActionBarActivity implements
     // Layout variables
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
+
+    @InjectView(R.id.toolbarProgress)
+    ProgressBar toolbarProgress;
 
     @InjectView(R.id.firstFractalView)
     FractalView firstFractalView;
@@ -110,6 +115,8 @@ public class FractalActivity extends ActionBarActivity implements
         ButterKnife.inject(this);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
         // If first time launch, show the tutorial/intro
@@ -139,7 +146,7 @@ public class FractalActivity extends ActionBarActivity implements
         getSupportActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 
-        this.firstFractalPresenter = new FractalPresenter(this, new MandelbrotCPUFractalComputeStrategy());
+        this.firstFractalPresenter = new FractalPresenter(this, this, new MandelbrotCPUFractalComputeStrategy());
         this.firstFractalPresenter.fractalStrategy.setColourStrategy(new DefaultColourStrategy());
         this.firstFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
         this.firstFractalView.setResizeListener(this.firstFractalPresenter);
@@ -148,7 +155,7 @@ public class FractalActivity extends ActionBarActivity implements
 
         juliaStrategy = new JuliaCPUFractalComputeStrategy();
         juliaStrategy.setJuliaSeed(juliaParams[0], juliaParams[1]);
-        this.secondFractalPresenter = new FractalPresenter(this, juliaStrategy);
+        this.secondFractalPresenter = new FractalPresenter(this, this, juliaStrategy);
         this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
         this.secondFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.JULIA));
         this.secondFractalView.setResizeListener(this.secondFractalPresenter);
@@ -652,6 +659,11 @@ public class FractalActivity extends ActionBarActivity implements
         this.firstFractalPresenter.setGraphArea(new MandelbrotJuliaLocation().defaultMandelbrotGraphArea);
         this.firstFractalPresenter.clearPixelSizes();
         this.firstFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+
+        this.secondFractalPresenter.setGraphArea(new MandelbrotJuliaLocation().defaultJuliaGraphArea);
+        this.secondFractalPresenter.clearPixelSizes();
+        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+
         this.dismissMenuDialog();
     }
 
@@ -712,5 +724,21 @@ public class FractalActivity extends ActionBarActivity implements
     @Override
     public void onCancelClicked() {
         this.dismissDetailDialog();
+    }
+
+    // IFractalSceneDelegate
+
+    @Override
+    public void setProgressSpinnerStatus(boolean enabled) {
+        if (enabled) {
+            this.toolbarProgress.setVisibility(View.VISIBLE);
+        } else {
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    toolbarProgress.setVisibility(View.GONE);
+                }
+            });
+        }
     }
 }

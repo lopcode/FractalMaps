@@ -620,7 +620,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /*-----------------------------------------------------------------------------------*/
     /* Utilities (miscellaneous useful functions)  */
     /*-----------------------------------------------------------------------------------*/
-	/* Clear the sizes array of its current values, so anything new is smaller
+    /* Clear the sizes array of its current values, so anything new is smaller
 	 * (Fills it with 1000s) */
     protected void clearPixelSizes() {
         for (int i = 0; i < pixelSizes.length; i++) {

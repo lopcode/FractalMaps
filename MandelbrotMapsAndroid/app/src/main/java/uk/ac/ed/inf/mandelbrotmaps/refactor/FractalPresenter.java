@@ -15,6 +15,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public IFractalComputeStrategy fractalStrategy;
     public IFractalView view;
     public IFractalTouchHandler touchHandler;
+    private IFractalSceneDelegate sceneDelegate;
+
     private Context context;
 
     Matrix transformMatrix;
@@ -31,11 +33,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     private long lastComputeStart;
 
     // Touch
-
     boolean hasZoomed;
-
-    public float totalDragX = 0;
-    public float totalDragY = 0;
 
     // Default pixel block sizes for crude, detailed renders
     public static final int CRUDE_PIXEL_BLOCK = 3;
@@ -52,12 +50,13 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     // Overlays
     private List<IFractalOverlay> fractalOverlays;
 
-    public FractalPresenter(Context context, IFractalComputeStrategy fractalStrategy) {
+    public FractalPresenter(Context context, IFractalSceneDelegate sceneDelegate, IFractalComputeStrategy fractalStrategy) {
         this.fractalStrategy = fractalStrategy;
         this.touchHandler = new FractalTouchHandler(context, this);
 
         this.transformMatrix = new Matrix();
         this.fractalOverlays = new ArrayList<IFractalOverlay>();
+        this.sceneDelegate = sceneDelegate;
     }
 
     // IFractalPresenter
@@ -117,6 +116,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         Log.i("AFV", "Starting new style render");
         Log.i("AFV", "Notifying of update every " + this.viewHeight / 12 + " lines");
 
+        this.sceneDelegate.setProgressSpinnerStatus(true);
         this.lastComputeStart = System.currentTimeMillis();
 
         this.fractalStrategy.computeFractal(new FractalComputeArguments(pixelBlockSize,
@@ -225,6 +225,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public void notifyRecomputeComplete(int pixelBlockSize) {
         long timeDifference = System.currentTimeMillis() - this.lastComputeStart;
         Log.i("FP", "Took " + timeDifference / 1000.0D + " seconds to finish render");
+
+        this.sceneDelegate.setProgressSpinnerStatus(false);
     }
 
     // IFractalComputeDelegate
@@ -254,9 +256,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         this.fractalStrategy.stopAllRendering();
 
-        this.totalDragX = 0;
-        this.totalDragY = 0;
-
         this.transformMatrix.reset();
         this.view.setFractalTransformMatrix(this.transformMatrix);
 
@@ -264,17 +263,14 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     @Override
-    public void dragFractal(float x, float y) {
-        this.totalDragX += x;
-        this.totalDragY += y;
-
+    public void dragFractal(float x, float y, float totalDragX, float totalDragY) {
         this.transformMatrix.postTranslate(x, y);
         this.view.setFractalTransformMatrix(this.transformMatrix);
 
         this.view.postUIThreadRedraw();
     }
 
-    public void stopDragging(boolean stoppedOnZoom) {
+    public void stopDragging(boolean stoppedOnZoom, float totalDragX, float totalDragY) {
         Log.i("FP", "Stopped dragging: " + totalDragX + " " + totalDragY);
 
         if (!hasZoomed && !stoppedOnZoom) {
@@ -313,8 +309,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         this.view.cacheCurrentBitmap(this.pixelBuffer);
 
-        totalDragX = 0;
-        totalDragY = 0;
         this.transformMatrix.reset();
     }
 

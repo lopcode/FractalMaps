@@ -58,6 +58,7 @@ public class FractalView extends View implements IFractalView {
     @Override
     public void setTouchHandler(IFractalTouchHandler handler) {
         this.setOnTouchListener(handler);
+        this.setOnLongClickListener(handler);
     }
 
     @Override
