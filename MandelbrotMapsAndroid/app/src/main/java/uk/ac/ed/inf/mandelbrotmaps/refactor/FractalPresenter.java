@@ -116,7 +116,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         Log.i("AFV", "Starting new style render");
         Log.i("AFV", "Notifying of update every " + this.viewHeight / 12 + " lines");
 
-        this.sceneDelegate.setProgressSpinnerStatus(true);
+        this.sceneDelegate.setRenderingStatus(this, true);
         this.lastComputeStart = System.currentTimeMillis();
 
         this.fractalStrategy.computeFractal(new FractalComputeArguments(pixelBlockSize,
@@ -226,7 +226,19 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         long timeDifference = System.currentTimeMillis() - this.lastComputeStart;
         Log.i("FP", "Took " + timeDifference / 1000.0D + " seconds to finish render");
 
-        this.sceneDelegate.setProgressSpinnerStatus(false);
+        this.sceneDelegate.setRenderingStatus(this, false);
+    }
+
+    public double[] getGraphPositionFromClickedPosition(float touchX, float touchY) {
+        double pixelSize = getPixelSize();
+
+        double[] graphPosition = new double[2];
+
+        // Touch position, on the complex plane (translated from pixels)
+        graphPosition[0] = graphArea[0] + ((double) touchX * pixelSize);
+        graphPosition[1] = graphArea[1] - ((double) touchY * pixelSize);
+
+        return graphPosition;
     }
 
     // IFractalComputeDelegate
@@ -320,6 +332,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.view.setFractalTransformMatrix(this.transformMatrix);
 
         this.view.postUIThreadRedraw();
+    }
+
+    @Override
+    public void onLongClick(float x, float y) {
+        this.sceneDelegate.onFractalLongClick(this, x, y);
     }
 
     // IViewResizeListener

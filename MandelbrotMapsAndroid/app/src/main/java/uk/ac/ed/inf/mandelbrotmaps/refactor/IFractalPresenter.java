@@ -19,6 +19,8 @@ public interface IFractalPresenter {
 
     public void setView(IFractalView view, Matrix matrix, IViewResizeListener listener);
 
+    public double[] getGraphPositionFromClickedPosition(float touchX, float touchY);
+
     // Graph area affecting
 
     public void translateGraphArea(int dx, int dy);

@@ -12,4 +12,6 @@ public interface IFractalTouchDelegate {
     public void dragFractal(float x, float y, float totalDragX, float totalDragY);
 
     public void scaleFractal(float scaleFactor, float midX, float midY);
+
+    public void onLongClick(float x, float y);
 }

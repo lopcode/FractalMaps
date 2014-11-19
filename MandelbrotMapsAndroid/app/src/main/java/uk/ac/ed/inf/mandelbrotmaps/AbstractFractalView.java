@@ -224,7 +224,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
 
         // Try showing the progress spinner (won't show if, as normal, it's disallowed)
 //        if (fractalViewSize == FractalViewSize.LARGE)
-        parentActivity.showProgressSpinner();
+        //parentActivity.showProgressSpinner();
 
         // Reset all the tracking
         for (int i = 0; i < noOfThreads; i++) {
@@ -294,7 +294,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
             if (PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("SHOW_TIMES", true))
                 parentActivity.showToastOnUIThread(renderCompleteMessage, Toast.LENGTH_SHORT);
 
-            parentActivity.hideProgressSpinner();
+            //parentActivity.hideProgressSpinner();
         }
     }
 
@@ -621,7 +621,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /* Utilities (miscellaneous useful functions)  */
     /*-----------------------------------------------------------------------------------*/
     /* Clear the sizes array of its current values, so anything new is smaller
-	 * (Fills it with 1000s) */
+     * (Fills it with 1000s) */
     protected void clearPixelSizes() {
         for (int i = 0; i < pixelSizes.length; i++) {
             pixelSizes[i] = 1000;

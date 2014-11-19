@@ -192,6 +192,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
         if (!gestureDetector.isInProgress() && this.totalDragX < 1 && this.totalDragY < 1) {
             Log.i("FTH", "Long tap at " + this.dragLastX + " " + this.dragLastY);
+            this.delegate.onLongClick(this.dragLastX, this.dragLastY);
             return true;
         }
 

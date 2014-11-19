@@ -26,13 +26,14 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -44,6 +45,7 @@ import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalView;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
@@ -95,13 +97,10 @@ public class FractalActivity extends ActionBarActivity implements
     private File imagefile;
     private Boolean cancelledSave = false;
 
-    // Loading spinner (currently all disabled due to slowdown)
-    private ProgressBar progressBar;
-    private boolean showingSpinner = false;
-    private boolean allowSpinner = false;
-
     public static final String FRAGMENT_MENU_DIALOG_NAME = "menuDialog";
     public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
+
+    private HashMap<IFractalPresenter, Boolean> UIRenderStates = new HashMap<IFractalPresenter, Boolean>();
 
     // Android lifecycle
 
@@ -165,6 +164,9 @@ public class FractalActivity extends ActionBarActivity implements
         mjLocation = new MandelbrotJuliaLocation(juliaGraphArea, juliaParams);
         this.firstFractalPresenter.setGraphArea(mjLocation.defaultMandelbrotGraphArea);
         this.secondFractalPresenter.setGraphArea(mjLocation.defaultJuliaGraphArea);
+
+        this.UIRenderStates.put(this.firstFractalPresenter, false);
+        this.UIRenderStates.put(this.secondFractalPresenter, false);
     }
 
     // When destroyed, kill all render threads
@@ -269,34 +271,6 @@ public class FractalActivity extends ActionBarActivity implements
 //                }
                 break;
         }
-    }
-
-    /* Shows the progress spinner. Never used because it causes slowdown,
-     * leaving it in so I can demonstrate it with benchmarks.
-     * Might adapt it to do a progress bar that updates less often.
-     */
-    public void showProgressSpinner() {
-        if (showingSpinner || !allowSpinner) return;
-
-        LayoutParams progressBarParams = new LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        progressBarParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        progressBar = new ProgressBar(getApplicationContext());
-        //relativeLayout.addView(progressBar, progressBarParams);
-        showingSpinner = true;
-    }
-
-    /* As above, except for hiding.
-     */
-    public void hideProgressSpinner() {
-        if (!showingSpinner || !allowSpinner) return;
-
-        runOnUiThread(new Runnable() {
-
-            public void run() {
-                //    relativeLayout.removeView(progressBar);
-            }
-        });
-        showingSpinner = false;
     }
 
     // Menu creation and handling
@@ -729,9 +703,24 @@ public class FractalActivity extends ActionBarActivity implements
     // IFractalSceneDelegate
 
     @Override
-    public void setProgressSpinnerStatus(boolean enabled) {
-        if (enabled) {
-            this.toolbarProgress.setVisibility(View.VISIBLE);
+    public void setRenderingStatus(IFractalPresenter presenter, boolean rendering) {
+        this.UIRenderStates.put(presenter, rendering);
+
+        boolean atLeastOnePresenterRendering = false;
+        Iterator iterator = this.UIRenderStates.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry presenterRendering = (Map.Entry) iterator.next();
+            if ((Boolean) presenterRendering.getValue())
+                atLeastOnePresenterRendering = true;
+        }
+
+        if (atLeastOnePresenterRendering) {
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    toolbarProgress.setVisibility(View.VISIBLE);
+                }
+            });
         } else {
             this.runOnUiThread(new Runnable() {
                 @Override
@@ -740,5 +729,17 @@ public class FractalActivity extends ActionBarActivity implements
                 }
             });
         }
+    }
+
+    @Override
+    public void onFractalLongClick(IFractalPresenter presenter, float x, float y) {
+        if (presenter != this.firstFractalPresenter)
+            return;
+
+        double[] graphTapPosition = this.firstFractalPresenter.getGraphPositionFromClickedPosition(x, y);
+        Log.i("FA", "First fractal long tap at " + x + " " + y + ", " + graphTapPosition[0] + " " + graphTapPosition[1]);
+        this.juliaStrategy.setJuliaSeed(graphTapPosition[0], graphTapPosition[1]);
+        this.secondFractalPresenter.clearPixelSizes();
+        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
     }
 }

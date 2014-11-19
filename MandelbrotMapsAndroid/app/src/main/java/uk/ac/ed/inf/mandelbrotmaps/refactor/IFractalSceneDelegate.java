@@ -1,5 +1,7 @@
 package uk.ac.ed.inf.mandelbrotmaps.refactor;
 
 public interface IFractalSceneDelegate {
-    public void setProgressSpinnerStatus(boolean enabled);
+    public void setRenderingStatus(IFractalPresenter presenter, boolean rendering);
+
+    public void onFractalLongClick(IFractalPresenter presenter, float x, float y);
 }
