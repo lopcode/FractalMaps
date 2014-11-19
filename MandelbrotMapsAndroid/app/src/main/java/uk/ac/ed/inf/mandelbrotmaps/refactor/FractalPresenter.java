@@ -1,14 +1,21 @@
 package uk.ac.ed.inf.mandelbrotmaps.refactor;
 
+import android.content.Context;
 import android.graphics.Matrix;
 import android.util.Log;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.IFractalComputeStrategy;
 
 public class FractalPresenter implements IFractalPresenter, IFractalComputeDelegate, IFractalTouchDelegate, IViewResizeListener {
     public IFractalComputeStrategy fractalStrategy;
     public IFractalView view;
+    public IFractalTouchHandler touchHandler;
+    private Context context;
 
     Matrix transformMatrix;
 
@@ -42,10 +49,15 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     protected static final double DETAIL_DIVISOR = 50;
     public static final double DEFAULT_DETAIL_LEVEL = 15;
 
-    public FractalPresenter(IFractalComputeStrategy fractalStrategy) {
+    // Overlays
+    private List<IFractalOverlay> fractalOverlays;
+
+    public FractalPresenter(Context context, IFractalComputeStrategy fractalStrategy) {
         this.fractalStrategy = fractalStrategy;
+        this.touchHandler = new FractalTouchHandler(context, this);
 
         this.transformMatrix = new Matrix();
+        this.fractalOverlays = new ArrayList<IFractalOverlay>();
     }
 
     // IFractalPresenter
@@ -53,6 +65,14 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void setFractalDetail(double detail) {
         this.detail = detail;
+    }
+
+    @Override
+    public void setView(IFractalView view, Matrix matrix, IViewResizeListener listener) {
+        this.view = view;
+        this.view.setFractalTransformMatrix(new Matrix());
+        this.view.setResizeListener(this);
+        this.view.setTouchHandler(this.touchHandler);
     }
 
     @Override
@@ -267,6 +287,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         if (!stoppedOnZoom) {
             this.clearPixelSizes();
             this.setGraphArea(graphArea);
+            //this.recomputeGraph(FractalPresenter.CRUDE_PIXEL_BLOCK);
             this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
         }
 
@@ -317,6 +338,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.initialisePixelBuffers();
         this.fractalStrategy.initialise(this.viewWidth, this.viewHeight, this);
         this.view.createNewFractalBitmap(new int[this.viewWidth * this.viewHeight]);
+        //this.recomputeGraph(FractalPresenter.CRUDE_PIXEL_BLOCK);
         this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
     }
 }

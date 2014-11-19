@@ -125,8 +125,8 @@ public abstract class AbstractFractalView extends View implements IFractalComput
 
     public void initialise(FractalActivity parentActivity) {
         this.parentActivity = parentActivity;
-        setOnTouchListener(parentActivity);
-        setOnLongClickListener(parentActivity);
+        //setOnTouchListener(parentActivity);
+        //setOnLongClickListener(parentActivity);
         setLongClickable(true);
 
         //Up the iteration count a bit for the little view (decent value, seems to work)
@@ -605,7 +605,7 @@ public abstract class AbstractFractalView extends View implements IFractalComput
     /*-----------------------------------------------------------------------------------*/
     /* Thread handling  */
     /*-----------------------------------------------------------------------------------*/
-	/* Interrupt (and end) the rendering threads, called when activity closing */
+    /* Interrupt (and end) the rendering threads, called when activity closing */
     public void interruptThreads() {
         for (RenderThread thread : renderThreadList) {
             thread.interrupt();

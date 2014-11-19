@@ -16,4 +16,6 @@ public interface IFractalView {
     public void setBitmapPixels(int[] pixels);
 
     public void cacheCurrentBitmap(int[] pixelBuffer);
+
+    public void setTouchHandler(IFractalTouchHandler handler);
 }

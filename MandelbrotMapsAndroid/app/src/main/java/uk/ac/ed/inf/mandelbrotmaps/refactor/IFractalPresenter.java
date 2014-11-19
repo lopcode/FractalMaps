@@ -1,5 +1,7 @@
 package uk.ac.ed.inf.mandelbrotmaps.refactor;
 
+import android.graphics.Matrix;
+
 public interface IFractalPresenter {
     public int[] getPixelBuffer();
 
@@ -14,6 +16,8 @@ public interface IFractalPresenter {
     public double getPixelSize();
 
     public void setFractalDetail(double detail);
+
+    public void setView(IFractalView view, Matrix matrix, IViewResizeListener listener);
 
     // Graph area affecting
 

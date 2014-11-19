@@ -56,6 +56,11 @@ public class FractalView extends View implements IFractalView {
     }
 
     @Override
+    public void setTouchHandler(IFractalTouchHandler handler) {
+        this.setOnTouchListener(handler);
+    }
+
+    @Override
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
 
