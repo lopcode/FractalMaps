@@ -31,8 +31,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import butterknife.ButterKnife;
@@ -47,6 +49,8 @@ import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalView;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalSceneDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.PinOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
 
@@ -101,6 +105,10 @@ public class FractalActivity extends ActionBarActivity implements
     public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
 
     private HashMap<IFractalPresenter, Boolean> UIRenderStates = new HashMap<IFractalPresenter, Boolean>();
+
+    // Overlays
+    private List<IFractalOverlay> sceneOverlays;
+    private IFractalOverlay pinOverlay;
 
     // Android lifecycle
 
@@ -161,12 +169,21 @@ public class FractalActivity extends ActionBarActivity implements
 
         this.secondFractalPresenter.setView(this.secondFractalView, new Matrix(), this.secondFractalPresenter);
 
+        this.initialiseOverlays();
+
         mjLocation = new MandelbrotJuliaLocation(juliaGraphArea, juliaParams);
         this.firstFractalPresenter.setGraphArea(mjLocation.defaultMandelbrotGraphArea);
         this.secondFractalPresenter.setGraphArea(mjLocation.defaultJuliaGraphArea);
 
         this.UIRenderStates.put(this.firstFractalPresenter, false);
         this.UIRenderStates.put(this.secondFractalPresenter, false);
+    }
+
+    public void initialiseOverlays() {
+        this.sceneOverlays = new ArrayList<IFractalOverlay>();
+        this.pinOverlay = new PinOverlay(this, R.color.dark_blue, R.color.black, 42.0f, 100f, 100f);
+        this.sceneOverlays.add(this.pinOverlay);
+        this.firstFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);
     }
 
     // When destroyed, kill all render threads
@@ -736,10 +753,24 @@ public class FractalActivity extends ActionBarActivity implements
         if (presenter != this.firstFractalPresenter)
             return;
 
+        this.pinOverlay.setPosition(x, y);
         double[] graphTapPosition = this.firstFractalPresenter.getGraphPositionFromClickedPosition(x, y);
+
         Log.i("FA", "First fractal long tap at " + x + " " + y + ", " + graphTapPosition[0] + " " + graphTapPosition[1]);
         this.juliaStrategy.setJuliaSeed(graphTapPosition[0], graphTapPosition[1]);
+        this.firstFractalView.postUIThreadRedraw();
         this.secondFractalPresenter.clearPixelSizes();
         this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+    }
+
+    @Override
+    public void onFractalRecomputed(IFractalPresenter presenter) {
+        if (presenter != this.firstFractalPresenter)
+            return;
+
+        double[] juliaSeed = this.juliaStrategy.getJuliaSeed();
+        double[] newPinPoint = this.firstFractalPresenter.getPointFromGraphPosition(juliaSeed[0], juliaSeed[1]);
+
+        this.pinOverlay.setPosition((float) newPinPoint[0], (float) newPinPoint[1]);
     }
 }

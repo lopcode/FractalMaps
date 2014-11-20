@@ -8,6 +8,10 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
+import java.util.List;
+
+import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
+
 public class FractalView extends View implements IFractalView {
     private IViewResizeListener resizeListener;
     private Matrix fractalTransformMatrix;
@@ -17,6 +21,9 @@ public class FractalView extends View implements IFractalView {
 
     private Bitmap fractalBitmap;
     private Paint fractalPaint;
+
+    private List<IFractalOverlay> presenterOverlays;
+    private List<IFractalOverlay> sceneOverlays;
 
     public FractalView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -62,6 +69,16 @@ public class FractalView extends View implements IFractalView {
     }
 
     @Override
+    public void setSceneOverlays(List<IFractalOverlay> overlays) {
+        this.sceneOverlays = overlays;
+    }
+
+    @Override
+    public void setPresenterOverlays(List<IFractalOverlay> overlays) {
+        this.presenterOverlays = overlays;
+    }
+
+    @Override
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
 
@@ -78,6 +95,24 @@ public class FractalView extends View implements IFractalView {
             return;
 
         canvas.drawBitmap(this.fractalBitmap, this.fractalTransformMatrix, this.fractalPaint);
+
+        if (this.presenterOverlays != null) {
+            for (IFractalOverlay overlay : this.presenterOverlays) {
+                this.drawOverlayWithTransformedPosition(overlay, canvas);
+            }
+        }
+
+        if (this.sceneOverlays != null) {
+            for (IFractalOverlay overlay : this.sceneOverlays) {
+                this.drawOverlayWithTransformedPosition(overlay, canvas);
+            }
+        }
+    }
+
+    private void drawOverlayWithTransformedPosition(IFractalOverlay overlay, Canvas canvas) {
+        float[] transformedPoints = new float[2];
+        this.fractalTransformMatrix.mapPoints(transformedPoints, new float[]{overlay.getX(), overlay.getY()});
+        overlay.drawToCanvas(canvas, transformedPoints[0], transformedPoints[1]);
     }
 
     // IFractalView

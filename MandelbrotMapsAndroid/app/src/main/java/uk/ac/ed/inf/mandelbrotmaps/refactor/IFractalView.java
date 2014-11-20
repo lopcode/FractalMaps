@@ -2,6 +2,10 @@ package uk.ac.ed.inf.mandelbrotmaps.refactor;
 
 import android.graphics.Matrix;
 
+import java.util.List;
+
+import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
+
 public interface IFractalView {
     public void postUIThreadRedraw();
 
@@ -18,4 +22,8 @@ public interface IFractalView {
     public void cacheCurrentBitmap(int[] pixelBuffer);
 
     public void setTouchHandler(IFractalTouchHandler handler);
+
+    public void setSceneOverlays(List<IFractalOverlay> overlays);
+
+    public void setPresenterOverlays(List<IFractalOverlay> overlays);
 }

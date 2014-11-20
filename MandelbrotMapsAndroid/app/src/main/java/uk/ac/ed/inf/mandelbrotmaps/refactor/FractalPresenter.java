@@ -48,15 +48,21 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public static final double DEFAULT_DETAIL_LEVEL = 15;
 
     // Overlays
-    private List<IFractalOverlay> fractalOverlays;
+    private List<IFractalOverlay> fractalPresenterOverlays;
 
     public FractalPresenter(Context context, IFractalSceneDelegate sceneDelegate, IFractalComputeStrategy fractalStrategy) {
+        this.context = context;
         this.fractalStrategy = fractalStrategy;
         this.touchHandler = new FractalTouchHandler(context, this);
 
         this.transformMatrix = new Matrix();
-        this.fractalOverlays = new ArrayList<IFractalOverlay>();
         this.sceneDelegate = sceneDelegate;
+
+        this.initialiseOverlays();
+    }
+
+    public void initialiseOverlays() {
+        this.fractalPresenterOverlays = new ArrayList<IFractalOverlay>();
     }
 
     // IFractalPresenter
@@ -72,6 +78,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.view.setFractalTransformMatrix(new Matrix());
         this.view.setResizeListener(this);
         this.view.setTouchHandler(this.touchHandler);
+        this.view.setPresenterOverlays(this.fractalPresenterOverlays);
+
     }
 
     @Override
@@ -130,6 +138,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
                 getPixelSize(),
                 this.pixelBuffer,
                 this.pixelBufferSizes));
+
+        this.sceneDelegate.onFractalRecomputed(this);
     }
 
     @Override
@@ -241,6 +251,16 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         return graphPosition;
     }
 
+    @Override
+    public double[] getPointFromGraphPosition(double pointX, double pointY) {
+        double[] point = new double[2];
+        double pixelSize = getPixelSize();
+        point[0] = ((pointX - graphArea[0]) / pixelSize);
+        point[1] = (-(pointY - graphArea[1]) / pixelSize);
+
+        return point;
+    }
+
     // IFractalComputeDelegate
 
     @Override
@@ -305,7 +325,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         }
 
         this.hasZoomed = false;
-
         this.view.postUIThreadRedraw();
     }
 
@@ -351,5 +370,13 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.view.createNewFractalBitmap(new int[this.viewWidth * this.viewHeight]);
         //this.recomputeGraph(FractalPresenter.CRUDE_PIXEL_BLOCK);
         this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+    }
+
+    // IFractalPresenterDelegate
+
+    @Override
+    public void onSceneOverlaysChanged(List<IFractalOverlay> overlays) {
+        Log.i("FP", "Changing scene overlays");
+        this.view.setSceneOverlays(overlays);
     }
 }

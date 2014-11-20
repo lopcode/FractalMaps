@@ -2,7 +2,9 @@ package uk.ac.ed.inf.mandelbrotmaps.refactor;
 
 import android.graphics.Matrix;
 
-public interface IFractalPresenter {
+import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.IFractalPresenterDelegate;
+
+public interface IFractalPresenter extends IFractalPresenterDelegate {
     public int[] getPixelBuffer();
 
     public void translatePixelBuffer(int dx, int dy);
@@ -20,6 +22,8 @@ public interface IFractalPresenter {
     public void setView(IFractalView view, Matrix matrix, IViewResizeListener listener);
 
     public double[] getGraphPositionFromClickedPosition(float touchX, float touchY);
+
+    public double[] getPointFromGraphPosition(double pointX, double pointY);
 
     // Graph area affecting
 
