@@ -774,7 +774,7 @@ public class FractalActivity extends ActionBarActivity implements
         this.juliaStrategy.setJuliaSeed(juliaSeed[0], juliaSeed[1]);
         this.firstFractalView.postUIThreadRedraw();
         this.secondFractalPresenter.clearPixelSizes();
-        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+        this.secondFractalPresenter.recomputeGraph(pixelBlockSize);
     }
 
     @Override
