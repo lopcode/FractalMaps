@@ -50,7 +50,7 @@ public class MandelbrotTouchHandler extends FractalTouchHandler {
             case MotionEvent.ACTION_MOVE:
                 if (this.draggingPin && evt.getPointerCount() == 1) {
                     //Log.i("MTH", "Dragged pin");
-                    this.delegate.pinDragged(evt.getX(), evt.getY());
+                    this.delegate.pinDragged(evt.getX(), evt.getY(), false);
                     return true;
                 }
 
@@ -62,7 +62,7 @@ public class MandelbrotTouchHandler extends FractalTouchHandler {
                     Log.i("MTH", "Stopped dragging pin");
                     this.draggingPin = false;
                     stopDraggingPin = true;
-                    this.delegate.stoppedDraggingPin();
+                    this.delegate.stoppedDraggingPin(evt.getX(), evt.getY());
 
                     return true;
                 }

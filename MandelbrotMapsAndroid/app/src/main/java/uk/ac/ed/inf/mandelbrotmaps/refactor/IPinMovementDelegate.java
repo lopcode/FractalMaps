@@ -1,7 +1,7 @@
 package uk.ac.ed.inf.mandelbrotmaps.refactor;
 
 public interface IPinMovementDelegate {
-    public void pinDragged(float x, float y);
+    public void pinDragged(float x, float y, boolean forceUpdate);
 
     public float getPinX();
 
@@ -11,5 +11,5 @@ public interface IPinMovementDelegate {
 
     public void startedDraggingPin();
 
-    public void stoppedDraggingPin();
+    public void stoppedDraggingPin(float x, float y);
 }

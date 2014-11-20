@@ -113,6 +113,9 @@ public class FractalActivity extends ActionBarActivity implements
     private List<IFractalOverlay> sceneOverlays;
     private PinOverlay pinOverlay;
 
+    private float previousPinDragX = 0;
+    private float previousPinDragY = 0;
+
     // Android lifecycle
 
     @Override
@@ -788,10 +791,18 @@ public class FractalActivity extends ActionBarActivity implements
     // IPinMovementDelegate
 
     @Override
-    public void pinDragged(float x, float y) {
+    public void pinDragged(float x, float y, boolean forceUpdate) {
         this.pinOverlay.setPosition(x, y);
-        double[] graphTapPosition = this.firstFractalPresenter.getGraphPositionFromClickedPosition(x, y);
-        this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.CRUDE_PIXEL_BLOCK);
+        this.firstFractalView.postUIThreadRedraw();
+
+        double dragDistance = Math.sqrt(Math.pow(this.previousPinDragX - x, 2) + Math.pow(this.previousPinDragY - y, 2));
+        if (dragDistance > 1 || forceUpdate) {
+            double[] graphTapPosition = this.firstFractalPresenter.getGraphPositionFromClickedPosition(x, y);
+            this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.CRUDE_PIXEL_BLOCK);
+
+            this.previousPinDragX = x;
+            this.previousPinDragY = y;
+        }
     }
 
     @Override
@@ -815,7 +826,8 @@ public class FractalActivity extends ActionBarActivity implements
     }
 
     @Override
-    public void stoppedDraggingPin() {
+    public void stoppedDraggingPin(float x, float y) {
+        this.pinDragged(x, y, true);
         this.pinOverlay.setHilighted(false);
         this.secondFractalPresenter.clearPixelSizes();
         this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
