@@ -762,9 +762,13 @@ public class FractalActivity extends ActionBarActivity implements
 
         this.pinOverlay.setPosition(x, y);
         double[] graphTapPosition = this.firstFractalPresenter.getGraphPositionFromClickedPosition(x, y);
-
+        this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.DEFAULT_PIXEL_SIZE);
         //Log.i("FA", "First fractal long tap at " + x + " " + y + ", " + graphTapPosition[0] + " " + graphTapPosition[1]);
-        this.juliaStrategy.setJuliaSeed(graphTapPosition[0], graphTapPosition[1]);
+
+    }
+
+    private void setJuliaSeedAndRecompute(double[] juliaSeed, int pixelBlockSize) {
+        this.juliaStrategy.setJuliaSeed(juliaSeed[0], juliaSeed[1]);
         this.firstFractalView.postUIThreadRedraw();
         this.secondFractalPresenter.clearPixelSizes();
         this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
@@ -785,7 +789,9 @@ public class FractalActivity extends ActionBarActivity implements
 
     @Override
     public void pinDragged(float x, float y) {
-        this.onFractalLongClick(this.firstFractalPresenter, x, y);
+        this.pinOverlay.setPosition(x, y);
+        double[] graphTapPosition = this.firstFractalPresenter.getGraphPositionFromClickedPosition(x, y);
+        this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.CRUDE_PIXEL_BLOCK);
     }
 
     @Override
@@ -811,5 +817,7 @@ public class FractalActivity extends ActionBarActivity implements
     @Override
     public void stoppedDraggingPin() {
         this.pinOverlay.setHilighted(false);
+        this.secondFractalPresenter.clearPixelSizes();
+        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
     }
 }

@@ -168,7 +168,6 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
             if (showRenderProgress && (loopCount % arguments.linesPerProgressUpdate == 0) && !callingThread.abortSignalled()) {
                 Log.i("CFCS", "Posting update for thread " + threadID);
                 this.delegate.postUpdate(arguments.pixelBuffer, arguments.pixelBufferSizes);
-
             }
         }
 
@@ -182,7 +181,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
         }
 
         if (allComplete) {
-            this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBuffer, arguments.pixelBlockSize);
+            this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize);
         }
     }
 }
