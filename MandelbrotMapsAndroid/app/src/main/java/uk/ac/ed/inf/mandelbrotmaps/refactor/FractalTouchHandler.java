@@ -157,6 +157,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
         this.delegate.stopDragging(false, this.totalDragX, this.totalDragY);
     }
 
+    @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
         this.delegate.stopDragging(true, this.totalDragX, this.totalDragY);
         this.delegate.startScaling(detector.getFocusX(), detector.getFocusY());
@@ -165,11 +166,13 @@ public class FractalTouchHandler implements IFractalTouchHandler {
         return true;
     }
 
+    @Override
     public boolean onScale(ScaleGestureDetector detector) {
         this.delegate.scaleFractal(detector.getScaleFactor(), detector.getFocusX(), detector.getFocusY());
         return true;
     }
 
+    @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
         this.totalDragX = 0;
         this.totalDragY = 0;
