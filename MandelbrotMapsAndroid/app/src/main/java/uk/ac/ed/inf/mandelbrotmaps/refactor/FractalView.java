@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import java.util.List;
@@ -89,8 +90,10 @@ public class FractalView extends View implements IFractalView {
         this.width = width;
         this.height = height;
 
-        if (this.resizeListener != null)
+        if (this.resizeListener != null) {
+            Log.i("FV", "Firing onViewResized " + width + " " + height);
             this.resizeListener.onViewResized(this, width, height);
+        }
     }
 
     @Override

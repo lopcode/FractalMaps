@@ -11,8 +11,8 @@ import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
 
 public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     private ArrayList<LinkedBlockingQueue<FractalComputeArguments>> renderQueueList = new ArrayList<LinkedBlockingQueue<FractalComputeArguments>>();
-    private ArrayList<RenderThread> renderThreadList = new ArrayList<RenderThread>();
-    private ArrayList<Boolean> rendersComplete = new ArrayList<Boolean>();
+    private ArrayList<RenderThread> renderThreadList;
+    private ArrayList<Boolean> rendersComplete;
 
     private int numberOfThreads = 1;
 
@@ -30,6 +30,14 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     }
 
     public void initialiseRenderThreads() {
+        if (this.renderThreadList != null && !this.renderThreadList.isEmpty()) {
+            this.stopAllRendering();
+            this.interruptThreads();
+        }
+
+        this.renderThreadList = new ArrayList<RenderThread>();
+        this.rendersComplete = new ArrayList<Boolean>();
+
         // Create the render threads
         this.numberOfThreads = Runtime.getRuntime().availableProcessors();
 //        this.numberOfThreads = 1;

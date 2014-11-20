@@ -309,6 +309,18 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public void stopDragging(boolean stoppedOnZoom, float totalDragX, float totalDragY) {
         Log.i("FP", "Stopped dragging: " + totalDragX + " " + totalDragY);
 
+        if (totalDragX < -this.viewWidth)
+            totalDragX = -this.viewWidth;
+
+        if (totalDragX > this.viewWidth)
+            totalDragX = this.viewWidth;
+
+        if (totalDragY < -this.viewHeight)
+            totalDragY = -this.viewHeight;
+
+        if (totalDragY > this.viewHeight)
+            totalDragY = this.viewHeight;
+
         if (!hasZoomed && !stoppedOnZoom) {
             this.translatePixelBuffer((int) totalDragX, (int) totalDragY);
             this.view.setBitmapPixels(this.pixelBuffer);
