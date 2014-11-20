@@ -33,6 +33,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
         this.delegate = delegate;
     }
 
+    @Override
     public boolean onTouch(View v, MotionEvent evt) {
         gestureDetector.onTouchEvent(evt);
 

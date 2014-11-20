@@ -53,7 +53,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public FractalPresenter(Context context, IFractalSceneDelegate sceneDelegate, IFractalComputeStrategy fractalStrategy) {
         this.context = context;
         this.fractalStrategy = fractalStrategy;
-        this.touchHandler = new FractalTouchHandler(context, this);
 
         this.transformMatrix = new Matrix();
         this.sceneDelegate = sceneDelegate;
@@ -66,6 +65,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     // IFractalPresenter
+
+    @Override
+    public void setTouchHandler(IFractalTouchHandler touchHandler) {
+        this.touchHandler = touchHandler;
+    }
 
     @Override
     public void setFractalDetail(double detail) {

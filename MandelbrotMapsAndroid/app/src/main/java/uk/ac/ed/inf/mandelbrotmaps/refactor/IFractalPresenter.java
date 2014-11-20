@@ -21,6 +21,8 @@ public interface IFractalPresenter extends IFractalPresenterDelegate {
 
     public void setView(IFractalView view, Matrix matrix, IViewResizeListener listener);
 
+    public void setTouchHandler(IFractalTouchHandler touchHandler);
+
     public double[] getGraphPositionFromClickedPosition(float touchX, float touchY);
 
     public double[] getPointFromGraphPosition(double pointX, double pointY);

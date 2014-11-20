@@ -46,16 +46,19 @@ import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalPresenter;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalView;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalSceneDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.IPinMovementDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.MandelbrotTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.PinOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
 
 public class FractalActivity extends ActionBarActivity implements
-        OnSharedPreferenceChangeListener, MenuClickDelegate, DetailControlDelegate, IFractalSceneDelegate {
+        OnSharedPreferenceChangeListener, MenuClickDelegate, DetailControlDelegate, IFractalSceneDelegate, IPinMovementDelegate {
     private final String TAG = "MMaps";
 
     // Constants
@@ -108,7 +111,7 @@ public class FractalActivity extends ActionBarActivity implements
 
     // Overlays
     private List<IFractalOverlay> sceneOverlays;
-    private IFractalOverlay pinOverlay;
+    private PinOverlay pinOverlay;
 
     // Android lifecycle
 
@@ -154,6 +157,9 @@ public class FractalActivity extends ActionBarActivity implements
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 
         this.firstFractalPresenter = new FractalPresenter(this, this, new MandelbrotCPUFractalComputeStrategy());
+        MandelbrotTouchHandler mandelbrotTouchHandler = new MandelbrotTouchHandler(this, this.firstFractalPresenter);
+        mandelbrotTouchHandler.setPinMovementDelegate(this);
+        this.firstFractalPresenter.setTouchHandler(mandelbrotTouchHandler);
         this.firstFractalPresenter.fractalStrategy.setColourStrategy(new DefaultColourStrategy());
         this.firstFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
         this.firstFractalView.setResizeListener(this.firstFractalPresenter);
@@ -163,6 +169,7 @@ public class FractalActivity extends ActionBarActivity implements
         juliaStrategy = new JuliaCPUFractalComputeStrategy();
         juliaStrategy.setJuliaSeed(juliaParams[0], juliaParams[1]);
         this.secondFractalPresenter = new FractalPresenter(this, this, juliaStrategy);
+        this.secondFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.secondFractalPresenter));
         this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
         this.secondFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.JULIA));
         this.secondFractalView.setResizeListener(this.secondFractalPresenter);
@@ -756,7 +763,7 @@ public class FractalActivity extends ActionBarActivity implements
         this.pinOverlay.setPosition(x, y);
         double[] graphTapPosition = this.firstFractalPresenter.getGraphPositionFromClickedPosition(x, y);
 
-        Log.i("FA", "First fractal long tap at " + x + " " + y + ", " + graphTapPosition[0] + " " + graphTapPosition[1]);
+        //Log.i("FA", "First fractal long tap at " + x + " " + y + ", " + graphTapPosition[0] + " " + graphTapPosition[1]);
         this.juliaStrategy.setJuliaSeed(graphTapPosition[0], graphTapPosition[1]);
         this.firstFractalView.postUIThreadRedraw();
         this.secondFractalPresenter.clearPixelSizes();
@@ -772,5 +779,37 @@ public class FractalActivity extends ActionBarActivity implements
         double[] newPinPoint = this.firstFractalPresenter.getPointFromGraphPosition(juliaSeed[0], juliaSeed[1]);
 
         this.pinOverlay.setPosition((float) newPinPoint[0], (float) newPinPoint[1]);
+    }
+
+    // IPinMovementDelegate
+
+    @Override
+    public void pinDragged(float x, float y) {
+        this.onFractalLongClick(this.firstFractalPresenter, x, y);
+    }
+
+    @Override
+    public float getPinX() {
+        return this.pinOverlay.getX();
+    }
+
+    @Override
+    public float getPinY() {
+        return this.pinOverlay.getY();
+    }
+
+    @Override
+    public float getPinRadius() {
+        return this.pinOverlay.getPinRadius();
+    }
+
+    @Override
+    public void startedDraggingPin() {
+        this.pinOverlay.setHilighted(true);
+    }
+
+    @Override
+    public void stoppedDraggingPin() {
+        this.pinOverlay.setHilighted(false);
     }
 }
