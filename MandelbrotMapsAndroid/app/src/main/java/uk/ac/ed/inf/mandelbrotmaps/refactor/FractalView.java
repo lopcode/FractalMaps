@@ -25,6 +25,8 @@ public class FractalView extends View implements IFractalView {
     private List<IFractalOverlay> presenterOverlays;
     private List<IFractalOverlay> sceneOverlays;
 
+    private boolean drawOverlays = true;
+
     public FractalView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -56,10 +58,12 @@ public class FractalView extends View implements IFractalView {
 
     @Override
     public void cacheCurrentBitmap(int[] pixelBuffer) {
+        this.drawOverlays = false;
         setDrawingCacheEnabled(true);
         getDrawingCache().getPixels(pixelBuffer, 0, this.width, 0, 0, this.width, this.height);
         this.setBitmapPixels(pixelBuffer);
         setDrawingCacheEnabled(false);
+        this.drawOverlays = true;
     }
 
     @Override
@@ -95,6 +99,9 @@ public class FractalView extends View implements IFractalView {
             return;
 
         canvas.drawBitmap(this.fractalBitmap, this.fractalTransformMatrix, this.fractalPaint);
+
+        if (!drawOverlays)
+            return;
 
         if (this.presenterOverlays != null) {
             for (IFractalOverlay overlay : this.presenterOverlays) {
