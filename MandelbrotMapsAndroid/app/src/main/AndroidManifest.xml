@@ -11,7 +11,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".SettingsActivity"
+            android:name=".refactor.settings.SettingsActivity"
             android:label="@string/settings_title"/>
         <activity
             android:name=".FractalActivity"

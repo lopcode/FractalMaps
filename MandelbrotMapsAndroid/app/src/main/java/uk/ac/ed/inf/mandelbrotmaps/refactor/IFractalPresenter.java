@@ -9,6 +9,8 @@ public interface IFractalPresenter extends IFractalPresenterDelegate {
 
     public void translatePixelBuffer(int dx, int dy);
 
+    public void clearPixelSizes();
+
     public void recomputeGraph(int pixelBlockSize);
 
     public void notifyRecomputeComplete(int pixelBlockSize);

@@ -331,8 +331,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         if (!stoppedOnZoom) {
             this.clearPixelSizes();
             this.setGraphArea(graphArea);
-            this.recomputeGraph(FractalPresenter.CRUDE_PIXEL_BLOCK);
-            this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+            this.sceneDelegate.scheduleRecomputeBasedOnPreferences(this);
         }
 
         if (!hasZoomed && !stoppedOnZoom) {
@@ -384,8 +383,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.initialisePixelBuffers();
         this.fractalStrategy.initialise(this.viewWidth, this.viewHeight, this);
         this.view.createNewFractalBitmap(new int[this.viewWidth * this.viewHeight]);
-        this.recomputeGraph(FractalPresenter.CRUDE_PIXEL_BLOCK);
-        this.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+        this.sceneDelegate.scheduleRecomputeBasedOnPreferences(this);
     }
 
     // IFractalPresenterDelegate

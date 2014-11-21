@@ -6,4 +6,6 @@ public interface IFractalSceneDelegate {
     public void onFractalLongClick(IFractalPresenter presenter, float x, float y);
 
     public void onFractalRecomputed(IFractalPresenter presenter);
+
+    public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter);
 }

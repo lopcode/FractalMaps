@@ -54,17 +54,12 @@ import uk.ac.ed.inf.mandelbrotmaps.refactor.IPinMovementDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.MandelbrotTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.PinOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.settings.SettingsActivity;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.settings.SettingsManager;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
 
-public class FractalActivity extends ActionBarActivity implements
-        OnSharedPreferenceChangeListener, MenuClickDelegate, DetailControlDelegate, IFractalSceneDelegate, IPinMovementDelegate {
-    private final String TAG = "MMaps";
-
-    // Constants
-    private final int SHARE_IMAGE_REQUEST = 0;
-    private final int RETURN_FROM_JULIA = 1;
-
+public class FractalActivity extends ActionBarActivity implements OnSharedPreferenceChangeListener, MenuClickDelegate, DetailControlDelegate, IFractalSceneDelegate, IPinMovementDelegate {
     // Shared pref keys
     public static final String mandelbrotDetailKey = "MANDELBROT_DETAIL";
     public static final String juliaDetailKey = "JULIA_DETAIL";
@@ -116,6 +111,9 @@ public class FractalActivity extends ActionBarActivity implements
     private float previousPinDragX = 0;
     private float previousPinDragY = 0;
 
+    // Settings
+    private SettingsManager settings;
+
     // Android lifecycle
 
     @Override
@@ -132,24 +130,15 @@ public class FractalActivity extends ActionBarActivity implements
 
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
+        this.settings = new SettingsManager(this);
+
         // If first time launch, show the tutorial/intro
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if (prefs.getBoolean(FIRST_TIME_KEY, true)) showIntro();
 
-        Bundle bundle = getIntent().getExtras();
-
         mjLocation = new MandelbrotJuliaLocation();
         double[] juliaParams = mjLocation.defaultJuliaParams;
         double[] juliaGraphArea = mjLocation.defaultJuliaGraphArea;
-
-        //Extract features from bundle, if there is one
-        try {
-            fractalType = FractalTypeEnum.valueOf(bundle.getString("FractalType"));
-            littleMandelbrotLocation = bundle.getDoubleArray("LittleMandelbrotLocation");
-//            showLittleAtStart = bundle.getBoolean("ShowLittleAtStart");
-        } catch (NullPointerException npe) {
-        }
-
 
         firstFractalView.initialise();
         secondFractalView.initialise();
@@ -191,7 +180,7 @@ public class FractalActivity extends ActionBarActivity implements
 
     public void initialiseOverlays() {
         this.sceneOverlays = new ArrayList<IFractalOverlay>();
-        this.pinOverlay = new PinOverlay(this, R.color.dark_blue, R.color.black, 42.0f, 100f, 100f);
+        this.pinOverlay = new PinOverlay(this, R.color.blue, R.color.dark_blue, 42.0f, 100f, 100f);
         this.sceneOverlays.add(this.pinOverlay);
         this.firstFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);
     }
@@ -262,44 +251,6 @@ public class FractalActivity extends ActionBarActivity implements
 //        showLittleAtStart = savedInstanceState.getBoolean(PREVIOUS_SHOWING_LITTLE);
     }
 
-    // Set activity result when finishing
-
-    @Override
-    public void finish() {
-//        if (fractalType == FractalTypeEnum.JULIA) {
-//            //double[] juliaParams = ((JuliaFractalView) fractalView).getJuliaParam();
-//            double[] currentGraphArea = fractalView.graphArea;
-//
-//            Intent result = new Intent();
-//            //result.putExtra("JuliaParams", juliaParams);
-//            result.putExtra("JuliaGraphArea", currentGraphArea);
-//
-//            setResult(Activity.RESULT_OK, result);
-//        }
-
-        super.finish();
-    }
-
-    //Get result of launched activity (only time used is after sharing, so delete temp. image)
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        switch (requestCode) {
-            case SHARE_IMAGE_REQUEST:
-                // Delete the temporary image
-                imagefile.delete();
-                break;
-
-            case RETURN_FROM_JULIA:
-//                if (showingLittle) {
-//                    double[] juliaGraphArea = data.getDoubleArrayExtra("JuliaGraphArea");
-//                    double[] juliaParams = data.getDoubleArrayExtra("JuliaParams");
-//                    littleFractalView.loadLocation(new MandelbrotJuliaLocation(juliaGraphArea, juliaParams));
-//                }
-                break;
-        }
-    }
-
     // Menu creation and handling
 
     // Listen for hardware menu presses on older phones, show the menu dialog
@@ -333,6 +284,16 @@ public class FractalActivity extends ActionBarActivity implements
             default:
                 return false;
         }
+    }
+
+    public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter) {
+        presenter.clearPixelSizes();
+
+        if (settings.performCrudeFirst()) {
+            presenter.recomputeGraph(FractalPresenter.CRUDE_PIXEL_BLOCK);
+        }
+
+        presenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -461,38 +422,6 @@ public class FractalActivity extends ActionBarActivity implements
         });
     }
 
-
-    /* Launches a new Julia fractal activity with the given parameters */
-//    private void launchJulia(double[] juliaParams) {
-//        Intent intent = new Intent(this, FractalActivity.class);
-//        Bundle bundle = new Bundle();
-//        bundle.putString("FractalType", FractalTypeEnum.JULIA.toString());
-//        bundle.putBoolean("ShowLittleAtStart", true);
-//        bundle.putDoubleArray("LittleMandelbrotLocation", fractalView.graphArea);
-//
-//        bundle.putDouble("JULIA_X", juliaParams[0]);
-//        bundle.putDouble("JULIA_Y", juliaParams[1]);
-//        bundle.putDoubleArray("JuliaParams", juliaParams);
-//        bundle.putDoubleArray("JuliaGraphArea", littleFractalView.graphArea);
-//
-//        intent.putExtras(bundle);
-//        startActivityForResult(intent, RETURN_FROM_JULIA);
-//    }
-
-    private void updateLittleJulia(float x, float y) {
-        if (fractalType != FractalTypeEnum.MANDELBROT)
-            return;
-
-//        fractalView.invalidate();
-//
-//        littleFractalView.strategy.clearPixelSizes();
-//        double[] juliaParams = ((MandelbrotFractalView) fractalView).getJuliaParams(x, y);
-//        ((JuliaFractalView) littleFractalView).setJuliaParameter(juliaParams[0], juliaParams[1]);
-
-
-//        Log.i("FA", "Setting julia params to " + juliaParams[0] + " " + juliaParams[1]);
-    }
-
     public void onSharedPreferenceChanged(SharedPreferences prefs, String changedPref) {
 //        if (changedPref.equals("MANDELBROT_COLOURS")) {
 //            String mandelbrotScheme = prefs.getString(changedPref, "MandelbrotDefault");
@@ -523,16 +452,11 @@ public class FractalActivity extends ActionBarActivity implements
 
     public double getDetailFromPrefs(FractalTypeEnum fractalTypeEnum) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String keyToUse = mandelbrotDetailKey;
-
+        String keyToUse;
         if (fractalTypeEnum == FractalTypeEnum.MANDELBROT) {
-
             keyToUse = mandelbrotDetailKey;
-
         } else {
-
             keyToUse = juliaDetailKey;
-
         }
 
         return (double) prefs.getFloat(keyToUse, (float) FractalPresenter.DEFAULT_DETAIL_LEVEL);
@@ -585,44 +509,6 @@ public class FractalActivity extends ActionBarActivity implements
         helpDialog.show();
     }
 
-    /* Set the bookmark location in Prefs to the current location
-     * (Proof-of-concept, currently unused)
-     */
-    private void setBookmark() {
-//        MandelbrotJuliaLocation bookmark;
-//        if (fractalType == FractalTypeEnum.MANDELBROT) {
-//            if (littleFractalView != null) {
-//                Log.d(TAG, "Showing little...");
-//                bookmark = new MandelbrotJuliaLocation(fractalView.graphArea, littleFractalView.graphArea,
-//                        ((MandelbrotFractalView) fractalView).currentJuliaParams);
-//            } else {
-//                bookmark = new MandelbrotJuliaLocation(fractalView.graphArea);
-//            }
-//        } else {
-//            //bookmark = new MandelbrotJuliaLocation(littleFractalView.graphArea, fractalView.graphArea,
-//            //        ((MandelbrotFractalView) littleFractalView).currentJuliaParams);
-//        }
-//
-//        //Log.d(TAG, bookmark.toString());
-//
-//        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
-//        //editor.putString("BOOKMARK", bookmark.toString());
-//        editor.commit();
-    }
-
-    /* Set the current location to the bookmark
-     * (Proof-of-concept, currently unused)
-     */
-    private void loadBookmark() {
-//        String bookmark = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("BOOKMARK", null);
-//
-//        if (bookmark != null) {
-//            Log.d(TAG, "Loaded bookmark " + bookmark);
-//            MandelbrotJuliaLocation newLocation = new MandelbrotJuliaLocation(bookmark);
-//            fractalView.loadLocation(newLocation);
-//        }
-    }
-
     // Dialogs
 
     private void showMenuDialog() {
@@ -658,12 +544,10 @@ public class FractalActivity extends ActionBarActivity implements
     @Override
     public void onResetClicked() {
         this.firstFractalPresenter.setGraphArea(new MandelbrotJuliaLocation().defaultMandelbrotGraphArea);
-        this.firstFractalPresenter.clearPixelSizes();
-        this.firstFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter);
 
         this.secondFractalPresenter.setGraphArea(new MandelbrotJuliaLocation().defaultJuliaGraphArea);
-        this.secondFractalPresenter.clearPixelSizes();
-        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+        this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter);
 
         this.dismissMenuDialog();
     }
@@ -713,13 +597,8 @@ public class FractalActivity extends ActionBarActivity implements
 
         this.firstFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
         this.secondFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.JULIA));
-        this.firstFractalPresenter.clearPixelSizes();
-        this.secondFractalPresenter.clearPixelSizes();
-        this.firstFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
-        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
-//        fractalView.reloadCurrentLocation();
-//        if (showingLittle)
-//            littleFractalView.reloadCurrentLocation();
+        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter);
+        this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter);
     }
 
     @Override

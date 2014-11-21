@@ -39,20 +39,10 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
         switch (evt.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
-//                if (showingLittle && evt.getX() <= borderView.getWidth() && evt.getY() <= borderView.getHeight()) {
-//                    borderView.setBackgroundColor(Color.DKGRAY);
-//                    littleFractalSelected = true;
-//                } else
-//                if (!gestureDetector.isInProgress()
-//                        && !fractalView.holdingPin && (touchingPin(evt.getX(), evt.getY()))) {
-//                    // Take hold of the pin, reset the little fractal view.
-//                    fractalView.holdingPin = true;
-//                    updateLittleJulia(evt.getX(), evt.getY());
-//                } else {
                 Log.i("FA", "Touch down");
                 startDragging(evt);
+
                 return false;
-//                }
 
 
             case MotionEvent.ACTION_MOVE:
@@ -61,9 +51,6 @@ public class FractalTouchHandler implements IFractalTouchHandler {
                     if (currentlyDragging) {
                         dragFractal(evt);
                     }
-//                    else if (fractalView.holdingPin) {
-//                        updateLittleJulia(evt.getX(), evt.getY());
-//                    }
                 }
 
                 return true;
@@ -86,25 +73,6 @@ public class FractalTouchHandler implements IFractalTouchHandler {
                 if (currentlyDragging) {
                     stopDragging();
                 }
-//                else if (littleFractalSelected) {
-//                    borderView.setBackgroundColor(Color.GRAY);
-//                    littleFractalSelected = false;
-//                    if (evt.getX() <= borderView.getWidth() && evt.getY() <= borderView.getHeight()) {
-//                        if (fractalType == FractalTypeEnum.MANDELBROT) {
-//                            launchJulia(((JuliaFractalView) littleFractalView).getJuliaParam());
-//                        } else if (fractalType == FractalTypeEnum.JULIA) {
-//                            finish();
-//                        }
-//                    }
-//                }
-                // If holding the pin, drop it, update screen (render won't display while dragging, might've finished in background)
-//                else if (fractalView.holdingPin) {
-//                    fractalView.holdingPin = false;
-//                    updateLittleJulia(evt.getX(), evt.getY());
-//                }
-//
-//                fractalView.holdingPin = false;
-
                 break;
         }
         return false;
@@ -123,33 +91,29 @@ public class FractalTouchHandler implements IFractalTouchHandler {
     }
 
     private void dragFractal(MotionEvent evt) {
+        int pointerIndex = evt.findPointerIndex(dragID);
+
+        float dragDiffPixelsX;
+        float dragDiffPixelsY;
+
         try {
-            int pointerIndex = evt.findPointerIndex(dragID);
-
-            float dragDiffPixelsX = evt.getX(pointerIndex) - dragLastX;
-            float dragDiffPixelsY = evt.getY(pointerIndex) - dragLastY;
-
-            // Move the canvas
-            if (dragDiffPixelsX != 0.0f && dragDiffPixelsY != 0.0f) {
-                this.totalDragX += dragDiffPixelsX;
-                this.totalDragY += dragDiffPixelsY;
-
-                this.delegate.dragFractal(dragDiffPixelsX, dragDiffPixelsY, this.totalDragX, this.totalDragY);
-
-//                // Proof of concept julia changing
-//                double[] juliaSeed = juliaStrategy.getJuliaSeed();
-//                Log.i("FA", "Julia seed " + juliaSeed[0] + " " + juliaSeed[1]);
-//                juliaStrategy.setJuliaSeed(juliaSeed[0] + 0.01, juliaSeed[1] + 0.01);
-//                this.secondFractalPresenter.clearPixelSizes();
-//                this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
-            }
-
-            // Update last mouse position
-            dragLastX = evt.getX(pointerIndex);
-            dragLastY = evt.getY(pointerIndex);
-        } catch (Exception iae) {
-            // TODO: Investigate why this is in a try-catch block
+            dragDiffPixelsX = evt.getX(pointerIndex) - dragLastX;
+            dragDiffPixelsY = evt.getY(pointerIndex) - dragLastY;
+        } catch (IllegalArgumentException e) {
+            return;
         }
+
+        // Move the canvas
+        if (dragDiffPixelsX != 0.0f && dragDiffPixelsY != 0.0f) {
+            this.totalDragX += dragDiffPixelsX;
+            this.totalDragY += dragDiffPixelsY;
+
+            this.delegate.dragFractal(dragDiffPixelsX, dragDiffPixelsY, this.totalDragX, this.totalDragY);
+        }
+
+        // Update last mouse position
+        dragLastX = evt.getX(pointerIndex);
+        dragLastY = evt.getY(pointerIndex);
     }
 
     private void stopDragging() {

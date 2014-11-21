@@ -7,11 +7,11 @@
             android:summary="Performing a first pass with large pixel blocks gets a rough image faster but makes the full render take longer."
             android:defaultValue="true" />
 
-        <CheckBoxPreference
-            android:key="SHOW_TIMES"
-            android:title="Show render times"
-            android:summary="Display the time of each render once complete."
-            android:defaultValue="true" />
+        <!--<CheckBoxPreference-->
+            <!--android:key="SHOW_TIMES"-->
+            <!--android:title="Show render times"-->
+            <!--android:summary="Display the time of each render once complete."-->
+            <!--android:defaultValue="true" />-->
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Colours">

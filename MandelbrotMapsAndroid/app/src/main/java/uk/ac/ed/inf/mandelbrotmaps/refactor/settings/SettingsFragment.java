@@ -1,7 +1,9 @@
-package uk.ac.ed.inf.mandelbrotmaps;
+package uk.ac.ed.inf.mandelbrotmaps.refactor.settings;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
+
+import uk.ac.ed.inf.mandelbrotmaps.R;
 
 public class SettingsFragment extends PreferenceFragment {
     @Override
