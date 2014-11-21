@@ -53,6 +53,7 @@ import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.IPinMovementDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.MandelbrotTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.PinColour;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.PinOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.settings.SettingsActivity;
 import uk.ac.ed.inf.mandelbrotmaps.refactor.settings.SettingsManager;
@@ -131,6 +132,9 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
         this.settings = new SettingsManager(this);
+        this.settings.setFractalSceneDelegate(this);
+
+        PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext()).registerOnSharedPreferenceChangeListener(this.settings);
 
         // If first time launch, show the tutorial/intro
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -180,7 +184,8 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
 
     public void initialiseOverlays() {
         this.sceneOverlays = new ArrayList<IFractalOverlay>();
-        this.pinOverlay = new PinOverlay(this, R.color.blue, R.color.dark_blue, 42.0f, 100f, 100f);
+        this.pinOverlay = new PinOverlay(this, 42.0f, 100f, 100f);
+        this.settings.refreshPinSettings();
         this.sceneOverlays.add(this.pinOverlay);
         this.firstFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);
     }
@@ -192,6 +197,8 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
 
         this.firstFractalPresenter.fractalStrategy.tearDown();
         this.secondFractalPresenter.fractalStrategy.tearDown();
+
+        PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext()).unregisterOnSharedPreferenceChangeListener(this.settings);
     }
 
     @Override
@@ -294,6 +301,12 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
         }
 
         presenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+    }
+
+    @Override
+    public void onPinColourChanged(PinColour colour) {
+        this.pinOverlay.setPinColour(colour);
+        this.firstFractalView.postUIThreadRedraw();
     }
 
     /*-----------------------------------------------------------------------------------*/

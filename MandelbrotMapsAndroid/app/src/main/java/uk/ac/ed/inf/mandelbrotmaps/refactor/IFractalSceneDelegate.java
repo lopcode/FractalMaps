@@ -1,5 +1,7 @@
 package uk.ac.ed.inf.mandelbrotmaps.refactor;
 
+import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.PinColour;
+
 public interface IFractalSceneDelegate {
     public void setRenderingStatus(IFractalPresenter presenter, boolean rendering);
 
@@ -8,4 +10,6 @@ public interface IFractalSceneDelegate {
     public void onFractalRecomputed(IFractalPresenter presenter);
 
     public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter);
+
+    public void onPinColourChanged(PinColour colour);
 }
