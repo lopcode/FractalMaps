@@ -54,7 +54,8 @@ public abstract class AbstractFractalView extends View {
     public static enum ControlMode {
         ZOOMING,
         DRAGGING,
-        STATIC
+        STATIC,
+        ROTATING
     }
 
     public ControlMode controlmode = ControlMode.STATIC;
@@ -104,6 +105,9 @@ public abstract class AbstractFractalView extends View {
     boolean hasZoomed = false;
     boolean hasPassedMaxDepth = false;
 
+    // Rotation state
+    boolean hasRotated = false;
+
     // Tracks scaling/ dragging position
     public Matrix matrix;
 
@@ -124,6 +128,10 @@ public abstract class AbstractFractalView extends View {
 
     // Render calculating variables
     double xMin, yMax, pixelSize;
+
+    // Tan Lei variables
+    public float pointBoxHeight = 100.0f;
+    public float pointBoxWidth = 150.0f;
 
 
     /*-----------------------------------------------------------------------------------*/
@@ -783,6 +791,39 @@ public abstract class AbstractFractalView extends View {
 
         if (reload)
             reloadCurrentLocation();
+    }
+    /*-----------------------------------------------------------------------------------*/
+    /* Tan Lei */
+    /*-----------------------------------------------------------------------------------*/
+
+    public float[] getPointOneCoords() {
+        float[] pointCoords = new float[2];
+        double pixelSize = getPixelSize();
+
+        pointCoords[0] = (float) ((parentActivity.misPoints[0][0] - graphArea[0]) / pixelSize);
+        pointCoords[1] = (float) (-(parentActivity.misPoints[0][1] - graphArea[1]) / pixelSize);
+
+        return pointCoords;
+    }
+
+    public float[] getPointTwoCoords() {
+        float[] pointCoords = new float[2];
+        double pixelSize = getPixelSize();
+
+        pointCoords[0] = (float) ((parentActivity.misPoints[1][0] - graphArea[0]) / pixelSize);
+        pointCoords[1] = (float) (-(parentActivity.misPoints[1][1] - graphArea[1]) / pixelSize);
+
+        return pointCoords;
+    }
+
+    public float[] getPointThreeCoords() {
+        float[] pointCoords = new float[2];
+        double pixelSize = getPixelSize();
+
+        pointCoords[0] = (float) ((parentActivity.misPoints[2][0] - graphArea[0]) / pixelSize);
+        pointCoords[1] = (float) (-(parentActivity.misPoints[2][1] - graphArea[1]) / pixelSize);
+
+        return pointCoords;
     }
 
     /*-----------------------------------------------------------------------------------*/

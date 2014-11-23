@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 public class MandelbrotFractalView extends AbstractFractalView {
     public float lastTouchX = 0;
@@ -14,6 +15,9 @@ public class MandelbrotFractalView extends AbstractFractalView {
 
     public double[] currentJuliaParams = null;
     private float[] pinCoords = new float[2];
+    private float[] pointOneCoords = new float[2];
+    private float[] pointTwoCoords = new float[2];
+    private float[] pointThreeCoords = new float[2];
 
     Paint outerPinPaint;
     Paint innerPinPaint;
@@ -24,6 +28,14 @@ public class MandelbrotFractalView extends AbstractFractalView {
     int innerPinAlpha = 150;
     int selectedPinAlpha = 150;
     int littlePinAlpha = 180;
+
+    Paint pointOnePaint;
+    Paint pointTwoPaint;
+    Paint pointThreePaint;
+
+    int pointOneAlpha = 150;
+    int pointTwoAlpha = 150;
+    int pointThreeAlpha = 150;
 
     public float smallPinRadius = 5.0f;
     public float largePinRadius = 20.0f;
@@ -67,12 +79,57 @@ public class MandelbrotFractalView extends AbstractFractalView {
         selectedPinPaint = new Paint();
         selectedPinPaint.setColor(pinColour);
         selectedPinPaint.setAlpha(selectedPinAlpha);
+
+        pointOnePaint = new Paint();
+        pointOnePaint.setColor(pinColour);
+        pointOnePaint.setAlpha(pointOneAlpha);
+        pointOnePaint.setStyle(Style.STROKE);
+
+        pointTwoPaint = new Paint();
+        pointTwoPaint.setColor(pinColour);
+        pointTwoPaint.setAlpha(pointTwoAlpha);
+        pointTwoPaint.setStyle(Style.STROKE);
+
+        pointThreePaint = new Paint();
+        pointThreePaint.setColor(pinColour);
+        pointThreePaint.setAlpha(pointThreeAlpha);
+        pointThreePaint.setStyle(Style.STROKE);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        if (parentActivity.tanLeiEnabled && !parentActivity.TLPointSelected) {
+            if (controlmode != ControlMode.ZOOMING) {
+                pointOneCoords = getPointOneCoords();
+                pointTwoCoords = getPointTwoCoords();
+                pointThreeCoords = getPointThreeCoords();
+            }
+            float[] mappedCoordsTL1 = new float[2];
+            float[] mappedCoordsTL2 = new float[2];
+            float[] mappedCoordsTL3 = new float[2];
+                if (fractalViewSize == FractalViewSize.LARGE) {
+
+                matrix.mapPoints(mappedCoordsTL1, pointOneCoords);
+
+                pointOnePaint.setStrokeWidth(10);
+                canvas.drawRect(mappedCoordsTL1[0] - pointBoxWidth / 2, mappedCoordsTL1[1] - pointBoxHeight / 2,
+                        mappedCoordsTL1[0] + pointBoxWidth / 2, mappedCoordsTL1[1] + pointBoxHeight / 2, pointOnePaint);
+
+                matrix.mapPoints(mappedCoordsTL2, pointTwoCoords);
+
+                pointTwoPaint.setStrokeWidth(10);
+                canvas.drawRect(mappedCoordsTL2[0] - pointBoxWidth / 2, mappedCoordsTL2[1] - pointBoxHeight / 2,
+                        mappedCoordsTL2[0] + pointBoxWidth / 2, mappedCoordsTL2[1] + pointBoxHeight / 2, pointTwoPaint);
+
+                matrix.mapPoints(mappedCoordsTL3, pointThreeCoords);
+
+                pointThreePaint.setStrokeWidth(10);
+                canvas.drawRect(mappedCoordsTL3[0] - pointBoxWidth / 2, mappedCoordsTL3[1] - pointBoxHeight / 2,
+                        mappedCoordsTL3[0] + pointBoxWidth / 2, mappedCoordsTL3[1] + pointBoxHeight / 2, pointThreePaint);
+            }
+        }
         if (parentActivity.showingLittle && drawPin) {
             if (controlmode != ControlMode.ZOOMING) pinCoords = getPinCoords();
             float[] mappedCoords = new float[2];
@@ -106,6 +163,9 @@ public class MandelbrotFractalView extends AbstractFractalView {
             int dpi = currentDisplayMetrics.densityDpi;
             largePinRadius = dpi / 6;
             smallPinRadius = dpi / 30;
+
+            pointBoxHeight = getHeight() / 6;
+            pointBoxWidth = getWidth() / 6;
         }
     }
 
@@ -198,6 +258,15 @@ public class MandelbrotFractalView extends AbstractFractalView {
         innerPinPaint.setAlpha(innerPinAlpha);
         littlePinPaint.setAlpha(littlePinAlpha);
         selectedPinPaint.setAlpha(selectedPinAlpha);
+
+        pointOnePaint.setColor(newColour);
+        pointOnePaint.setAlpha(pointOneAlpha);
+
+        pointTwoPaint.setColor(newColour);
+        pointTwoPaint.setAlpha(pointOneAlpha);
+
+        pointThreePaint.setColor(newColour);
+        pointThreePaint.setAlpha(pointOneAlpha);
 
         invalidate();
     }

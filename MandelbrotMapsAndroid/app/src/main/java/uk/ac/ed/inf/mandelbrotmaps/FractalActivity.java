@@ -20,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,6 +50,7 @@ import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 
 public class FractalActivity extends ActionBarActivity implements OnTouchListener, OnScaleGestureListener,
         OnSharedPreferenceChangeListener, OnLongClickListener, MenuClickDelegate, DetailControlDelegate {
+
     private final String TAG = "MMaps";
 
     // Constants
@@ -102,6 +104,16 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
     public static final String FRAGMENT_MENU_DIALOG_NAME = "menuDialog";
     public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
+
+    // Tan Lei variables
+    public boolean tanLeiEnabled = true;
+    public boolean TLPointSelected = false;
+    public float[][] misPoints = {
+            {-2.0f, 0.0f},
+            {0.0f, 1.0f},
+            {0.11031f, -0.67037f}};
+    public float tanLeiZoom;
+    public float tanLeiRotate;
 
     // Android lifecycle
 
@@ -537,6 +549,30 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                     // Take hold of the pin, reset the little fractal view.
                     fractalView.holdingPin = true;
                     updateLittleJulia(evt.getX(), evt.getY());
+                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT
+                        && evt.getX() <= fractalView.getPointOneCoords()[0] + fractalView.pointBoxWidth/2
+                        && evt.getX() >= fractalView.getPointOneCoords()[0] - fractalView.pointBoxWidth/2
+                        && evt.getY() <= fractalView.getPointOneCoords()[1] + fractalView.pointBoxHeight/2
+                        && evt.getY() >= fractalView.getPointOneCoords()[1] - fractalView.pointBoxHeight/2) {
+                    ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[0][0],
+                            (double) misPoints[0][1]);
+                    littleFractalSelected = true;
+                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT
+                        && evt.getX() <= fractalView.getPointTwoCoords()[0] + fractalView.pointBoxWidth/2
+                        && evt.getX() >= fractalView.getPointTwoCoords()[0] - fractalView.pointBoxWidth/2
+                        && evt.getY() <= fractalView.getPointTwoCoords()[1] + fractalView.pointBoxHeight/2
+                        && evt.getY() >= fractalView.getPointTwoCoords()[1] - fractalView.pointBoxHeight/2) {
+                    ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[1][0],
+                            (double) misPoints[1][1]);
+                    littleFractalSelected = true;
+                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT
+                        && evt.getX() <= fractalView.getPointThreeCoords()[0] + fractalView.pointBoxWidth/2
+                        && evt.getX() >= fractalView.getPointThreeCoords()[0] - fractalView.pointBoxWidth/2
+                        && evt.getY() <= fractalView.getPointThreeCoords()[1] + fractalView.pointBoxHeight/2
+                        && evt.getY() >= fractalView.getPointThreeCoords()[1] - fractalView.pointBoxHeight/2) {
+                    ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[2][0],
+                            (double) misPoints[2][1]);
+                    littleFractalSelected = true;
                 } else {
                     startDragging(evt);
                 }
@@ -578,10 +614,28 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                         } else if (fractalType == FractalTypeEnum.JULIA) {
                             finish();
                         }
+                        // TODO: tidy this up later
+                    } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT
+                            && (evt.getX() <= fractalView.getPointOneCoords()[0] + fractalView.pointBoxWidth/2
+                            && evt.getX() >= fractalView.getPointOneCoords()[0] - fractalView.pointBoxWidth/2
+                            && evt.getY() <= fractalView.getPointOneCoords()[1] + fractalView.pointBoxHeight/2
+                            && evt.getY() >= fractalView.getPointOneCoords()[1] - fractalView.pointBoxHeight/2)
+                            || (evt.getX() <= fractalView.getPointTwoCoords()[0] + fractalView.pointBoxWidth/2
+                            && evt.getX() >= fractalView.getPointTwoCoords()[0] - fractalView.pointBoxWidth/2
+                            && evt.getY() <= fractalView.getPointTwoCoords()[1] + fractalView.pointBoxHeight/2
+                            && evt.getY() >= fractalView.getPointTwoCoords()[1] - fractalView.pointBoxHeight/2)
+                            || (evt.getX() <= fractalView.getPointThreeCoords()[0] + fractalView.pointBoxWidth/2
+                            && evt.getX() >= fractalView.getPointThreeCoords()[0] - fractalView.pointBoxWidth/2
+                            && evt.getY() <= fractalView.getPointThreeCoords()[1] + fractalView.pointBoxHeight/2
+                            && evt.getY() >= fractalView.getPointThreeCoords()[1] - fractalView.pointBoxHeight/2)) {
+                        if (fractalType == FractalTypeEnum.MANDELBROT) {
+                            launchJulia(((JuliaFractalView) littleFractalView).getJuliaParam());
+                        } else if (fractalType == FractalTypeEnum.JULIA) {
+                            finish();
+                        }
                     }
-                }
-                // If holding the pin, drop it, update screen (render won't display while dragging, might've finished in background)
-                else if (fractalView.holdingPin) {
+                } else if (fractalView.holdingPin) {
+                    // If holding the pin, drop it, update screen (render won't display while dragging, might've finished in background)
                     fractalView.holdingPin = false;
                     updateLittleJulia(evt.getX(), evt.getY());
                 }
