@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor;
+package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.content.Context;
 import android.graphics.Matrix;
@@ -8,8 +8,12 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.IFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
+import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
 
 public class FractalPresenter implements IFractalPresenter, IFractalComputeDelegate, IFractalTouchDelegate, IViewResizeListener {
     public IFractalComputeStrategy fractalStrategy;
@@ -233,6 +237,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void setGraphArea(double[] graphArea) {
         this.graphArea = graphArea;
+    }
+
+    @Override
+    public double[] getGraphArea() {
+        return this.graphArea;
     }
 
     @Override

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@color/black">
 
-    <uk.ac.ed.inf.mandelbrotmaps.refactor.FractalView
+    <uk.ac.ed.inf.mandelbrotmaps.FractalView
         android:id="@+id/firstFractalView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
@@ -23,7 +23,7 @@
             android:orientation="horizontal"
             android:layout_weight="2">
 
-            <uk.ac.ed.inf.mandelbrotmaps.refactor.FractalView
+            <uk.ac.ed.inf.mandelbrotmaps.FractalView
                 android:id="@+id/secondFractalView"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"

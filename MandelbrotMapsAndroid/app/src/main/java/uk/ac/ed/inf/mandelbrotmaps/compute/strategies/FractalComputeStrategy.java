@@ -1,7 +1,7 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
 
 import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 
 public abstract class FractalComputeStrategy implements IFractalComputeStrategy {
     protected int width;

@@ -39,26 +39,20 @@ import java.util.Map;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColourStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalPresenter;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalTouchHandler;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalView;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalPresenter;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalSceneDelegate;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.IPinMovementDelegate;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.MandelbrotTouchHandler;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.PinColour;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.PinOverlay;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.settings.SettingsActivity;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.settings.SettingsManager;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.JuliaCPUFractalComputeStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.MandelbrotCPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaCPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.MandelbrotCPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.PinColour;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.PinOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.settings.SettingsActivity;
+import uk.ac.ed.inf.mandelbrotmaps.settings.SettingsManager;
+import uk.ac.ed.inf.mandelbrotmaps.touch.FractalTouchHandler;
+import uk.ac.ed.inf.mandelbrotmaps.touch.MandelbrotTouchHandler;
 
 public class FractalActivity extends ActionBarActivity implements OnSharedPreferenceChangeListener, MenuClickDelegate, DetailControlDelegate, IFractalSceneDelegate, IPinMovementDelegate {
     // Shared pref keys
@@ -70,8 +64,6 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
     private final String PREVIOUS_JULIA_PARAMS = "prevJuliaParams";
     private final String PREVIOUS_SHOWING_LITTLE = "prevShowingLittle";
     private final String FIRST_TIME_KEY = "FirstTime";
-
-    public FractalTypeEnum fractalType = FractalTypeEnum.MANDELBROT;
 
     // Layout variables
     @InjectView(R.id.toolbar)
@@ -123,7 +115,9 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
 
         super.onCreate(savedInstanceState);
 
-        this.setContentView(R.layout.fractals_side_by_side);
+        Log.i("FA", "OnCreate");
+
+        this.setContentView(R.layout.fractals_two_next);
         ButterKnife.inject(this);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -140,10 +134,6 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if (prefs.getBoolean(FIRST_TIME_KEY, true)) showIntro();
 
-        mjLocation = new MandelbrotJuliaLocation();
-        double[] juliaParams = mjLocation.defaultJuliaParams;
-        double[] juliaGraphArea = mjLocation.defaultJuliaGraphArea;
-
         firstFractalView.initialise();
         secondFractalView.initialise();
 
@@ -156,27 +146,48 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
         MandelbrotTouchHandler mandelbrotTouchHandler = new MandelbrotTouchHandler(this, this.firstFractalPresenter);
         mandelbrotTouchHandler.setPinMovementDelegate(this);
         this.firstFractalPresenter.setTouchHandler(mandelbrotTouchHandler);
-        this.firstFractalPresenter.fractalStrategy.setColourStrategy(new DefaultColourStrategy());
+//        this.firstFractalPresenter.fractalStrategy.setColourStrategy(new DefaultColourStrategy());
         this.firstFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
         this.firstFractalView.setResizeListener(this.firstFractalPresenter);
 
         this.firstFractalPresenter.setView(this.firstFractalView, new Matrix(), this.firstFractalPresenter);
 
+        mjLocation = new MandelbrotJuliaLocation();
+
+        double[] juliaParams = mjLocation.defaultJuliaParams;
+        double[] juliaGraphArea = mjLocation.defaultJuliaGraphArea;
+        double[] mainGraphArea = mjLocation.defaultMandelbrotGraphArea;
+
+        if (savedInstanceState != null) {
+            Log.i("FA", "Restoring instance state");
+
+            try {
+                mainGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_MAIN_GRAPH_AREA);
+                juliaGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA);
+                juliaParams = savedInstanceState.getDoubleArray(PREVIOUS_JULIA_PARAMS);
+            } catch (Exception e) {
+                Log.i("FA", "Failed to restore instance state, using some defaults");
+            }
+        } else {
+            Log.i("FA", "Not restoring instance state as there was no bundle");
+        }
+
         juliaStrategy = new JuliaCPUFractalComputeStrategy();
         juliaStrategy.setJuliaSeed(juliaParams[0], juliaParams[1]);
         this.secondFractalPresenter = new FractalPresenter(this, this, juliaStrategy);
         this.secondFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.secondFractalPresenter));
-        this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
+//        this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
         this.secondFractalPresenter.setFractalDetail(this.getDetailFromPrefs(FractalTypeEnum.JULIA));
         this.secondFractalView.setResizeListener(this.secondFractalPresenter);
 
         this.secondFractalPresenter.setView(this.secondFractalView, new Matrix(), this.secondFractalPresenter);
 
         this.initialiseOverlays();
+        this.settings.refreshColourSettings();
 
-        mjLocation = new MandelbrotJuliaLocation(juliaGraphArea, juliaParams);
-        this.firstFractalPresenter.setGraphArea(mjLocation.defaultMandelbrotGraphArea);
-        this.secondFractalPresenter.setGraphArea(mjLocation.defaultJuliaGraphArea);
+        this.juliaStrategy.setJuliaSeed(juliaParams[0], juliaParams[1]);
+        this.firstFractalPresenter.setGraphArea(mainGraphArea);
+        this.secondFractalPresenter.setGraphArea(juliaGraphArea);
 
         this.UIRenderStates.put(this.firstFractalPresenter, false);
         this.UIRenderStates.put(this.secondFractalPresenter, false);
@@ -204,6 +215,7 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
     @Override
     protected void onPause() {
         super.onPause();
+
         if (savingDialog != null)
             savingDialog.dismiss();
     }
@@ -213,49 +225,35 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
         super.onResume();
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        prefs.registerOnSharedPreferenceChangeListener(this);
+        prefs.registerOnSharedPreferenceChangeListener(this.settings);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-//        outState.putDoubleArray(PREVIOUS_MAIN_GRAPH_AREA, fractalView.graphArea);
-//
-//        if (showingLittle) {
-//            outState.putDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA, littleFractalView.graphArea);
-//        }
-//
-//        if (fractalType == FractalTypeEnum.MANDELBROT) {
-//            outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((MandelbrotFractalView) fractalView).currentJuliaParams);
-//        } else {
-//            //outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, ((JuliaFractalView) fractalView).getJuliaParam());
-//        }
-//
-//        outState.putBoolean(PREVIOUS_SHOWING_LITTLE, showingLittle);
+        Log.i("FA", "Saving instance state");
+
+        outState.putDoubleArray(PREVIOUS_MAIN_GRAPH_AREA, this.firstFractalPresenter.getGraphArea());
+        outState.putDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA, this.secondFractalPresenter.getGraphArea());
+        outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, this.juliaStrategy.getJuliaSeed());
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
+        Log.i("FA", "Restoring instance state");
+
         double[] mainGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_MAIN_GRAPH_AREA);
-        double[] littleGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA);
+        double[] juliaGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA);
         double[] juliaParams = savedInstanceState.getDoubleArray(PREVIOUS_JULIA_PARAMS);
 
-//        MandelbrotJuliaLocation restoredLoc;
-//
-//        if (fractalType == FractalTypeEnum.MANDELBROT) {
-//            restoredLoc = new MandelbrotJuliaLocation(mainGraphArea, littleGraphArea, juliaParams);
-//            ((MandelbrotFractalView) fractalView).currentJuliaParams = juliaParams;
-//        } else {
-//            restoredLoc = new MandelbrotJuliaLocation(littleGraphArea, mainGraphArea, juliaParams);
-//        }
-//
-//        restoredLoc.setMandelbrotGraphArea(mainGraphArea);
-//        fractalView.loadLocation(restoredLoc);
-//
-//        showLittleAtStart = savedInstanceState.getBoolean(PREVIOUS_SHOWING_LITTLE);
+        this.juliaStrategy.setJuliaSeed(juliaParams[0], juliaParams[1]);
+        this.firstFractalPresenter.setGraphArea(mainGraphArea);
+        this.secondFractalPresenter.setGraphArea(juliaGraphArea);
+//        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter);
+//        this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter);
     }
 
     // Menu creation and handling
@@ -307,6 +305,20 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
     public void onPinColourChanged(PinColour colour) {
         this.pinOverlay.setPinColour(colour);
         this.firstFractalView.postUIThreadRedraw();
+    }
+
+    @Override
+    public void onMandelbrotColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender) {
+        this.firstFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
+        if (reRender)
+            this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter);
+    }
+
+    @Override
+    public void onJuliaColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender) {
+        this.secondFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
+        if (reRender)
+            this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter);
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -566,13 +578,6 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
     }
 
     @Override
-    public void onToggleSmallClicked() {
-        Log.e("FA", "No-op on toggle small clicked");
-
-        this.dismissMenuDialog();
-    }
-
-    @Override
     public void onSettingsClicked() {
         this.startActivity(new Intent(this, SettingsActivity.class));
         this.dismissMenuDialog();
@@ -584,17 +589,17 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
         this.showDetailDialog();
     }
 
-    @Override
-    public void onSaveClicked() {
-        this.saveImage();
-        this.dismissMenuDialog();
-    }
-
-    @Override
-    public void onShareClicked() {
-        this.shareImage();
-        this.dismissMenuDialog();
-    }
+//    @Override
+//    public void onSaveClicked() {
+//        this.saveImage();
+//        this.dismissMenuDialog();
+//    }
+//
+//    @Override
+//    public void onShareClicked() {
+//        this.shareImage();
+//        this.dismissMenuDialog();
+//    }
 
     @Override
     public void onHelpClicked() {

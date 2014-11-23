@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
 
 public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
     private double juliaX = 0;

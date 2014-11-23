@@ -11,7 +11,7 @@
         android:minHeight="?attr/actionBarSize"
         android:background="?attr/colorPrimary" />
 
-    <fragment android:name="uk.ac.ed.inf.mandelbrotmaps.refactor.settings.SettingsFragment"
+    <fragment android:name="uk.ac.ed.inf.mandelbrotmaps.settings.SettingsFragment"
         android:id="@+id/settings_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

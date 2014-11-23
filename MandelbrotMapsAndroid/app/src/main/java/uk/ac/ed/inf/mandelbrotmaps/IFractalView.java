@@ -1,10 +1,11 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor;
+package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.graphics.Matrix;
 
 import java.util.List;
 
-import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
 
 public interface IFractalView {
     public void postUIThreadRedraw();

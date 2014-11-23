@@ -39,23 +39,9 @@
         android:layout_row="0"
         android:layout_column="1"
         android:orientation="vertical"
-        android:id="@+id/menuButtonToggleSmall"
         style="?android:attr/buttonStyle">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/menuImageLittle"
-            android:src="@drawable/ic_action_view_as_grid"/>
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/menu_little"
-            android:id="@+id/menuLittleLabel"
-            android:gravity="center_horizontal"
-            android:paddingTop="@dimen/menu_inner_padding"/>
 
     </LinearLayout>
 
@@ -130,20 +116,20 @@
         android:id="@+id/menuButtonSave"
         style="?android:attr/buttonStyle">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/menuImageSave"
-            android:src="@drawable/ic_action_sd_storage"/>
+        <!--<ImageView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:id="@+id/menuImageSave"-->
+            <!--android:src="@drawable/ic_action_sd_storage"/>-->
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/menu_save"
-            android:id="@+id/menuLabelSave"
-            android:gravity="center_horizontal"
-            android:paddingTop="@dimen/menu_inner_padding"/>
+        <!--<TextView-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textAppearance="?android:attr/textAppearanceMedium"-->
+            <!--android:text="@string/menu_save"-->
+            <!--android:id="@+id/menuLabelSave"-->
+            <!--android:gravity="center_horizontal"-->
+            <!--android:paddingTop="@dimen/menu_inner_padding"/>-->
 
     </LinearLayout>
 
@@ -156,20 +142,20 @@
         android:id="@+id/menuButtonShare"
         style="?android:attr/buttonStyle">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/menuImageShare"
-            android:src="@drawable/ic_action_share"/>
+        <!--<ImageView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:id="@+id/menuImageShare"-->
+            <!--android:src="@drawable/ic_action_share"/>-->
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/menu_share"
-            android:id="@+id/menuLabelShare"
-            android:gravity="center_horizontal"
-            android:paddingTop="@dimen/menu_inner_padding"/>
+        <!--<TextView-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textAppearance="?android:attr/textAppearanceMedium"-->
+            <!--android:text="@string/menu_share"-->
+            <!--android:id="@+id/menuLabelShare"-->
+            <!--android:gravity="center_horizontal"-->
+            <!--android:paddingTop="@dimen/menu_inner_padding"/>-->
 
     </LinearLayout>
 

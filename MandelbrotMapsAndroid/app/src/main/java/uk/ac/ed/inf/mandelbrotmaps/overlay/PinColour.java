@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor.overlay;
+package uk.ac.ed.inf.mandelbrotmaps.overlay;
 
 public enum PinColour {
     RED,

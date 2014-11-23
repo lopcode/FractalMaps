@@ -1,6 +1,7 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor;
+package uk.ac.ed.inf.mandelbrotmaps;
 
-import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.PinColour;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.PinColour;
 
 public interface IFractalSceneDelegate {
     public void setRenderingStatus(IFractalPresenter presenter, boolean rendering);
@@ -12,4 +13,8 @@ public interface IFractalSceneDelegate {
     public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter);
 
     public void onPinColourChanged(PinColour colour);
+
+    public void onMandelbrotColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender);
+
+    public void onJuliaColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender);
 }

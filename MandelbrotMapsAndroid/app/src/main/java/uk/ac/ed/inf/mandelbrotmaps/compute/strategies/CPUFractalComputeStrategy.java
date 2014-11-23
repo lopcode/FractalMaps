@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
 
 import android.util.Log;
 
@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import uk.ac.ed.inf.mandelbrotmaps.RenderThread;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalComputeArguments;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 
 public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     private ArrayList<LinkedBlockingQueue<FractalComputeArguments>> renderQueueList = new ArrayList<LinkedBlockingQueue<FractalComputeArguments>>();
@@ -67,8 +67,11 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     /* Stop all rendering, including planned and current */
     public void stopAllRendering() {
         for (int i = 0; i < this.numberOfThreads; i++) {
-            renderQueueList.get(i).clear();
-            renderThreadList.get(i).abortRendering();
+            if (!this.renderQueueList.isEmpty())
+                this.renderQueueList.get(i).clear();
+
+            if (!this.renderThreadList.isEmpty())
+                this.renderThreadList.get(i).abortRendering();
         }
     }
 

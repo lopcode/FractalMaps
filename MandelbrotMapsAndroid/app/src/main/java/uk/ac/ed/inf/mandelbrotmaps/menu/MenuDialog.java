@@ -50,11 +50,6 @@ public class MenuDialog extends DialogFragment {
         this.delegate.onResetClicked();
     }
 
-    @OnClick(R.id.menuButtonToggleSmall)
-    public void toggleSmallButtonClicked() {
-        this.delegate.onToggleSmallClicked();
-    }
-
     @OnClick(R.id.menuButtonSettings)
     public void settingsButtonClicked() {
         this.delegate.onSettingsClicked();
@@ -65,15 +60,15 @@ public class MenuDialog extends DialogFragment {
         this.delegate.onDetailClicked();
     }
 
-    @OnClick(R.id.menuButtonSave)
-    public void saveButtonClicked() {
-        this.delegate.onSaveClicked();
-    }
-
-    @OnClick(R.id.menuButtonShare)
-    public void shareButtonClicked() {
-        this.delegate.onShareClicked();
-    }
+//    @OnClick(R.id.menuButtonSave)
+//    public void saveButtonClicked() {
+//        this.delegate.onSaveClicked();
+//    }
+//
+//    @OnClick(R.id.menuButtonShare)
+//    public void shareButtonClicked() {
+//        this.delegate.onShareClicked();
+//    }
 
     @OnClick(R.id.menuButtonHelp)
     public void helpButtonClicked() {

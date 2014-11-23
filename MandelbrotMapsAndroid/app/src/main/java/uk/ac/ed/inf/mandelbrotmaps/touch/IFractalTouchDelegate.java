@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor;
+package uk.ac.ed.inf.mandelbrotmaps.touch;
 
 public interface IFractalTouchDelegate {
     public void startDragging();

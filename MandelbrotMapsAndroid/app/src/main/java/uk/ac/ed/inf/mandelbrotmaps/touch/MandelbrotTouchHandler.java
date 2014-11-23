@@ -1,9 +1,11 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor;
+package uk.ac.ed.inf.mandelbrotmaps.touch;
 
 import android.content.Context;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
+import uk.ac.ed.inf.mandelbrotmaps.IPinMovementDelegate;
 
 public class MandelbrotTouchHandler extends FractalTouchHandler {
     private IPinMovementDelegate delegate;

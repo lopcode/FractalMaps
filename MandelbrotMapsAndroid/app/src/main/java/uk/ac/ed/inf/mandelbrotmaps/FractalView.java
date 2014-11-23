@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor;
+package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,7 +11,8 @@ import android.view.View;
 
 import java.util.List;
 
-import uk.ac.ed.inf.mandelbrotmaps.refactor.overlay.IFractalOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
 
 public class FractalView extends View implements IFractalView {
     private IViewResizeListener resizeListener;

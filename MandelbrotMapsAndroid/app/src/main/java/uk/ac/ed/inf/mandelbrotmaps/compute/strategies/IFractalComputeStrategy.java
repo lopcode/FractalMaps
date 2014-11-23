@@ -1,8 +1,8 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
 
 import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalComputeArguments;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 
 public interface IFractalComputeStrategy {
     public void initialise(int width, int height, IFractalComputeDelegate delegate);

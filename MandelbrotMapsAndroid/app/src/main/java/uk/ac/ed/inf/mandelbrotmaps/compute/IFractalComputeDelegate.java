@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor;
+package uk.ac.ed.inf.mandelbrotmaps.compute;
 
 public interface IFractalComputeDelegate {
     public void postUpdate(int[] pixels, int[] pixelSizes);

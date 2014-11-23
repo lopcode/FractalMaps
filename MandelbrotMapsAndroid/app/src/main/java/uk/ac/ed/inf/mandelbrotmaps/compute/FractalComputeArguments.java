@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor;
+package uk.ac.ed.inf.mandelbrotmaps.compute;
 
 public class FractalComputeArguments {
     public final int pixelBlockSize;

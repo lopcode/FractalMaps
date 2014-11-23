@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor.settings;
+package uk.ac.ed.inf.mandelbrotmaps.settings;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;

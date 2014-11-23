@@ -11,13 +11,13 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".refactor.settings.SettingsActivity"
+            android:name=".settings.SettingsActivity"
             android:label="@string/settings_title"/>
         <activity
             android:name=".FractalActivity"
             android:configChanges="orientation"
-            android:label="Mandelbrot Maps"
-            android:screenOrientation="landscape">
+            android:label="Mandelbrot Maps">
+            <!--android:screenOrientation="landscape">-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

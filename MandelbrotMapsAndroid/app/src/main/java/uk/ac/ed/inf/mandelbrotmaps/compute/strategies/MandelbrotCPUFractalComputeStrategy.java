@@ -1,6 +1,6 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor.strategies;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
 
-import uk.ac.ed.inf.mandelbrotmaps.refactor.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 
 public class MandelbrotCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
     // Set the "maximum iteration" calculation constants

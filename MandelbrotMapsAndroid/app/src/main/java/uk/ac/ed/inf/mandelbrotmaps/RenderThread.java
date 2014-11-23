@@ -1,7 +1,7 @@
 package uk.ac.ed.inf.mandelbrotmaps;
 
-import uk.ac.ed.inf.mandelbrotmaps.refactor.FractalComputeArguments;
-import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.CPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.CPUFractalComputeStrategy;
 
 public class RenderThread extends Thread {
     private CPUFractalComputeStrategy strategy;

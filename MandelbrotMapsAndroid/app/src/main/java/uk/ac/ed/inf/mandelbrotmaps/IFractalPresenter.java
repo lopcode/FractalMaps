@@ -1,8 +1,8 @@
-package uk.ac.ed.inf.mandelbrotmaps.refactor;
+package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.graphics.Matrix;
 
-import uk.ac.ed.inf.mandelbrotmaps.refactor.strategies.IFractalPresenterDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
 
 public interface IFractalPresenter extends IFractalPresenterDelegate {
     public int[] getPixelBuffer();
@@ -36,4 +36,6 @@ public interface IFractalPresenter extends IFractalPresenterDelegate {
     public void zoomGraphArea(int x, int y, double scale);
 
     public void setGraphArea(double[] graphArea);
+
+    public double[] getGraphArea();
 }
