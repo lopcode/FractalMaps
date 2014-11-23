@@ -392,7 +392,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.initialisePixelBuffers();
         this.fractalStrategy.initialise(this.viewWidth, this.viewHeight, this);
         this.view.createNewFractalBitmap(new int[this.viewWidth * this.viewHeight]);
-        this.sceneDelegate.scheduleRecomputeBasedOnPreferences(this);
+
+        this.sceneDelegate.onFractalViewReady(this);
     }
 
     // IFractalPresenterDelegate

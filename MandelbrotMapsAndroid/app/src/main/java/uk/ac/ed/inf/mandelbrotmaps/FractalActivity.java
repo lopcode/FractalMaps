@@ -51,17 +51,17 @@ import uk.ac.ed.inf.mandelbrotmaps.overlay.PinColour;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.PinOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.settings.SettingsActivity;
 import uk.ac.ed.inf.mandelbrotmaps.settings.SettingsManager;
+import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedGraphArea;
+import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedJuliaGraph;
 import uk.ac.ed.inf.mandelbrotmaps.touch.FractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.touch.MandelbrotTouchHandler;
 
-public class FractalActivity extends ActionBarActivity implements OnSharedPreferenceChangeListener, MenuClickDelegate, DetailControlDelegate, IFractalSceneDelegate, IPinMovementDelegate {
+public class FractalActivity extends ActionBarActivity implements MenuClickDelegate, DetailControlDelegate, IFractalSceneDelegate, IPinMovementDelegate {
     // Shared pref keys
     public static final String mandelbrotDetailKey = "MANDELBROT_DETAIL";
     public static final String juliaDetailKey = "JULIA_DETAIL";
     public static final String DETAIL_CHANGED_KEY = "DETAIL_CHANGED";
-    private final String PREVIOUS_MAIN_GRAPH_AREA = "prevMainGraphArea";
-    private final String PREVIOUS_LITTLE_GRAPH_AREA = "prevLittleGraphArea";
-    private final String PREVIOUS_JULIA_PARAMS = "prevJuliaParams";
+
     private final String PREVIOUS_SHOWING_LITTLE = "prevShowingLittle";
     private final String FIRST_TIME_KEY = "FirstTime";
 
@@ -154,22 +154,44 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
 
         mjLocation = new MandelbrotJuliaLocation();
 
-        double[] juliaParams = mjLocation.defaultJuliaParams;
-        double[] juliaGraphArea = mjLocation.defaultJuliaGraphArea;
-        double[] mainGraphArea = mjLocation.defaultMandelbrotGraphArea;
+        double[] juliaParams = mjLocation.defaultJuliaParams.clone();
+        double[] juliaGraphArea = mjLocation.defaultJuliaGraphArea.clone();
+        double[] mainGraphArea = mjLocation.defaultMandelbrotGraphArea.clone();
 
         if (savedInstanceState != null) {
             Log.i("FA", "Restoring instance state");
 
             try {
-                mainGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_MAIN_GRAPH_AREA);
-                juliaGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA);
-                juliaParams = savedInstanceState.getDoubleArray(PREVIOUS_JULIA_PARAMS);
+                mainGraphArea = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_MAIN_GRAPH_AREA);
+                juliaGraphArea = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_LITTLE_GRAPH_AREA);
+                juliaParams = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_JULIA_PARAMS);
             } catch (Exception e) {
                 Log.i("FA", "Failed to restore instance state, using some defaults");
             }
         } else {
-            Log.i("FA", "Not restoring instance state as there was no bundle");
+            Log.i("FA", "No saved instance state bundle, trying shared preferences");
+
+            SavedGraphArea savedMandelbrotGraph = this.settings.getPreviousMandelbrotGraph();
+            SavedJuliaGraph savedJuliaGraph = this.settings.getPreviousJuliaGraph();
+
+            if (savedMandelbrotGraph != null) {
+                Log.i("FA", "Restoring Mandelbrot from SharedPrefs");
+
+                mainGraphArea[0] = savedMandelbrotGraph.graphX;
+                mainGraphArea[1] = savedMandelbrotGraph.graphY;
+                mainGraphArea[2] = savedMandelbrotGraph.graphZ;
+            }
+
+            if (savedJuliaGraph != null) {
+                Log.i("FA", "Restoring Julia from SharedPrefs");
+
+                juliaGraphArea[0] = savedJuliaGraph.graphX;
+                juliaGraphArea[1] = savedJuliaGraph.graphY;
+                juliaGraphArea[2] = savedJuliaGraph.graphZ;
+
+                juliaParams[0] = savedJuliaGraph.juliaSeedX;
+                juliaParams[1] = savedJuliaGraph.juliaSeedY;
+            }
         }
 
         juliaStrategy = new JuliaCPUFractalComputeStrategy();
@@ -206,6 +228,13 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
     protected void onDestroy() {
         super.onDestroy();
 
+        double[] mandelbrotGraphArea = this.firstFractalPresenter.getGraphArea();
+        double[] juliaGraphArea = this.secondFractalPresenter.getGraphArea();
+        double[] juliaParams = this.juliaStrategy.getJuliaSeed();
+
+        this.settings.savePreviousMandelbrotGraph(new SavedGraphArea(mandelbrotGraphArea[0], mandelbrotGraphArea[1], mandelbrotGraphArea[2]));
+        this.settings.savePreviousJuliaGraph(new SavedJuliaGraph(juliaGraphArea[0], juliaGraphArea[1], juliaGraphArea[2], juliaParams[0], juliaParams[1]));
+
         this.firstFractalPresenter.fractalStrategy.tearDown();
         this.secondFractalPresenter.fractalStrategy.tearDown();
 
@@ -234,9 +263,9 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
 
         Log.i("FA", "Saving instance state");
 
-        outState.putDoubleArray(PREVIOUS_MAIN_GRAPH_AREA, this.firstFractalPresenter.getGraphArea());
-        outState.putDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA, this.secondFractalPresenter.getGraphArea());
-        outState.putDoubleArray(PREVIOUS_JULIA_PARAMS, this.juliaStrategy.getJuliaSeed());
+        outState.putDoubleArray(SettingsManager.PREVIOUS_MAIN_GRAPH_AREA, this.firstFractalPresenter.getGraphArea());
+        outState.putDoubleArray(SettingsManager.PREVIOUS_LITTLE_GRAPH_AREA, this.secondFractalPresenter.getGraphArea());
+        outState.putDoubleArray(SettingsManager.PREVIOUS_JULIA_PARAMS, this.juliaStrategy.getJuliaSeed());
     }
 
     @Override
@@ -245,9 +274,9 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
 
         Log.i("FA", "Restoring instance state");
 
-        double[] mainGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_MAIN_GRAPH_AREA);
-        double[] juliaGraphArea = savedInstanceState.getDoubleArray(PREVIOUS_LITTLE_GRAPH_AREA);
-        double[] juliaParams = savedInstanceState.getDoubleArray(PREVIOUS_JULIA_PARAMS);
+        double[] mainGraphArea = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_MAIN_GRAPH_AREA);
+        double[] juliaGraphArea = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_LITTLE_GRAPH_AREA);
+        double[] juliaParams = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_JULIA_PARAMS);
 
         this.juliaStrategy.setJuliaSeed(juliaParams[0], juliaParams[1]);
         this.firstFractalPresenter.setGraphArea(mainGraphArea);
@@ -319,6 +348,33 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
         this.secondFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
         if (reRender)
             this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter);
+    }
+
+    @Override
+    public void onFractalViewReady(IFractalPresenter presenter) {
+        Log.i("FA", "Fractal view ready");
+
+        // Move the fractal down a to the mid point of the view
+        //  Only if the graph area is the default, otherwise it got set manually
+        View view = null;
+        boolean isDefaultGraphArea = false;
+        if (presenter == this.firstFractalPresenter) {
+            view = this.firstFractalView;
+            isDefaultGraphArea = this.firstFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultMandelbrotGraphArea;
+        } else if (presenter == this.secondFractalPresenter) {
+            view = this.secondFractalView;
+            isDefaultGraphArea = this.secondFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultJuliaGraphArea;
+        }
+
+        if (isDefaultGraphArea) {
+            Log.i("FA", "Moved default graph area to midpoint of view");
+            double[] graphMidPoint = presenter.getGraphPositionFromClickedPosition(view.getWidth() / 2.0f, view.getHeight() / 2.0f);
+            double[] originalGraphPoint = presenter.getGraphArea();
+            originalGraphPoint[1] -= graphMidPoint[1];
+            presenter.setGraphArea(originalGraphPoint);
+        }
+
+        this.scheduleRecomputeBasedOnPreferences(presenter);
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -447,34 +503,6 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
         });
     }
 
-    public void onSharedPreferenceChanged(SharedPreferences prefs, String changedPref) {
-//        if (changedPref.equals("MANDELBROT_COLOURS")) {
-//            String mandelbrotScheme = prefs.getString(changedPref, "MandelbrotDefault");
-//
-//            if (fractalType == FractalTypeEnum.MANDELBROT) {
-//                this.firstFractalPresenter.setColouringScheme(mandelbrotScheme, true);
-//            } else if (showingLittle) {
-//                littleFractalView.setColouringScheme(mandelbrotScheme, true);
-//            }
-//        } else if (changedPref.equals("JULIA_COLOURS")) {
-//            String juliaScheme = prefs.getString(changedPref, "JuliaDefault");
-//
-//            if (fractalType == FractalTypeEnum.JULIA) {
-//                fractalView.setColouringScheme(juliaScheme, true);
-//            } else if (showingLittle) {
-//                littleFractalView.setColouringScheme(juliaScheme, true);
-//            }
-//        } else if (changedPref.equals("PIN_COLOUR")) {
-//            int newColour = Color.parseColor(prefs.getString(changedPref, "blue"));
-//
-//            if (fractalType == FractalTypeEnum.MANDELBROT) {
-//                ((MandelbrotFractalView) fractalView).setPinColour(newColour);
-//            } else if (showingLittle) {
-//                //((MandelbrotFractalView) littleFractalView).setPinColour(newColour);
-//            }
-//        }
-    }
-
     public double getDetailFromPrefs(FractalTypeEnum fractalTypeEnum) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String keyToUse;
@@ -568,11 +596,12 @@ public class FractalActivity extends ActionBarActivity implements OnSharedPrefer
 
     @Override
     public void onResetClicked() {
-        this.firstFractalPresenter.setGraphArea(new MandelbrotJuliaLocation().defaultMandelbrotGraphArea);
-        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter);
+        this.firstFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultMandelbrotGraphArea);
+        this.secondFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultJuliaGraphArea);
 
-        this.secondFractalPresenter.setGraphArea(new MandelbrotJuliaLocation().defaultJuliaGraphArea);
-        this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter);
+        this.juliaStrategy.setJuliaSeed(MandelbrotJuliaLocation.defaultJuliaParams[0], MandelbrotJuliaLocation.defaultJuliaParams[1]);
+        this.onFractalViewReady(this.firstFractalPresenter);
+        this.onFractalViewReady(this.secondFractalPresenter);
 
         this.dismissMenuDialog();
     }

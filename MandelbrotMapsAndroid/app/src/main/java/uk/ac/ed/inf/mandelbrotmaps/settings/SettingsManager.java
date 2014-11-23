@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import uk.ac.ed.inf.mandelbrotmaps.R;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
@@ -13,6 +15,8 @@ import uk.ac.ed.inf.mandelbrotmaps.colouring.PsychadelicColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.RGBWalkColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.PinColour;
+import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedGraphArea;
+import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedJuliaGraph;
 
 public class SettingsManager implements SharedPreferences.OnSharedPreferenceChangeListener {
     private Context context;
@@ -43,6 +47,11 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
 
     private static final String PREFERENCE_KEY_JULIA_COLOUR = "JULIA_COLOURS";
     private static final String PREFERENCE_JULIA_COLOUR_DEFAULT = "JuliaDefault";
+
+    public static final String PREVIOUS_MAIN_GRAPH_AREA = "prevMainGraphArea";
+    public static final String PREVIOUS_LITTLE_GRAPH_AREA = "prevLittleGraphArea";
+    public static final String PREVIOUS_JULIA_PARAMS = "prevJuliaParams";
+    public final String PREVIOUS_JULIA_GRAPH = "prevJuliaGraph";
 
     private SharedPreferences getDefaultSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(this.context.getApplicationContext());
@@ -85,6 +94,36 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
 
         return null;
     }
+
+    public SavedGraphArea getPreviousMandelbrotGraph() {
+        String storedArea = this.getDefaultSharedPreferences().getString(PREVIOUS_MAIN_GRAPH_AREA, "");
+        if (storedArea.isEmpty())
+            return null;
+        else
+            return new Gson().fromJson(storedArea, SavedGraphArea.class);
+    }
+
+    public void savePreviousMandelbrotGraph(SavedGraphArea graphArea) {
+        SharedPreferences.Editor editor = this.getDefaultSharedPreferences().edit();
+        editor.putString(PREVIOUS_MAIN_GRAPH_AREA, new Gson().toJson(graphArea));
+        editor.commit();
+    }
+
+    public SavedJuliaGraph getPreviousJuliaGraph() {
+        String storedArea = this.getDefaultSharedPreferences().getString(PREVIOUS_JULIA_GRAPH, "");
+        if (storedArea.isEmpty())
+            return null;
+        else
+            return new Gson().fromJson(storedArea, SavedJuliaGraph.class);
+    }
+
+    public void savePreviousJuliaGraph(SavedJuliaGraph juliaGraph) {
+        SharedPreferences.Editor editor = this.getDefaultSharedPreferences().edit();
+        String gsonString = new Gson().toJson(juliaGraph);
+        editor.putString(PREVIOUS_JULIA_GRAPH, gsonString);
+        editor.commit();
+    }
+
 
     // OnSharedPreferenceChangeListener
 

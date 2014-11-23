@@ -17,4 +17,6 @@ public interface IFractalSceneDelegate {
     public void onMandelbrotColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender);
 
     public void onJuliaColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender);
+
+    public void onFractalViewReady(IFractalPresenter presenter);
 }
