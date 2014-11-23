@@ -55,6 +55,9 @@ public class MenuDialog extends DialogFragment {
         this.delegate.onToggleSmallClicked();
     }
 
+    @OnClick(R.id.menuButtonTanLei)
+    public void theoremButtonClicked () { this.delegate.onTheoremClicked(); }
+
     @OnClick(R.id.menuButtonSettings)
     public void settingsButtonClicked() {
         this.delegate.onSettingsClicked();

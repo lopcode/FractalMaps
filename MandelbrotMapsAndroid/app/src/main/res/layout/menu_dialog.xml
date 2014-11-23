@@ -117,12 +117,25 @@
         android:layout_row="0"
         android:layout_column="2"
         android:orientation="vertical"
-        style="?android:attr/buttonStyle">
+        android:id="@+id/menuButtonTanLei"
+        style="?android:attr/buttonStyle"
+        android:weightSum="1">
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/imageView" />
+            android:id="@+id/imageView"
+            android:src="@drawable/ic_action_search"
+            android:layout_gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/menu_tanlei"
+            android:id="@+id/menuLabelTanLei"
+            android:gravity="center_horizontal"
+            android:paddingTop="@dimen/menu_inner_padding"/>
     </LinearLayout>
 
     <LinearLayout

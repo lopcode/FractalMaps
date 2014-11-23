@@ -982,6 +982,13 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     }
 
     @Override
+    public void onTheoremClicked() {
+        tanLeiEnabled = !tanLeiEnabled;
+
+        this.dismissMenuDialog();
+    }
+
+    @Override
     public void onSettingsClicked() {
         this.startActivity(new Intent(this, SettingsActivity.class));
         this.dismissMenuDialog();

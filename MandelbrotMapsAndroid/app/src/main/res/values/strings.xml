@@ -91,4 +91,5 @@
     <string name="menu_save">Save</string>
     <string name="menu_share">Share</string>
     <string name="menu_help">Help</string>
+    <string name="menu_tanlei">Theorem</string>
 </resources>
