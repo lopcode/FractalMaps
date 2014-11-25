@@ -13,7 +13,7 @@ public abstract class FractalComputeStrategy implements IFractalComputeStrategy 
     //protected double[] homeGraphArea;
 
     // Render calculating variables
-    double xMin, yMax, pixelSize;
+    protected double xMin, yMax, pixelSize;
 
     @Override
     public void initialise(int width, int height, IFractalComputeDelegate delegate) {
@@ -25,8 +25,4 @@ public abstract class FractalComputeStrategy implements IFractalComputeStrategy 
     public void setColourStrategy(IColourStrategy colourStrategy) {
         this.colourStrategy = colourStrategy;
     }
-
-    // Abstract methods
-
-    abstract int pixelInSet(int xPixel, int yPixel, int maxIterations);
 }

@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu;
 
 import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 
@@ -16,12 +16,10 @@ public class MandelbrotCPUFractalComputeStrategy extends CPUFractalComputeStrate
     @Override
     public void initialise(int width, int height, IFractalComputeDelegate delegate) {
         super.initialise(width, height, delegate);
-
-//        Set home area
-//        homeGraphArea = new MandelbrotJuliaLocation().getMandelbrotGraphArea();
     }
 
-    int pixelInSet(int xPixel, int yPixel, int maxIterations) {
+    @Override
+    protected int pixelInSet(int xPixel, int yPixel, int maxIterations) {
         boolean inside = true;
         int iterationNr;
         double newx, newy;

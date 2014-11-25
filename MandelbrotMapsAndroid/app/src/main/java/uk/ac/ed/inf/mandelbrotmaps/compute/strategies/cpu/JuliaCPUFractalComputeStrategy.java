@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu;
 
 public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
     private double juliaX = 0;
@@ -6,10 +6,12 @@ public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
 
     // Set the "maximum iteration" calculation constants
     // Empirically determined values for Julia sets.
+    @Override
     public double getIterationBase() {
         return 1.58D;
     }
 
+    @Override
     public double getIterationConstantFactor() {
         return 6.46D;
     }
@@ -24,7 +26,7 @@ public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
     }
 
     @Override
-    int pixelInSet(int xPixel, int yPixel, int maxIterations) {
+    protected int pixelInSet(int xPixel, int yPixel, int maxIterations) {
         boolean inside = true;
         int iterationNr;
         double newx, newy;

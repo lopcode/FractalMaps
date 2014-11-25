@@ -17,8 +17,8 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import uk.ac.ed.inf.mandelbrotmaps.FractalActivity;
-import uk.ac.ed.inf.mandelbrotmaps.R;
 import uk.ac.ed.inf.mandelbrotmaps.FractalPresenter;
+import uk.ac.ed.inf.mandelbrotmaps.R;
 
 public class DetailControlDialog extends DialogFragment implements SeekBar.OnSeekBarChangeListener {
     private DetailControlDelegate delegate;

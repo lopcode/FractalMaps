@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu;
 
 import android.util.Log;
 
@@ -6,8 +6,9 @@ import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import uk.ac.ed.inf.mandelbrotmaps.RenderThread;
-import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
+import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.FractalComputeStrategy;
 
 public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     private ArrayList<LinkedBlockingQueue<FractalComputeArguments>> renderQueueList = new ArrayList<LinkedBlockingQueue<FractalComputeArguments>>();
@@ -65,6 +66,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     }
 
     /* Stop all rendering, including planned and current */
+    @Override
     public void stopAllRendering() {
         for (int i = 0; i < this.numberOfThreads; i++) {
             if (!this.renderQueueList.isEmpty())
@@ -195,4 +197,8 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
             this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize);
         }
     }
+
+    // Abstract methods
+
+    protected abstract int pixelInSet(int xPixel, int yPixel, int maxIterations);
 }

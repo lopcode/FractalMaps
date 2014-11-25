@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Matrix;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -40,12 +39,12 @@ import java.util.Map;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.JuliaCPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.MandelbrotCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaCPUFractalComputeStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.MandelbrotCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.PinColour;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.PinOverlay;
@@ -81,6 +80,8 @@ public class FractalActivity extends ActionBarActivity implements MenuClickDeleg
     FractalPresenter firstFractalPresenter;
     FractalPresenter secondFractalPresenter;
 
+    //GPUFractalComputeStrategy mandelbrotStrategy;
+    MandelbrotCPUFractalComputeStrategy mandelbrotStrategy;
     JuliaCPUFractalComputeStrategy juliaStrategy;
 
     // Fractal locations
@@ -142,7 +143,10 @@ public class FractalActivity extends ActionBarActivity implements MenuClickDeleg
         getSupportActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 
-        this.firstFractalPresenter = new FractalPresenter(this, this, new MandelbrotCPUFractalComputeStrategy());
+        //this.mandelbrotStrategy = new GPUFractalComputeStrategy();
+        //this.mandelbrotStrategy.setContext(this);
+        this.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
+        this.firstFractalPresenter = new FractalPresenter(this, this, mandelbrotStrategy);
         MandelbrotTouchHandler mandelbrotTouchHandler = new MandelbrotTouchHandler(this, this.firstFractalPresenter);
         mandelbrotTouchHandler.setPinMovementDelegate(this);
         this.firstFractalPresenter.setTouchHandler(mandelbrotTouchHandler);
