@@ -90,6 +90,8 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
 
     private HashMap<IFractalPresenter, Boolean> UIRenderStates = new HashMap<IFractalPresenter, Boolean>();
 
+    private SceneLayoutEnum layoutType;
+
     // Overlays
     private List<IFractalOverlay> sceneOverlays;
     private PinOverlay pinOverlay;
@@ -109,18 +111,18 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
 
         Log.i("FA", "OnCreate");
 
-        this.setContentView(R.layout.fractals_two_next);
-        ButterKnife.inject(this);
+        this.settings = new SettingsManager(this);
+        this.settings.setFractalSceneDelegate(this);
+
+        PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext()).registerOnSharedPreferenceChangeListener(this.settings);
+
+        this.layoutType = this.settings.getLayoutType();
+        this.setContentViewFromLayoutType(this.layoutType);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-
-        this.settings = new SettingsManager(this);
-        this.settings.setFractalSceneDelegate(this);
-
-        PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext()).registerOnSharedPreferenceChangeListener(this.settings);
 
         if (this.settings.isFirstTimeUse()) {
             showIntro();
@@ -129,10 +131,7 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
         this.firstFractalView.initialise();
         this.secondFractalView.initialise();
 
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
+        this.initialiseToolbar();
 
         this.initialiseMandelbrotPresenter();
         this.initialiseJuliaPresenter();
@@ -182,6 +181,32 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
 
         this.initialiseFractalParameters(mainGraphArea, juliaGraphArea, juliaParams);
         this.initialiseRenderStates();
+    }
+
+    public void setContentViewFromLayoutType(SceneLayoutEnum layoutType) {
+        switch (layoutType) {
+            case SIDE_BY_SIDE:
+                this.setContentView(R.layout.fractals_two_next);
+                break;
+
+            case LARGE_SMALL:
+                this.setContentView(R.layout.fractals_large_small);
+                break;
+
+            default:
+                this.setContentView(R.layout.fractals_two_next);
+                break;
+        }
+
+        this.layoutType = layoutType;
+        ButterKnife.inject(this);
+    }
+
+    public void initialiseToolbar() {
+        setSupportActionBar(this.toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
     }
 
     public void initialiseMandelbrotPresenter() {
@@ -318,6 +343,10 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
                 this.showMenuDialog();
                 return true;
 
+            case R.id.switchLayout:
+                this.onSwitchLayoutClicked();
+                return true;
+
             default:
                 return false;
         }
@@ -378,6 +407,18 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
         }
 
         this.scheduleRecomputeBasedOnPreferences(presenter);
+    }
+
+    @Override
+    public void onSceneLayoutChanged(SceneLayoutEnum layoutType) {
+        Log.i("FA", "Setting scene layout to " + layoutType.name());
+        this.setContentViewFromLayoutType(layoutType);
+        this.initialiseToolbar();
+
+        this.firstFractalPresenter.setView(this.firstFractalView, new Matrix(), this.firstFractalPresenter);
+        this.secondFractalPresenter.setView(this.secondFractalView, new Matrix(), this.secondFractalPresenter);
+
+        this.firstFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -625,6 +666,17 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
         this.dismissMenuDialog();
     }
 
+    @Override
+    public void onSwitchLayoutClicked() {
+        if (this.layoutType == SceneLayoutEnum.LARGE_SMALL) {
+            this.settings.setLayoutType(SceneLayoutEnum.SIDE_BY_SIDE);
+        } else {
+            this.settings.setLayoutType(SceneLayoutEnum.LARGE_SMALL);
+        }
+
+        this.dismissMenuDialog();
+    }
+
     // Detail control delegate
 
     @Override
@@ -693,7 +745,7 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
     }
 
     @Override
-    public void onFractalRecomputed(IFractalPresenter presenter) {
+    public void onFractalRecomputeScheduled(IFractalPresenter presenter) {
         if (presenter != this.firstFractalPresenter)
             return;
 
@@ -701,6 +753,14 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
         double[] newPinPoint = this.firstFractalPresenter.getPointFromGraphPosition(juliaSeed[0], juliaSeed[1]);
 
         this.pinOverlay.setPosition((float) newPinPoint[0], (float) newPinPoint[1]);
+    }
+
+    @Override
+    public void onFractalRecomputed(IFractalPresenter presenter, double timeInSeconds) {
+        Log.i("FP", presenter.getClass().getCanonicalName() + " took " + timeInSeconds + " seconds to finish render");
+
+        String toastText = "Recompute took " + timeInSeconds + " seconds";
+        //this.showToastOnUIThread(toastText, toastText.length());
     }
 
     // IPinMovementDelegate

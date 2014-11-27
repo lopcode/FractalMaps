@@ -74,4 +74,9 @@ public class MenuDialog extends DialogFragment {
     public void helpButtonClicked() {
         this.delegate.onHelpClicked();
     }
+
+    @OnClick(R.id.menuButtonSwitchLayout)
+    public void switchLayoutButtonClicked() {
+        this.delegate.onSwitchLayoutClicked();
+    }
 }

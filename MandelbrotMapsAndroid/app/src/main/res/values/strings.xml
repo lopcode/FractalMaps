@@ -83,6 +83,7 @@
     <string name="menu_save">Save</string>
     <string name="menu_share">Share</string>
     <string name="menu_help">Help</string>
+    <string name="menu_switch_layout">Switch Layout</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

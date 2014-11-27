@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import uk.ac.ed.inf.mandelbrotmaps.FractalTypeEnum;
 import uk.ac.ed.inf.mandelbrotmaps.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.R;
+import uk.ac.ed.inf.mandelbrotmaps.SceneLayoutEnum;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
@@ -60,6 +61,9 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
     public static final String DETAIL_CHANGED_KEY = "DETAIL_CHANGED";
 
     public static final String PREFERENCE_KEY_FIRST_TIME = "FirstTime";
+
+    public static final String PREFERENCE_KEY_LAYOUT_TYPE = "LAYOUT_TYPE";
+    public SceneLayoutEnum defaultLayoutType = SceneLayoutEnum.SIDE_BY_SIDE;
 
     private SharedPreferences getDefaultSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(this.context.getApplicationContext());
@@ -151,6 +155,23 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
         SharedPreferences.Editor editor = this.getDefaultSharedPreferences().edit();
         editor.putBoolean(PREFERENCE_KEY_FIRST_TIME, isFirstTimeUse);
         editor.commit();
+    }
+
+    public SceneLayoutEnum getLayoutType() {
+        String sLayoutType = this.getDefaultSharedPreferences().getString(PREFERENCE_KEY_LAYOUT_TYPE, "");
+        if (sLayoutType.isEmpty()) {
+            return this.defaultLayoutType;
+        }
+
+        return SceneLayoutEnum.valueOf(sLayoutType);
+    }
+
+    public void setLayoutType(SceneLayoutEnum layoutType) {
+        SharedPreferences.Editor editor = this.getDefaultSharedPreferences().edit();
+        editor.putString(PREFERENCE_KEY_LAYOUT_TYPE, layoutType.name());
+        editor.commit();
+
+        this.sceneDelegate.onSceneLayoutChanged(layoutType);
     }
 
     // OnSharedPreferenceChangeListener

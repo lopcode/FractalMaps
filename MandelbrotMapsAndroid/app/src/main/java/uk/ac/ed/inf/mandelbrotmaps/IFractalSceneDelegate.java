@@ -9,7 +9,9 @@ public interface IFractalSceneDelegate {
 
     public void onFractalLongClick(IFractalPresenter presenter, float x, float y);
 
-    public void onFractalRecomputed(IFractalPresenter presenter);
+    public void onFractalRecomputeScheduled(IFractalPresenter presenter);
+
+    public void onFractalRecomputed(IFractalPresenter presenter, double timeInSeconds);
 
     public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter);
 
@@ -20,4 +22,6 @@ public interface IFractalSceneDelegate {
     public void onJuliaColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender);
 
     public void onFractalViewReady(IFractalPresenter presenter);
+
+    public void onSceneLayoutChanged(SceneLayoutEnum layoutType);
 }

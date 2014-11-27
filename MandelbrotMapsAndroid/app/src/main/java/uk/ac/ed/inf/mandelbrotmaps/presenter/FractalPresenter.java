@@ -85,7 +85,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void setView(IFractalView view, Matrix matrix, IViewResizeListener listener) {
         this.view = view;
-        this.view.setFractalTransformMatrix(new Matrix());
+        this.view.setFractalTransformMatrix(matrix);
         this.view.setResizeListener(this);
         this.view.setTouchHandler(this.touchHandler);
         this.view.setPresenterOverlays(this.fractalPresenterOverlays);
@@ -149,7 +149,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
                 this.pixelBuffer,
                 this.pixelBufferSizes));
 
-        this.sceneDelegate.onFractalRecomputed(this);
+        this.sceneDelegate.onFractalRecomputeScheduled(this);
     }
 
     @Override
@@ -249,9 +249,10 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void notifyRecomputeComplete(int pixelBlockSize) {
         long timeDifference = System.currentTimeMillis() - this.lastComputeStart;
-        Log.i("FP", "Took " + timeDifference / 1000.0D + " seconds to finish render");
+        double timeInSeconds = timeDifference / 1000.0D;
 
         this.sceneDelegate.setRenderingStatus(this, false);
+        this.sceneDelegate.onFractalRecomputed(this, timeInSeconds);
     }
 
     public double[] getGraphPositionFromClickedPosition(float touchX, float touchY) {

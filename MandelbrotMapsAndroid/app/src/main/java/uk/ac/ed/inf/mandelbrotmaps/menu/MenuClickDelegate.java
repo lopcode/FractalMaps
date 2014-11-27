@@ -12,4 +12,6 @@ public interface MenuClickDelegate {
 //    public void onShareClicked();
 
     public void onHelpClicked();
+
+    public void onSwitchLayoutClicked();
 }
