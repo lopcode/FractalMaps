@@ -139,7 +139,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         this.fractalStrategy.computeFractal(new FractalComputeArguments(pixelBlockSize,
                 this.getMaxIterations(),
-                this.viewHeight / 24,
+                this.viewHeight / 12,
                 DEFAULT_PIXEL_SIZE,
                 this.viewWidth,
                 this.viewHeight,
@@ -294,6 +294,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.postUpdate(pixels, pixelSizes);
 
         this.notifyRecomputeComplete(pixelBlockSize);
+    }
+
+    @Override
+    public void onComputeStarted() {
+        this.sceneDelegate.setRenderingStatus(this, true);
     }
 
     // IFractalTouchDelegate
