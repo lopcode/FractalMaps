@@ -39,6 +39,9 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     private long lastComputeStart;
 
+    private final int ZOOM_SLIDER_SCALING = 300;
+    private double MINZOOM_LN_PIXEL = -3;
+
     // Touch
     boolean hasZoomed;
 
@@ -222,6 +225,30 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         return (graphArea[2] / (double) this.viewWidth);
     }
 
+    public int getZoomLevel() {
+        double pixelSize = getPixelSize();
+
+        // If the pixel size = 0, something's wrong (happens at Julia launch).
+        if (pixelSize == 0.0d)
+            return 1;
+
+        double lnPixelSize = Math.log(pixelSize);
+        double zoomLevel = (double)ZOOM_SLIDER_SCALING * (lnPixelSize-MINZOOM_LN_PIXEL) / (this.fractalStrategy.getMaxZoomLevel()-MINZOOM_LN_PIXEL);
+        return (int)zoomLevel;
+    }
+
+    /* Checks if this zoom level if sane (within the chosen limits) */
+    boolean saneZoomLevel() {
+        int zoomLevel = getZoomLevel();
+
+        if ((zoomLevel >= 1) &&	(zoomLevel <= ZOOM_SLIDER_SCALING)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     public void initialisePixelBuffers() {
         this.pixelBuffer = new int[this.viewWidth * this.viewHeight];
         this.pixelBufferSizes = new int[this.viewWidth * this.viewHeight];
@@ -377,6 +404,10 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void scaleFractal(float scaleFactor, float midX, float midY) {
+        if (!this.saneZoomLevel()) {
+            Log.w("FP", "Zoom level not sane!");
+        }
+
         this.zoomGraphArea((int) midX, (int) midY, 1 / scaleFactor);
 
         this.transformMatrix.postScale(scaleFactor, scaleFactor, midX, midY);

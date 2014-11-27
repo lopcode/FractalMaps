@@ -181,6 +181,9 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
     }
 
     @Override
+    public double getMaxZoomLevel() { return -31; }
+
+    @Override
     public void stopAllRendering() {
 
         if (!this.renderQueueList.isEmpty())

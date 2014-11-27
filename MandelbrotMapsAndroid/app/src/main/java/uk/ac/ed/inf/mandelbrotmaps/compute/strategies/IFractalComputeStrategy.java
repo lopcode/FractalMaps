@@ -19,5 +19,7 @@ public interface IFractalComputeStrategy {
 
     public double getIterationConstantFactor();
 
+    public double getMaxZoomLevel();
+
     public void stopAllRendering();
 }

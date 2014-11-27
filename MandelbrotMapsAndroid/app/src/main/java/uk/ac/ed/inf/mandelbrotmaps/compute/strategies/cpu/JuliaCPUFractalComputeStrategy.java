@@ -16,6 +16,10 @@ public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
         return 6.46D;
     }
 
+    public double getMaxZoomLevel() {
+        return -20;
+    }
+
     public double[] getJuliaSeed() {
         return new double[]{this.juliaX, this.juliaY};
     }

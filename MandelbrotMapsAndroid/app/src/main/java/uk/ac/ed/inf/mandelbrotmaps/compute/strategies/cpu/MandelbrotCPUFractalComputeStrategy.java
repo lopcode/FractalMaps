@@ -13,6 +13,10 @@ public class MandelbrotCPUFractalComputeStrategy extends CPUFractalComputeStrate
         return 54.0D;
     }
 
+    public double getMaxZoomLevel() {
+        return -31;
+    }
+
     @Override
     public void initialise(int width, int height, IFractalComputeDelegate delegate) {
         super.initialise(width, height, delegate);
