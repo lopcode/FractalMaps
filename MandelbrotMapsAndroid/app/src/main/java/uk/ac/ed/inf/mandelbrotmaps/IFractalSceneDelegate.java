@@ -3,6 +3,7 @@ package uk.ac.ed.inf.mandelbrotmaps;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinColour;
 import uk.ac.ed.inf.mandelbrotmaps.presenter.IFractalPresenter;
+import uk.ac.ed.inf.mandelbrotmaps.settings.SceneLayoutEnum;
 
 public interface IFractalSceneDelegate {
     public void setRenderingStatus(IFractalPresenter presenter, boolean rendering);

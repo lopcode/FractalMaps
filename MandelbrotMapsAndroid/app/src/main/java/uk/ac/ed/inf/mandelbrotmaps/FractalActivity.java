@@ -51,6 +51,8 @@ import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinColour;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.presenter.FractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.presenter.IFractalPresenter;
+import uk.ac.ed.inf.mandelbrotmaps.settings.FractalTypeEnum;
+import uk.ac.ed.inf.mandelbrotmaps.settings.SceneLayoutEnum;
 import uk.ac.ed.inf.mandelbrotmaps.settings.SettingsActivity;
 import uk.ac.ed.inf.mandelbrotmaps.settings.SettingsManager;
 import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedGraphArea;

@@ -7,10 +7,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
-import uk.ac.ed.inf.mandelbrotmaps.FractalTypeEnum;
 import uk.ac.ed.inf.mandelbrotmaps.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.R;
-import uk.ac.ed.inf.mandelbrotmaps.SceneLayoutEnum;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
