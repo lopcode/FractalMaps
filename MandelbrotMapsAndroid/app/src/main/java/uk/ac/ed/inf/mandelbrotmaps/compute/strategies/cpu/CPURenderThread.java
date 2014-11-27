@@ -1,16 +1,15 @@
-package uk.ac.ed.inf.mandelbrotmaps;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu;
 
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.CPUFractalComputeStrategy;
 
-public class RenderThread extends Thread {
+public class CPURenderThread extends Thread {
     private CPUFractalComputeStrategy strategy;
 
     private volatile boolean abortThisRendering = false;
     public boolean isRunning = false;
     private int threadID = -1;
 
-    public RenderThread(CPUFractalComputeStrategy strategy, int threadID) {
+    public CPURenderThread(CPUFractalComputeStrategy strategy, int threadID) {
         this.strategy = strategy;
         this.threadID = threadID;
         //setPriority(Thread.MAX_PRIORITY);

@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps;
+package uk.ac.ed.inf.mandelbrotmaps.overlay.pin;
 
 public interface IPinMovementDelegate {
     public void pinDragged(float x, float y, boolean forceUpdate);

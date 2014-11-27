@@ -5,14 +5,13 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import uk.ac.ed.inf.mandelbrotmaps.RenderThread;
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.FractalComputeStrategy;
 
 public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     private ArrayList<LinkedBlockingQueue<FractalComputeArguments>> renderQueueList = new ArrayList<LinkedBlockingQueue<FractalComputeArguments>>();
-    private ArrayList<RenderThread> renderThreadList;
+    private ArrayList<CPURenderThread> renderThreadList;
     private ArrayList<Boolean> rendersComplete;
 
     private int numberOfThreads = 1;
@@ -36,7 +35,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
             this.interruptThreads();
         }
 
-        this.renderThreadList = new ArrayList<RenderThread>();
+        this.renderThreadList = new ArrayList<CPURenderThread>();
         this.rendersComplete = new ArrayList<Boolean>();
 
         // Create the render threads
@@ -47,13 +46,13 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
         for (int i = 0; i < this.numberOfThreads; i++) {
             this.rendersComplete.add(false);
             this.renderQueueList.add(new LinkedBlockingQueue<FractalComputeArguments>());
-            this.renderThreadList.add(new RenderThread(this, i));
+            this.renderThreadList.add(new CPURenderThread(this, i));
             this.renderThreadList.get(i).start();
         }
     }
 
     public void interruptThreads() {
-        for (RenderThread thread : renderThreadList) {
+        for (CPURenderThread thread : renderThreadList) {
             thread.interrupt();
         }
     }
@@ -97,7 +96,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     }
 
     public void computeFractalWithThreadID(FractalComputeArguments arguments, int threadID) {
-        RenderThread callingThread = this.renderThreadList.get(threadID);
+        CPURenderThread callingThread = this.renderThreadList.get(threadID);
 
         int yStart = (arguments.viewHeight / 2) + (threadID * arguments.pixelBlockSize);
         int yEnd = arguments.viewHeight - (this.numberOfThreads - (threadID + 1));
@@ -114,12 +113,9 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
         int colourCodeHex;
         int pixelBlockA, pixelBlockB;
 
-        // TODO: See if threading breaks this
         this.xMin = arguments.xMin;
         this.yMax = arguments.yMax;
         this.pixelSize = arguments.pixelSize;
-
-        double x0 = 0, y0 = 0;
 
         int pixelIncrement = arguments.pixelBlockSize * this.numberOfThreads;
         int originalIncrement = pixelIncrement;

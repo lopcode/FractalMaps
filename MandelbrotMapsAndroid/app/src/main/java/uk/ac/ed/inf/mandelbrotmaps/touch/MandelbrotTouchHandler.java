@@ -5,7 +5,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import uk.ac.ed.inf.mandelbrotmaps.IPinMovementDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.IPinMovementDelegate;
 
 public class MandelbrotTouchHandler extends FractalTouchHandler {
     private IPinMovementDelegate delegate;

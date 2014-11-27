@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps;
+package uk.ac.ed.inf.mandelbrotmaps.presenter;
 
 import java.util.List;
 

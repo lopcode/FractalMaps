@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+import uk.ac.ed.inf.mandelbrotmaps.FractalTypeEnum;
 import uk.ac.ed.inf.mandelbrotmaps.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.R;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColourStrategy;
@@ -14,11 +15,12 @@ import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.PsychadelicColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.RGBWalkColourStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.overlay.PinColour;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinColour;
 import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedGraphArea;
 import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedJuliaGraph;
 
 public class SettingsManager implements SharedPreferences.OnSharedPreferenceChangeListener {
+    public static final double DEFAULT_DETAIL_LEVEL = 15;
     private Context context;
     private IFractalSceneDelegate sceneDelegate;
 
@@ -52,6 +54,12 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
     public static final String PREVIOUS_LITTLE_GRAPH_AREA = "prevLittleGraphArea";
     public static final String PREVIOUS_JULIA_PARAMS = "prevJuliaParams";
     public final String PREVIOUS_JULIA_GRAPH = "prevJuliaGraph";
+
+    public static final String PREFERENCE_KEY_MANDELBROT_DETAIL = "MANDELBROT_DETAIL";
+    public static final String PREFERENCE_KEY_JULIA_DETAIL = "JULIA_DETAIL";
+    public static final String DETAIL_CHANGED_KEY = "DETAIL_CHANGED";
+
+    public static final String PREFERENCE_KEY_FIRST_TIME = "FirstTime";
 
     private SharedPreferences getDefaultSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(this.context.getApplicationContext());
@@ -124,6 +132,26 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
         editor.commit();
     }
 
+    public double getDetailFromPrefs(FractalTypeEnum fractalTypeEnum) {
+        String keyToUse;
+        if (fractalTypeEnum == FractalTypeEnum.JULIA) {
+            keyToUse = PREFERENCE_KEY_JULIA_DETAIL;
+        } else {
+            keyToUse = PREFERENCE_KEY_MANDELBROT_DETAIL;
+        }
+
+        return (double) this.getDefaultSharedPreferences().getFloat(keyToUse, (float) DEFAULT_DETAIL_LEVEL);
+    }
+
+    public boolean isFirstTimeUse() {
+        return this.getDefaultSharedPreferences().getBoolean(PREFERENCE_KEY_FIRST_TIME, true);
+    }
+
+    public void setFirstTimeUse(boolean isFirstTimeUse) {
+        SharedPreferences.Editor editor = this.getDefaultSharedPreferences().edit();
+        editor.putBoolean(PREFERENCE_KEY_FIRST_TIME, isFirstTimeUse);
+        editor.commit();
+    }
 
     // OnSharedPreferenceChangeListener
 

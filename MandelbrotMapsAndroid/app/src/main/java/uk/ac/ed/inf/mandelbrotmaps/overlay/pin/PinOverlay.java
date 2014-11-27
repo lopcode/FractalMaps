@@ -1,10 +1,11 @@
-package uk.ac.ed.inf.mandelbrotmaps.overlay;
+package uk.ac.ed.inf.mandelbrotmaps.overlay.pin;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import uk.ac.ed.inf.mandelbrotmaps.R;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
 
 public class PinOverlay implements IFractalOverlay {
     private Context context;

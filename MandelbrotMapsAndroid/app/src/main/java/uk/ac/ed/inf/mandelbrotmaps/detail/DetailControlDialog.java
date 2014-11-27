@@ -16,9 +16,8 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-import uk.ac.ed.inf.mandelbrotmaps.FractalActivity;
-import uk.ac.ed.inf.mandelbrotmaps.FractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.R;
+import uk.ac.ed.inf.mandelbrotmaps.settings.SettingsManager;
 
 public class DetailControlDialog extends DialogFragment implements SeekBar.OnSeekBarChangeListener {
     private DetailControlDelegate delegate;
@@ -72,10 +71,10 @@ public class DetailControlDialog extends DialogFragment implements SeekBar.OnSee
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         mandelbrotBar.setOnSeekBarChangeListener(this);
-        mandelbrotBar.setProgress((int) prefs.getFloat(FractalActivity.mandelbrotDetailKey, (float) FractalPresenter.DEFAULT_DETAIL_LEVEL));
+        mandelbrotBar.setProgress((int) prefs.getFloat(SettingsManager.PREFERENCE_KEY_MANDELBROT_DETAIL, (float) SettingsManager.DEFAULT_DETAIL_LEVEL));
 
         juliaBar.setOnSeekBarChangeListener(this);
-        juliaBar.setProgress((int) prefs.getFloat(FractalActivity.juliaDetailKey, (float) FractalPresenter.DEFAULT_DETAIL_LEVEL));
+        juliaBar.setProgress((int) prefs.getFloat(SettingsManager.PREFERENCE_KEY_JULIA_DETAIL, (float) SettingsManager.DEFAULT_DETAIL_LEVEL));
 
         return view;
     }
@@ -87,16 +86,16 @@ public class DetailControlDialog extends DialogFragment implements SeekBar.OnSee
 
     @OnClick(R.id.default_detail_button)
     public void onDefaultDetailButtonClicked() {
-        juliaBar.setProgress((int) FractalPresenter.DEFAULT_DETAIL_LEVEL);
-        mandelbrotBar.setProgress((int) FractalPresenter.DEFAULT_DETAIL_LEVEL);
+        juliaBar.setProgress((int) SettingsManager.DEFAULT_DETAIL_LEVEL);
+        mandelbrotBar.setProgress((int) SettingsManager.DEFAULT_DETAIL_LEVEL);
     }
 
     @OnClick(R.id.detail_apply_button)
     public void onDetailApplyButtonClicked() {
         //Set shared prefs and return value (to indicate if shared prefs have changed)
         SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-        prefsEditor.putFloat(FractalActivity.mandelbrotDetailKey, (float) mandelbrotBar.getProgress());
-        prefsEditor.putFloat(FractalActivity.juliaDetailKey, (float) juliaBar.getProgress());
+        prefsEditor.putFloat(SettingsManager.PREFERENCE_KEY_MANDELBROT_DETAIL, (float) mandelbrotBar.getProgress());
+        prefsEditor.putFloat(SettingsManager.PREFERENCE_KEY_JULIA_DETAIL, (float) juliaBar.getProgress());
 
         prefsEditor.commit();
         this.delegate.onApplyChangesClicked();

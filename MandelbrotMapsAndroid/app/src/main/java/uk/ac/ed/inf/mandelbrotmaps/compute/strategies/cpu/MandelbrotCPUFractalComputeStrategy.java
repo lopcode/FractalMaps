@@ -27,7 +27,7 @@ public class MandelbrotCPUFractalComputeStrategy extends CPUFractalComputeStrate
 
         // Set x0 (real part of c)
         double x0 = xMin + ((double) xPixel * pixelSize);
-        double y0 = yMax - ((double) yPixel * pixelSize); //TODO This shouldn't be calculated every time
+        double y0 = yMax - ((double) yPixel * pixelSize);
 
         // Start at x0, y0
         x = x0;

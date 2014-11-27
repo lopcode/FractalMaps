@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps;
+package uk.ac.ed.inf.mandelbrotmaps.presenter;
 
 import android.content.Context;
 import android.graphics.Matrix;
@@ -8,12 +8,15 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.ed.inf.mandelbrotmaps.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
+import uk.ac.ed.inf.mandelbrotmaps.view.IFractalView;
+import uk.ac.ed.inf.mandelbrotmaps.view.IViewResizeListener;
 
 public class FractalPresenter implements IFractalPresenter, IFractalComputeDelegate, IFractalTouchDelegate, IViewResizeListener {
     public IFractalComputeStrategy fractalStrategy;
@@ -49,7 +52,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     // Constants for iteration number calculations
     protected static final double LITTLE_DETAIL_BOOST = 1.5; //Need to bump up the scaling on the little view so it looks better.
     protected static final double DETAIL_DIVISOR = 50;
-    public static final double DEFAULT_DETAIL_LEVEL = 15;
 
     // Overlays
     private List<IFractalOverlay> fractalPresenterOverlays;

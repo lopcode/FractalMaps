@@ -1,8 +1,10 @@
-package uk.ac.ed.inf.mandelbrotmaps;
+package uk.ac.ed.inf.mandelbrotmaps.presenter;
 
 import android.graphics.Matrix;
 
 import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
+import uk.ac.ed.inf.mandelbrotmaps.view.IFractalView;
+import uk.ac.ed.inf.mandelbrotmaps.view.IViewResizeListener;
 
 public interface IFractalPresenter extends IFractalPresenterDelegate {
     public int[] getPixelBuffer();
