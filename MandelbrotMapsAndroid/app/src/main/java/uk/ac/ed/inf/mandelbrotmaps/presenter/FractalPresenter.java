@@ -233,18 +233,17 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
             return 1;
 
         double lnPixelSize = Math.log(pixelSize);
-        double zoomLevel = (double)ZOOM_SLIDER_SCALING * (lnPixelSize-MINZOOM_LN_PIXEL) / (this.fractalStrategy.getMaxZoomLevel()-MINZOOM_LN_PIXEL);
-        return (int)zoomLevel;
+        double zoomLevel = (double) ZOOM_SLIDER_SCALING * (lnPixelSize - MINZOOM_LN_PIXEL) / (this.fractalStrategy.getMaxZoomLevel() - MINZOOM_LN_PIXEL);
+        return (int) zoomLevel;
     }
 
     /* Checks if this zoom level if sane (within the chosen limits) */
     boolean saneZoomLevel() {
         int zoomLevel = getZoomLevel();
 
-        if ((zoomLevel >= 1) &&	(zoomLevel <= ZOOM_SLIDER_SCALING)) {
+        if ((zoomLevel >= 1) && (zoomLevel <= ZOOM_SLIDER_SCALING)) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }

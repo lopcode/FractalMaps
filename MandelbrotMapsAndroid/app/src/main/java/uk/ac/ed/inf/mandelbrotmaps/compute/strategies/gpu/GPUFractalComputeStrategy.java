@@ -7,6 +7,7 @@ import android.support.v8.renderscript.RenderScript;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import uk.ac.ed.inf.mandelbrotmaps.R;
@@ -71,8 +72,7 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
         }
     }
 
-    @Override
-    public synchronized void tearDown() {
+    public void destroyRenderscriptObjects() {
         if (this.pixelBufferAllocation != null) {
             this.pixelBufferAllocation.destroy();
             this.pixelBufferAllocation = null;
@@ -92,6 +92,11 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
             this.renderScript.destroy();
             this.renderScript = null;
         }
+    }
+
+    @Override
+    public synchronized void tearDown() {
+        this.destroyRenderscriptObjects();
 
         this.stopAllRendering();
         this.interruptThreads();
@@ -107,7 +112,21 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
         this.scheduleRendering(arguments);
     }
 
+    private int[] buildIntArray(List<Integer> integers) {
+        int[] ints = new int[integers.size()];
+        int i = 0;
+        for (Integer n : integers) {
+            ints[i++] = n;
+        }
+        return ints;
+    }
+
     public void computeFractalWithThreadID(FractalComputeArguments arguments, int threadID) {
+        if (this.renderScript == null)
+            return;
+
+        this.delegate.onComputeStarted();
+
         int size = arguments.viewHeight * arguments.viewWidth;
 
         if (this.pixelBufferAllocation == null || this.pixelBufferAllocation.getType().getCount() != size) {
@@ -123,31 +142,86 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
         this.pixelBufferAllocation = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), size, Allocation.USAGE_SCRIPT);
         this.pixelBufferSizesAllocation = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), size, Allocation.USAGE_SCRIPT);
 
+        int num_rows = arguments.viewHeight / arguments.pixelBlockSize;
+        ArrayList<Integer> row_indices = new ArrayList<Integer>(500);
+
+        int yStart = (arguments.viewHeight / 2);
+        int yEnd = arguments.viewHeight;
+
+        int xPixelMin = 0;
+        int xPixelMax = arguments.viewWidth;
+        int yPixelMin = yStart;
+        int yPixelMax = yEnd;
+
+        int imgWidth = xPixelMax - xPixelMin;
+        int xPixel = 0;
+        int yPixel = 0;
+        int yIncrement = 0;
+
+        int pixelIncrement = arguments.pixelBlockSize;
+        int originalIncrement = pixelIncrement;
+
+        int loopCount = 0;
+        for (yIncrement = yPixelMin; yPixel < yPixelMax + (arguments.pixelBlockSize); yIncrement += pixelIncrement) {
+            yPixel = yIncrement;
+
+            pixelIncrement = (loopCount * originalIncrement);
+            if (loopCount % 2 == 0) {
+                pixelIncrement *= -1;
+            }
+
+            loopCount++;
+
+            if (((imgWidth * (yPixel + arguments.pixelBlockSize - 1)) + xPixelMax) > size || yPixel < 0) {
+                //rsDebug("exceeded bounds of image", 0);
+                //rsDebug("yPixel", yPixel);
+                //rsDebug("pixelBufferSizesLength", arraySize);
+                continue;
+            }
+
+
+            row_indices.add(yPixel);
+        }
+
+
+        Allocation row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), num_rows, Allocation.USAGE_SCRIPT);
+        row_indices_alloc.copyFrom(this.buildIntArray(row_indices));
+
         this.pixelBufferAllocation.copyFrom(arguments.pixelBuffer);
         this.pixelBufferSizesAllocation.copyFrom(arguments.pixelBufferSizes);
 
-        Log.i("GFCS", "Created renderscript allocation of size " + size);
+        //Log.i("GFCS", "Created renderscript allocation of size " + size);
 
         this.fractalRenderScript.bind_returnPixelBuffer(this.pixelBufferAllocation);
         this.fractalRenderScript.bind_returnPixelBufferSizes(this.pixelBufferSizesAllocation);
 
-
-        Log.i("GFCS", "Starting renderscript");
+        //Log.i("GFCS", "Starting renderscript");
         //(int pixelBlockSize, int maxIterations, int defaultPixelSize,
         // int viewWidth, int viewHeight, double xMin, double yMax,
         // double pixelSize, int arraySize) {
-        this.fractalRenderScript.invoke_mandelbrot(
-                arguments.pixelBlockSize, arguments.maxIterations, arguments.defaultPixelSize,
-                arguments.viewWidth, arguments.viewHeight, arguments.xMin, arguments.yMax,
-                arguments.pixelSize, size);
 
-        Log.i("GFCS", "Copying pixel buffer");
+        this.fractalRenderScript.set_pixelBlockSize(arguments.pixelBlockSize);
+        this.fractalRenderScript.set_maxIterations(arguments.maxIterations);
+        this.fractalRenderScript.set_defaultPixelSize(arguments.defaultPixelSize);
+        this.fractalRenderScript.set_viewWidth(arguments.viewWidth);
+
+        this.fractalRenderScript.set_xMin(arguments.xMin);
+        this.fractalRenderScript.set_yMax(arguments.yMax);
+        this.fractalRenderScript.set_pixelSize(arguments.pixelSize);
+        this.fractalRenderScript.set_arraySize(size);
+
+        this.fractalRenderScript.set_gIn(row_indices_alloc);
+        this.fractalRenderScript.set_gOut(row_indices_alloc);
+        this.fractalRenderScript.set_gScript(this.fractalRenderScript);
+        this.fractalRenderScript.invoke_mandelbrot();
+
+        //Log.i("GFCS", "Copying pixel buffer");
         this.pixelBufferAllocation.copyTo(arguments.pixelBuffer);
 
-        Log.i("GFCS", "Copying pixel buffer sizes");
+        //Log.i("GFCS", "Copying pixel buffer sizes");
         this.pixelBufferSizesAllocation.copyTo(arguments.pixelBufferSizes);
 
-        Log.i("GFCS", "Done");
+        //Log.i("GFCS", "Done");
 //
 //        for (int i = 0; i < size; i++) {
 //            if (arguments.pixelBuffer[i] != 0) {
@@ -181,17 +255,17 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
     }
 
     @Override
-    public double getMaxZoomLevel() { return -31; }
+    public double getMaxZoomLevel() {
+        return -31;
+    }
 
     @Override
     public void stopAllRendering() {
-
         if (!this.renderQueueList.isEmpty())
             this.renderQueueList.get(0).clear();
 
         if (!this.renderThreadList.isEmpty())
             this.renderThreadList.get(0).abortRendering();
-
     }
 
     public FractalComputeArguments getNextRendering(int threadID) throws InterruptedException {

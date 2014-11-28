@@ -1,9 +1,26 @@
 #pragma version(1)
 #pragma rs java_package_name(uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu)
 
+rs_allocation gIn;
+rs_allocation gOut;
+rs_script gScript;
+
 // [0] is fractal, [1] is pixel buffer sizes
 int *returnPixelBuffer;
 int *returnPixelBufferSizes;
+
+int pixelBlockSize;
+int maxIterations;
+int defaultPixelSize;
+int viewWidth;
+double xMin;
+double yMax;
+double pixelSize;
+int arraySize;
+
+int32_t xPixelMin;
+int32_t xPixelMax;
+int32_t imgWidth;
 
 static double PI = 3.1415926535;
 
@@ -41,10 +58,10 @@ static int colourInsidePoint() {
     return 0xFFFFFFFF;
 }
 
-static int pixelInMandelbrotSet(int xPixel, int yPixel, double xMin, double yMax, double pixelSize, int maxIterations) {
+static int pixelInMandelbrotSet(int32_t xPixel, int32_t yPixel, double xMin, double yMax, double pixelSize, int32_t maxIterations) {
     int inside = 1;
 
-    int iterationNumber;
+    int32_t iterationNumber;
     double newx;
     double newy;
     double x;
@@ -76,89 +93,51 @@ static int pixelInMandelbrotSet(int xPixel, int yPixel, double xMin, double yMax
     }
 }
 
-void mandelbrot(int pixelBlockSize, int maxIterations, int defaultPixelSize,
-                int viewWidth, int viewHeight, double xMin, double yMax,
-                double pixelSize, int arraySize) {
-    int numberOfThreads = 1;
-    int threadID = 0;
+void root(const int32_t *v_in, int32_t *v_out, const void *usrData, uint32_t x, uint32_t y) {
+    int32_t yPixel = *v_in;
 
-    int *pixelBuffer = returnPixelBuffer;
-    int *pixelBufferSizes = returnPixelBufferSizes;
-
-    int yStart = (viewHeight / 2);
-    int yEnd = viewHeight - (numberOfThreads - 1);
-
-    int xPixelMin = 0;
-    int xPixelMax = viewWidth;
-    int yPixelMin = yStart;
-    int yPixelMax = yEnd;
-
-    int imgWidth = xPixelMax - xPixelMin;
     int xPixel = 0;
-    int yPixel = 0;
-    int yIncrement = 0;
     int colourCodeHex;
     int pixelBlockA;
     int pixelBlockB;
 
-    double x0 = 0;
-    double y0 = 0;
+    int *pixelBuffer = returnPixelBuffer;
+    int *pixelBufferSizes = returnPixelBufferSizes;
 
-    int pixelIncrement = pixelBlockSize * numberOfThreads;
-    int originalIncrement = pixelIncrement;
-
-    int loopCount = 0;
-
-    //rsDebug("starting loop", 0);
-
-    for (yIncrement = yPixelMin; yPixel < yPixelMax + (numberOfThreads * pixelBlockSize); yIncrement += pixelIncrement) {
-        yPixel = yIncrement;
-
-        //rsDebug("y loop", yIncrement);
-
-        pixelIncrement = (loopCount * originalIncrement);
-        if (loopCount % 2 == 0) {
-            pixelIncrement *= -1;
-        }
-
-        loopCount++;
-
-        if (((imgWidth * (yPixel + pixelBlockSize - 1)) + xPixelMax) > arraySize || yPixel < 0) {
-            //rsDebug("exceeded bounds of image", 0);
-            //rsDebug("yPixel", yPixel);
-            //rsDebug("pixelBufferSizesLength", arraySize);
+    for (xPixel = xPixelMin; xPixel < xPixelMax + 1 - pixelBlockSize; xPixel += pixelBlockSize) {
+        if (pixelBufferSizes[(imgWidth * yPixel) + xPixel] <= pixelBlockSize) {
+            //rsDebug("already iterated to block size", 0);
+            //rsDebug("pixelBufferSizes[(imgWidth * yPixel) + xPixel]", pixelBufferSizes[(imgWidth * yPixel) + xPixel]);
+            //rsDebug("pixelBlockSize", pixelBlockSize);
             continue;
         }
 
-        for (xPixel = xPixelMin; xPixel < xPixelMax + 1 - pixelBlockSize; xPixel += pixelBlockSize) {
-            if (pixelBufferSizes[(imgWidth * yPixel) + xPixel] <= pixelBlockSize) {
-                //rsDebug("already iterated to block size", 0);
-                //rsDebug("pixelBufferSizes[(imgWidth * yPixel) + xPixel]", pixelBufferSizes[(imgWidth * yPixel) + xPixel]);
-                //rsDebug("pixelBlockSize", pixelBlockSize);
-                continue;
-            }
+        //rsDebug("inner loop", 0);
+        colourCodeHex = pixelInMandelbrotSet(xPixel, yPixel, xMin, yMax, pixelSize, maxIterations);
+        //if (value != 0) {
+        //    rsDebug("value", value);
+        //}
 
-            //rsDebug("inner loop", 0);
-            colourCodeHex = pixelInMandelbrotSet(xPixel, yPixel, xMin, yMax, pixelSize, maxIterations);
-            //if (value != 0) {
-            //    rsDebug("value", value);
-            //}
+        pixelBufferSizes[(imgWidth * yPixel) + (xPixel)] = defaultPixelSize;
 
-            pixelBufferSizes[(imgWidth * yPixel) + (xPixel)] = defaultPixelSize;
-
-            int p = 0;
-            for (pixelBlockA = 0; pixelBlockA < pixelBlockSize; pixelBlockA++) {
-                for (pixelBlockB = 0; pixelBlockB < pixelBlockSize; pixelBlockB++) {
-                    if (p != 0) {
-                        pixelBufferSizes[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = pixelBlockSize;
-                    }
-                    p++;
-                    pixelBuffer[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = colourCodeHex;
+        int p = 0;
+        for (pixelBlockA = 0; pixelBlockA < pixelBlockSize; pixelBlockA++) {
+            for (pixelBlockB = 0; pixelBlockB < pixelBlockSize; pixelBlockB++) {
+                if (p != 0) {
+                    pixelBufferSizes[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = pixelBlockSize;
                 }
+                p++;
+                pixelBuffer[imgWidth * (yPixel + pixelBlockB) + (xPixel + pixelBlockA)] = colourCodeHex;
             }
         }
     }
+}
 
-    returnPixelBuffer = pixelBuffer;
-    returnPixelBufferSizes = pixelBufferSizes;
+void mandelbrot() {
+    //rsDebug("Number of rows: ", rsAllocationGetDimX(gIn));
+    imgWidth = xPixelMax - xPixelMin;
+    xPixelMin = 0;
+    xPixelMax = viewWidth;
+
+    rsForEach(gScript, gIn, gOut);
 }

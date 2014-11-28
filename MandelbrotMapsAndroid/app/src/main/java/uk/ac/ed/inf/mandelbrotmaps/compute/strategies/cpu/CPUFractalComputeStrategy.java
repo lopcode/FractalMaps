@@ -101,7 +101,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
         CPURenderThread callingThread = this.renderThreadList.get(threadID);
 
         int yStart = (arguments.viewHeight / 2) + (threadID * arguments.pixelBlockSize);
-        int yEnd = arguments.viewHeight - (this.numberOfThreads - (threadID + 1));
+        int yEnd = arguments.viewHeight;
         boolean showRenderProgress = (threadID == 0);
 
         int xPixelMin = 0;
