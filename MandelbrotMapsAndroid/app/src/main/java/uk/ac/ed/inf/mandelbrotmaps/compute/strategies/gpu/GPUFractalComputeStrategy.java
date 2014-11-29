@@ -122,7 +122,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         return ints;
     }
 
-    public void computeFractalWithThreadID(FractalComputeArguments arguments, int threadID) {
+    public void computeFractalWithThreadID(FractalComputeArguments arguments, int _threadID) {
         if (this.renderScript == null)
             return;
 
@@ -148,42 +148,46 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         int num_rows = arguments.viewHeight / arguments.pixelBlockSize;
         ArrayList<Integer> row_indices = new ArrayList<Integer>(500);
 
-        int yStart = (arguments.viewHeight / 2);
-        int yEnd = arguments.viewHeight;
+        int numberOfThreads = 4;
+        for (int threadID = 0; threadID < numberOfThreads; threadID++) {
+            int yStart = (arguments.viewHeight / 2) + (threadID * arguments.pixelBlockSize);
+            int yEnd = arguments.viewHeight;
 
-        int xPixelMin = 0;
-        int xPixelMax = arguments.viewWidth;
-        int yPixelMin = yStart;
-        int yPixelMax = yEnd;
+            int xPixelMin = 0;
+            int xPixelMax = arguments.viewWidth;
+            int yPixelMin = yStart;
+            int yPixelMax = yEnd;
 
-        int imgWidth = xPixelMax - xPixelMin;
-        int xPixel = 0;
-        int yPixel = 0;
-        int yIncrement = 0;
+            int imgWidth = xPixelMax - xPixelMin;
+            int xPixel = 0;
+            int yPixel = 0;
+            int yIncrement = 0;
 
-        int pixelIncrement = arguments.pixelBlockSize;
-        int originalIncrement = pixelIncrement;
+            int pixelIncrement = arguments.pixelBlockSize * numberOfThreads;
+            int originalIncrement = pixelIncrement;
 
-        int loopCount = 0;
-        for (yIncrement = yPixelMin; yPixel < yPixelMax + (arguments.pixelBlockSize); yIncrement += pixelIncrement) {
-            yPixel = yIncrement;
+            int loopCount = 0;
 
-            pixelIncrement = (loopCount * originalIncrement);
-            if (loopCount % 2 == 0) {
-                pixelIncrement *= -1;
+            for (yIncrement = yPixelMin; yPixel < yPixelMax + (numberOfThreads * arguments.pixelBlockSize); yIncrement += pixelIncrement) {
+                yPixel = yIncrement;
+
+                pixelIncrement = (loopCount * originalIncrement);
+                if (loopCount % 2 == 0) {
+                    pixelIncrement *= -1;
+                }
+
+                loopCount++;
+
+                if (((imgWidth * (yPixel + arguments.pixelBlockSize - 1)) + xPixelMax) > size || yPixel < 0) {
+                    //rsDebug("exceeded bounds of image", 0);
+                    //rsDebug("yPixel", yPixel);
+                    //rsDebug("pixelBufferSizesLength", arraySize);
+                    continue;
+                }
+
+
+                row_indices.add(yPixel);
             }
-
-            loopCount++;
-
-            if (((imgWidth * (yPixel + arguments.pixelBlockSize - 1)) + xPixelMax) > size || yPixel < 0) {
-                //rsDebug("exceeded bounds of image", 0);
-                //rsDebug("yPixel", yPixel);
-                //rsDebug("pixelBufferSizesLength", arraySize);
-                continue;
-            }
-
-
-            row_indices.add(yPixel);
         }
 
 
