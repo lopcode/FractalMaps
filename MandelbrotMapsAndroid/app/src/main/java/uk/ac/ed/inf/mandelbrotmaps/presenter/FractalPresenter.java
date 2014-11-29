@@ -279,10 +279,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         long timeDifference = System.currentTimeMillis() - this.lastComputeStart;
         double timeInSeconds = timeDifference / 1000.0D;
 
-        if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
+        if (pixelBlockSize == DEFAULT_PIXEL_SIZE) {
             this.sceneDelegate.setRenderingStatus(this, false);
 
-        this.sceneDelegate.onFractalRecomputed(this, timeInSeconds);
+            this.sceneDelegate.onFractalRecomputed(this, timeInSeconds);
+        }
     }
 
     public double[] getGraphPositionFromClickedPosition(float touchX, float touchY) {

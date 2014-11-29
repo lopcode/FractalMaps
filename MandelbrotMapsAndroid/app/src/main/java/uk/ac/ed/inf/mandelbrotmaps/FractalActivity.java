@@ -43,6 +43,8 @@ import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.MandelbrotCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu.GPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu.JuliaGPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu.MandelbrotGPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
@@ -81,7 +83,7 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
     FractalPresenter secondFractalPresenter;
 
     IFractalComputeStrategy mandelbrotStrategy;
-    JuliaCPUFractalComputeStrategy juliaStrategy;
+    JuliaGPUFractalComputeStrategy juliaStrategy;
 
     // File saving variables
     private ProgressDialog savingDialog;
@@ -213,7 +215,7 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
     }
 
     public void initialiseMandelbrotPresenter() {
-        this.mandelbrotStrategy = new GPUFractalComputeStrategy();
+        this.mandelbrotStrategy = new MandelbrotGPUFractalComputeStrategy();
         ((GPUFractalComputeStrategy) this.mandelbrotStrategy).setContext(this);
 //        this.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
         this.firstFractalPresenter = new FractalPresenter(this, this, mandelbrotStrategy);
@@ -228,7 +230,9 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
     }
 
     public void initialiseJuliaPresenter() {
-        juliaStrategy = new JuliaCPUFractalComputeStrategy();
+        this.juliaStrategy = new JuliaGPUFractalComputeStrategy();
+        ((GPUFractalComputeStrategy) this.juliaStrategy).setContext(this);
+//        juliaStrategy = new JuliaCPUFractalComputeStrategy();
         this.secondFractalPresenter = new FractalPresenter(this, this, juliaStrategy);
         this.secondFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.secondFractalPresenter));
 //        this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());

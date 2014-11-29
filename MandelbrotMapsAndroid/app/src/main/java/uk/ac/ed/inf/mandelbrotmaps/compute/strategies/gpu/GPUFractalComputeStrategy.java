@@ -16,9 +16,9 @@ import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.FractalComputeStrategy;
 
-public class GPUFractalComputeStrategy extends FractalComputeStrategy {
+public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     private RenderScript renderScript;
-    private ScriptC_mandelbrot fractalRenderScript;
+    protected ScriptC_mandelbrot fractalRenderScript;
     private Allocation pixelBufferAllocation;
     private Allocation pixelBufferSizesAllocation;
     private Context context;
@@ -227,6 +227,7 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
         for (int i = 0; i < numRows; i += arguments.linesPerProgressUpdate) {
             int[] indicesForUpdate = Arrays.copyOfRange(primRowIndices, i, i + arguments.linesPerProgressUpdate);
             if (indicesForUpdate.length != lastAllocSize) {
+                row_indices_alloc.destroy();
                 row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), indicesForUpdate.length, Allocation.USAGE_SCRIPT);
                 this.fractalRenderScript.set_gIn(row_indices_alloc);
                 this.fractalRenderScript.set_gOut(row_indices_alloc);
@@ -235,7 +236,9 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
             }
 
             row_indices_alloc.copyFrom(indicesForUpdate);
-            this.fractalRenderScript.invoke_mandelbrot();
+
+            this.invokeComputeFunction();
+
 
             if (arguments.pixelBuffer != null) {
                 //Log.i("GFCS", "Copying pixel buffer");
@@ -308,4 +311,5 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
         return this.renderQueueList.get(threadID).take();
     }
 
+    protected abstract void invokeComputeFunction();
 }
