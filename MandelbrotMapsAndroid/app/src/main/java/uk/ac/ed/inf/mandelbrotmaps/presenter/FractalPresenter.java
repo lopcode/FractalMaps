@@ -137,7 +137,9 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         Log.i("AFV", "Starting new style render");
         Log.i("AFV", "Notifying of update every " + this.viewHeight / 4 + " lines");
 
-        this.sceneDelegate.setRenderingStatus(this, true);
+        if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
+            this.sceneDelegate.setRenderingStatus(this, true);
+
         this.lastComputeStart = System.currentTimeMillis();
 
         this.fractalStrategy.computeFractal(new FractalComputeArguments(pixelBlockSize,
@@ -277,7 +279,9 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         long timeDifference = System.currentTimeMillis() - this.lastComputeStart;
         double timeInSeconds = timeDifference / 1000.0D;
 
-        this.sceneDelegate.setRenderingStatus(this, false);
+        if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
+            this.sceneDelegate.setRenderingStatus(this, false);
+
         this.sceneDelegate.onFractalRecomputed(this, timeInSeconds);
     }
 
@@ -323,8 +327,9 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     @Override
-    public void onComputeStarted() {
-        this.sceneDelegate.setRenderingStatus(this, true);
+    public void onComputeStarted(int pixelBlockSize) {
+        if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
+            this.sceneDelegate.setRenderingStatus(this, true);
     }
 
     // IFractalTouchDelegate

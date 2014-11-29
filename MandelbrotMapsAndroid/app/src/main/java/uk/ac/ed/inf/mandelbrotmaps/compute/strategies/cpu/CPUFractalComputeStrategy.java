@@ -96,7 +96,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     }
 
     public void computeFractalWithThreadID(FractalComputeArguments arguments, int threadID) {
-        this.delegate.onComputeStarted();
+        this.delegate.onComputeStarted(arguments.pixelBlockSize);
 
         CPURenderThread callingThread = this.renderThreadList.get(threadID);
 

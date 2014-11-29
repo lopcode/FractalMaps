@@ -39,7 +39,9 @@ import java.util.Map;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.JuliaCPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.MandelbrotCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu.GPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
@@ -78,8 +80,7 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
     FractalPresenter firstFractalPresenter;
     FractalPresenter secondFractalPresenter;
 
-    GPUFractalComputeStrategy mandelbrotStrategy;
-    //    MandelbrotCPUFractalComputeStrategy mandelbrotStrategy;
+    IFractalComputeStrategy mandelbrotStrategy;
     JuliaCPUFractalComputeStrategy juliaStrategy;
 
     // File saving variables
@@ -213,7 +214,7 @@ public class FractalActivity extends ActionBarActivity implements IFractalSceneD
 
     public void initialiseMandelbrotPresenter() {
         this.mandelbrotStrategy = new GPUFractalComputeStrategy();
-        this.mandelbrotStrategy.setContext(this);
+        ((GPUFractalComputeStrategy) this.mandelbrotStrategy).setContext(this);
 //        this.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
         this.firstFractalPresenter = new FractalPresenter(this, this, mandelbrotStrategy);
         MandelbrotTouchHandler mandelbrotTouchHandler = new MandelbrotTouchHandler(this, this.firstFractalPresenter);

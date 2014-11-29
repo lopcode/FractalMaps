@@ -5,5 +5,5 @@ public interface IFractalComputeDelegate {
 
     public void postFinished(int[] pixels, int[] pixelSizes, int pixelBlockSize);
 
-    public void onComputeStarted();
+    public void onComputeStarted(int pixelBlockSize);
 }

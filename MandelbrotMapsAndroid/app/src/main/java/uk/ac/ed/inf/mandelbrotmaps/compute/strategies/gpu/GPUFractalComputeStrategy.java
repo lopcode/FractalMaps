@@ -126,9 +126,9 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
         if (this.renderScript == null)
             return;
 
-        this.delegate.onComputeStarted();
+        this.delegate.onComputeStarted(arguments.pixelBlockSize);
 
-        long setupStart = System.currentTimeMillis();
+        long setupStart = System.nanoTime();
 
         int size = arguments.viewHeight * arguments.viewWidth;
 
@@ -220,8 +220,8 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
         int numRows = row_indices.size();
         int[] primRowIndices = this.buildIntArray(row_indices);
 
-        long setupEnd = System.currentTimeMillis();
-        double setupTime = (setupEnd - setupStart) / 1000D;
+        long setupEnd = System.nanoTime();
+        double setupTime = (setupEnd - setupStart) / 1000000D;
         //Log.i("GFCS", "Took " + setupTime + " seconds to set up for GPU compute");
 
         for (int i = 0; i < numRows; i += arguments.linesPerProgressUpdate) {
