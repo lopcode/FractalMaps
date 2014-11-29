@@ -7,6 +7,7 @@ import android.support.v8.renderscript.RenderScript;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -127,6 +128,8 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
 
         this.delegate.onComputeStarted();
 
+        long setupStart = System.currentTimeMillis();
+
         int size = arguments.viewHeight * arguments.viewWidth;
 
         if (this.pixelBufferAllocation == null || this.pixelBufferAllocation.getType().getCount() != size) {
@@ -184,9 +187,6 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
         }
 
 
-        Allocation row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), num_rows, Allocation.USAGE_SCRIPT);
-        row_indices_alloc.copyFrom(this.buildIntArray(row_indices));
-
         this.pixelBufferAllocation.copyFrom(arguments.pixelBuffer);
         this.pixelBufferSizesAllocation.copyFrom(arguments.pixelBufferSizes);
 
@@ -210,16 +210,52 @@ public class GPUFractalComputeStrategy extends FractalComputeStrategy {
         this.fractalRenderScript.set_pixelSize(arguments.pixelSize);
         this.fractalRenderScript.set_arraySize(size);
 
+        this.fractalRenderScript.set_gScript(this.fractalRenderScript);
+
+        Allocation row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), arguments.linesPerProgressUpdate, Allocation.USAGE_SCRIPT);
+        int lastAllocSize = arguments.linesPerProgressUpdate;
         this.fractalRenderScript.set_gIn(row_indices_alloc);
         this.fractalRenderScript.set_gOut(row_indices_alloc);
-        this.fractalRenderScript.set_gScript(this.fractalRenderScript);
-        this.fractalRenderScript.invoke_mandelbrot();
 
-        //Log.i("GFCS", "Copying pixel buffer");
-        this.pixelBufferAllocation.copyTo(arguments.pixelBuffer);
+        int numRows = row_indices.size();
+        int[] primRowIndices = this.buildIntArray(row_indices);
 
-        //Log.i("GFCS", "Copying pixel buffer sizes");
-        this.pixelBufferSizesAllocation.copyTo(arguments.pixelBufferSizes);
+        long setupEnd = System.currentTimeMillis();
+        double setupTime = (setupEnd - setupStart) / 1000D;
+        //Log.i("GFCS", "Took " + setupTime + " seconds to set up for GPU compute");
+
+        for (int i = 0; i < numRows; i += arguments.linesPerProgressUpdate) {
+            int[] indicesForUpdate = Arrays.copyOfRange(primRowIndices, i, i + arguments.linesPerProgressUpdate);
+            if (indicesForUpdate.length != lastAllocSize) {
+                row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), indicesForUpdate.length, Allocation.USAGE_SCRIPT);
+                this.fractalRenderScript.set_gIn(row_indices_alloc);
+                this.fractalRenderScript.set_gOut(row_indices_alloc);
+                lastAllocSize = indicesForUpdate.length;
+                //Log.i("GFCS", "Created new allocation size");
+            }
+
+            row_indices_alloc.copyFrom(indicesForUpdate);
+            this.fractalRenderScript.invoke_mandelbrot();
+
+            if (arguments.pixelBuffer != null) {
+                //Log.i("GFCS", "Copying pixel buffer");
+                this.pixelBufferAllocation.copyTo(arguments.pixelBuffer);
+            } else {
+                return;
+            }
+
+            if (arguments.pixelBufferSizes != null) {
+                //Log.i("GFCS", "Copying pixel buffer sizes");
+                this.pixelBufferSizesAllocation.copyTo(arguments.pixelBufferSizes);
+            } else {
+                return;
+            }
+
+            if (!renderThreadList.get(0).abortSignalled())
+                this.delegate.postUpdate(arguments.pixelBuffer, arguments.pixelBufferSizes);
+            else
+                return;
+        }
 
         //Log.i("GFCS", "Done");
 //

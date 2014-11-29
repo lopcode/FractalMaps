@@ -135,14 +135,14 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void recomputeGraph(int pixelBlockSize) {
         Log.i("AFV", "Starting new style render");
-        Log.i("AFV", "Notifying of update every " + this.viewHeight / 12 + " lines");
+        Log.i("AFV", "Notifying of update every " + this.viewHeight / 4 + " lines");
 
         this.sceneDelegate.setRenderingStatus(this, true);
         this.lastComputeStart = System.currentTimeMillis();
 
         this.fractalStrategy.computeFractal(new FractalComputeArguments(pixelBlockSize,
                 this.getMaxIterations(),
-                this.viewHeight / 12,
+                this.viewHeight / 4,
                 DEFAULT_PIXEL_SIZE,
                 this.viewWidth,
                 this.viewHeight,
