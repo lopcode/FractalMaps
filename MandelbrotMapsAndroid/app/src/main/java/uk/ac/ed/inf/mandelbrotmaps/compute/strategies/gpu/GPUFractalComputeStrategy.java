@@ -8,13 +8,16 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import uk.ac.ed.inf.mandelbrotmaps.R;
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.FractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.presenter.FractalPresenter;
 
 public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     private RenderScript renderScript;
@@ -27,15 +30,87 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     private ArrayList<GPURenderThread> renderThreadList;
     private ArrayList<Boolean> rendersComplete;
 
+    private Allocation row_indices_alloc;
+    private Map<Integer, int[][]> rowIndices;
+
+    private int linesPerProgressUpdate;
+
     public void setContext(Context context) {
         this.context = context;
     }
 
+    @Override
     public void initialise(int width, int height, IFractalComputeDelegate delegate) {
         super.initialise(width, height, delegate);
 
+        this.linesPerProgressUpdate = this.height / 4;
+
         this.initialiseRenderThread();
         this.initialiseRenderScript();
+        this.initialiseRowIndexCache(Arrays.asList(new Integer[]{FractalPresenter.CRUDE_PIXEL_BLOCK, FractalPresenter.DEFAULT_PIXEL_SIZE}), linesPerProgressUpdate);
+    }
+
+    public void initialiseRowIndexCache(List<Integer> pixelBlockSizesToPrecompute, int linesPerProgressUpdate) {
+        this.rowIndices = new HashMap<Integer, int[][]>(2);
+        int size = this.width * this.height;
+
+        for (Integer pixelBlockSize : pixelBlockSizesToPrecompute) {
+            ArrayList<Integer> row_indices = new ArrayList<Integer>(2000);
+
+            int numberOfThreads = 4;
+            for (int threadID = 0; threadID < numberOfThreads; threadID++) {
+                int yStart = (this.height / 2) + (threadID * pixelBlockSize);
+                int yEnd = this.height;
+
+                int xPixelMin = 0;
+                int xPixelMax = this.width;
+                int yPixelMin = yStart;
+                int yPixelMax = yEnd;
+
+                int imgWidth = xPixelMax - xPixelMin;
+                int xPixel = 0;
+                int yPixel = 0;
+                int yIncrement = 0;
+
+                int pixelIncrement = pixelBlockSize * numberOfThreads;
+                int originalIncrement = pixelIncrement;
+
+                int loopCount = 0;
+
+                for (yIncrement = yPixelMin; yPixel < yPixelMax + (numberOfThreads * pixelBlockSize); yIncrement += pixelIncrement) {
+                    yPixel = yIncrement;
+
+                    pixelIncrement = (loopCount * originalIncrement);
+                    if (loopCount % 2 == 0) {
+                        pixelIncrement *= -1;
+                    }
+
+                    loopCount++;
+
+                    if (((imgWidth * (yPixel + pixelBlockSize - 1)) + xPixelMax) > size || yPixel < 0) {
+                        //rsDebug("exceeded bounds of image", 0);
+                        //rsDebug("yPixel", yPixel);
+                        //rsDebug("pixelBufferSizesLength", arraySize);
+                        continue;
+                    }
+
+                    row_indices.add(yPixel);
+                }
+            }
+
+            int numRows = row_indices.size();
+            int[] primRowIndices = this.buildIntArray(row_indices);
+            int progressUpdates = (int) Math.ceil(numRows / (double) linesPerProgressUpdate);
+            int[][] indices = new int[progressUpdates][];
+
+            int progressUpdate = 0;
+            for (int i = 0; i < numRows; i += linesPerProgressUpdate) {
+                indices[progressUpdate] = Arrays.copyOfRange(primRowIndices, i, i + linesPerProgressUpdate);
+                progressUpdate++;
+            }
+
+            rowIndices.put(pixelBlockSize, indices);
+        }
     }
 
     public void initialiseRenderThread() {
@@ -60,17 +135,33 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         }
     }
 
+    private void initialisePixelBufferAllocation(int size) {
+        this.pixelBufferAllocation = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), size, Allocation.USAGE_SCRIPT);
+        this.fractalRenderScript.bind_returnPixelBuffer(this.pixelBufferAllocation);
+    }
+
+    private void initialisePixelBufferSizesAllocation(int size) {
+        this.pixelBufferSizesAllocation = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), size, Allocation.USAGE_SCRIPT);
+        this.fractalRenderScript.bind_returnPixelBufferSizes(this.pixelBufferSizesAllocation);
+    }
+
     private boolean initialiseRenderScript() {
         try {
             this.renderScript = RenderScript.create(this.context);
             this.fractalRenderScript = new ScriptC_mandelbrot(this.renderScript, context.getResources(), R.raw.mandelbrot);
-
-            Log.i("GFCS", "Initialised renderscript objects successfully");
-            return true;
         } catch (Throwable throwable) {
             Log.e("GFCS", "Failed to initialise renderscript: " + throwable.getLocalizedMessage());
             return false;
         }
+
+        this.fractalRenderScript.set_gScript(this.fractalRenderScript);
+
+        this.initialisePixelBufferAllocation(this.width * this.height);
+        this.initialisePixelBufferSizesAllocation(this.width * this.height);
+
+        Log.i("GFCS", "Initialised renderscript objects successfully");
+
+        return true;
     }
 
     public void destroyRenderscriptObjects() {
@@ -135,69 +226,19 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         if (this.pixelBufferAllocation == null || this.pixelBufferAllocation.getType().getCount() != size) {
             if (this.pixelBufferAllocation != null)
                 this.pixelBufferAllocation.destroy();
+
+            this.initialisePixelBufferAllocation(size);
         }
 
         if (this.pixelBufferSizesAllocation == null || this.pixelBufferSizesAllocation.getType().getCount() != size) {
             if (this.pixelBufferSizesAllocation != null)
                 this.pixelBufferSizesAllocation.destroy();
+
+            this.initialisePixelBufferSizesAllocation(size);
         }
-
-        this.pixelBufferAllocation = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), size, Allocation.USAGE_SCRIPT);
-        this.pixelBufferSizesAllocation = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), size, Allocation.USAGE_SCRIPT);
-
-        int num_rows = arguments.viewHeight / arguments.pixelBlockSize;
-        ArrayList<Integer> row_indices = new ArrayList<Integer>(500);
-
-        int numberOfThreads = 4;
-        for (int threadID = 0; threadID < numberOfThreads; threadID++) {
-            int yStart = (arguments.viewHeight / 2) + (threadID * arguments.pixelBlockSize);
-            int yEnd = arguments.viewHeight;
-
-            int xPixelMin = 0;
-            int xPixelMax = arguments.viewWidth;
-            int yPixelMin = yStart;
-            int yPixelMax = yEnd;
-
-            int imgWidth = xPixelMax - xPixelMin;
-            int xPixel = 0;
-            int yPixel = 0;
-            int yIncrement = 0;
-
-            int pixelIncrement = arguments.pixelBlockSize * numberOfThreads;
-            int originalIncrement = pixelIncrement;
-
-            int loopCount = 0;
-
-            for (yIncrement = yPixelMin; yPixel < yPixelMax + (numberOfThreads * arguments.pixelBlockSize); yIncrement += pixelIncrement) {
-                yPixel = yIncrement;
-
-                pixelIncrement = (loopCount * originalIncrement);
-                if (loopCount % 2 == 0) {
-                    pixelIncrement *= -1;
-                }
-
-                loopCount++;
-
-                if (((imgWidth * (yPixel + arguments.pixelBlockSize - 1)) + xPixelMax) > size || yPixel < 0) {
-                    //rsDebug("exceeded bounds of image", 0);
-                    //rsDebug("yPixel", yPixel);
-                    //rsDebug("pixelBufferSizesLength", arraySize);
-                    continue;
-                }
-
-
-                row_indices.add(yPixel);
-            }
-        }
-
 
         this.pixelBufferAllocation.copyFrom(arguments.pixelBuffer);
         this.pixelBufferSizesAllocation.copyFrom(arguments.pixelBufferSizes);
-
-        //Log.i("GFCS", "Created renderscript allocation of size " + size);
-
-        this.fractalRenderScript.bind_returnPixelBuffer(this.pixelBufferAllocation);
-        this.fractalRenderScript.bind_returnPixelBufferSizes(this.pixelBufferSizesAllocation);
 
         //Log.i("GFCS", "Starting renderscript");
         //(int pixelBlockSize, int maxIterations, int defaultPixelSize,
@@ -214,35 +255,38 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         this.fractalRenderScript.set_pixelSize(arguments.pixelSize);
         this.fractalRenderScript.set_arraySize(size);
 
-        this.fractalRenderScript.set_gScript(this.fractalRenderScript);
+        if (this.row_indices_alloc == null || this.row_indices_alloc.getType().getCount() != size) {
+            if (this.row_indices_alloc != null)
+                this.row_indices_alloc.destroy();
 
-        Allocation row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), arguments.linesPerProgressUpdate, Allocation.USAGE_SCRIPT);
+            this.row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), arguments.linesPerProgressUpdate, Allocation.USAGE_SCRIPT);
+            this.fractalRenderScript.set_gIn(row_indices_alloc);
+            this.fractalRenderScript.set_gOut(row_indices_alloc);
+        }
+
         int lastAllocSize = arguments.linesPerProgressUpdate;
-        this.fractalRenderScript.set_gIn(row_indices_alloc);
-        this.fractalRenderScript.set_gOut(row_indices_alloc);
-
-        int numRows = row_indices.size();
-        int[] primRowIndices = this.buildIntArray(row_indices);
 
         long setupEnd = System.nanoTime();
         double setupTime = (setupEnd - setupStart) / 1000000000D;
         Log.i("GFCS", "Took " + setupTime + " seconds to set up for GPU compute");
 
-        for (int i = 0; i < numRows; i += arguments.linesPerProgressUpdate) {
-            int[] indicesForUpdate = Arrays.copyOfRange(primRowIndices, i, i + arguments.linesPerProgressUpdate);
-            if (indicesForUpdate.length != lastAllocSize) {
+        int[][] indices = this.rowIndices.get(arguments.pixelBlockSize);
+        int progressUpdates = indices.length;
+        for (int i = 0; i < progressUpdates; i++) {
+            int linesInProgressUpdate = indices[i].length;
+
+            if (linesInProgressUpdate != lastAllocSize) {
                 row_indices_alloc.destroy();
-                row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), indicesForUpdate.length, Allocation.USAGE_SCRIPT);
+                row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), linesInProgressUpdate, Allocation.USAGE_SCRIPT);
                 this.fractalRenderScript.set_gIn(row_indices_alloc);
                 this.fractalRenderScript.set_gOut(row_indices_alloc);
-                lastAllocSize = indicesForUpdate.length;
+                lastAllocSize = linesInProgressUpdate;
                 //Log.i("GFCS", "Created new allocation size");
             }
 
-            row_indices_alloc.copyFrom(indicesForUpdate);
+            row_indices_alloc.copyFrom(indices[i]);
 
             this.invokeComputeFunction();
-
 
             if (arguments.pixelBuffer != null) {
                 //Log.i("GFCS", "Copying pixel buffer");
@@ -258,11 +302,10 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
                 return;
             }
 
-            if (!renderThreadList.get(0).abortSignalled())
+            if (!renderThreadList.get(0).abortSignalled() && arguments.linesPerProgressUpdate != arguments.viewHeight)
                 this.delegate.postUpdate(arguments.pixelBuffer, arguments.pixelBufferSizes);
-            else
-                return;
         }
+
 
         //Log.i("GFCS", "Done");
 //
@@ -285,21 +328,6 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     @Override
     public boolean shouldPerformCrudeFirst() {
         return false;
-    }
-
-    @Override
-    public double getIterationBase() {
-        return 1.24D;
-    }
-
-    @Override
-    public double getIterationConstantFactor() {
-        return 54.0D;
-    }
-
-    @Override
-    public double getMaxZoomLevel() {
-        return -31;
     }
 
     @Override

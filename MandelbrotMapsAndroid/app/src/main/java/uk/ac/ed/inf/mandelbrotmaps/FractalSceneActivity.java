@@ -107,7 +107,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     private SettingsManager settings;
 
-    private static boolean shouldGPURender = false;
+    private static boolean shouldGPURender = true;
 
     // Android lifecycle
 

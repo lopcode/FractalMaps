@@ -7,6 +7,20 @@ public class JuliaGPUFractalComputeStrategy extends GPUFractalComputeStrategy im
     private double juliaY = 0;
 
     @Override
+    public double getIterationBase() {
+        return 1.58D;
+    }
+
+    @Override
+    public double getIterationConstantFactor() {
+        return 6.46D;
+    }
+
+    public double getMaxZoomLevel() {
+        return -20;
+    }
+
+    @Override
     public double[] getJuliaSeed() {
         return new double[]{this.juliaX, this.juliaY};
     }
