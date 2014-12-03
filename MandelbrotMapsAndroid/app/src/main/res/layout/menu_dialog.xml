@@ -103,23 +103,23 @@
         android:layout_row="0"
         android:layout_column="2"
         android:orientation="vertical"
-        android:id="@+id/menuButtonSwitchLayout"
+        android:id="@+id/menuButtonSwitchRenderer"
         style="?android:attr/buttonStyle">
 
-        <!--<ImageView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/menuImageSwitchLayout"-->
-        <!--android:src="@drawable/ic_action_sd_storage"/>-->
+        <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/menuImageSwitchRenderer"
+        android:src="@drawable/ic_action_sd_storage"/>
 
-        <!--<TextView-->
-        <!--android:layout_width="fill_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textAppearance="?android:attr/textAppearanceMedium"-->
-        <!--android:text="@string/menu_switch_layout"-->
-        <!--android:id="@+id/menuLabelSwitchLayout"-->
-        <!--android:gravity="center_horizontal"-->
-        <!--android:paddingTop="@dimen/menu_inner_padding"/>-->
+        <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/menu_switch_renderer"
+        android:id="@+id/menuLabelSwitchRenderer"
+        android:gravity="center_horizontal"
+        android:paddingTop="@dimen/menu_inner_padding"/>
 
     </LinearLayout>
 

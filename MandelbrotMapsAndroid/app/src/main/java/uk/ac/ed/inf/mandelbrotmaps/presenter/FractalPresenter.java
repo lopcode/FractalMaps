@@ -81,6 +81,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     @Override
+    public void setComputeStrategy(IFractalComputeStrategy strategy) {
+        this.fractalStrategy = strategy;
+    }
+
+    @Override
     public void setFractalDetail(double detail) {
         this.detail = detail;
     }
@@ -135,16 +140,16 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void recomputeGraph(int pixelBlockSize) {
         Log.i("AFV", "Starting new style render");
-        Log.i("AFV", "Notifying of update every " + this.viewHeight / 4 + " lines");
+        Log.i("AFV", "Notifying of update every " + this.viewHeight / 6 + " lines");
 
         if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
             this.sceneDelegate.setRenderingStatus(this, true);
 
-        this.lastComputeStart = System.currentTimeMillis();
+        this.lastComputeStart = System.nanoTime();
 
         this.fractalStrategy.computeFractal(new FractalComputeArguments(pixelBlockSize,
                 this.getMaxIterations(),
-                this.viewHeight / 4,
+                this.viewHeight / 6,
                 DEFAULT_PIXEL_SIZE,
                 this.viewWidth,
                 this.viewHeight,
@@ -276,8 +281,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void notifyRecomputeComplete(int pixelBlockSize) {
-        long timeDifference = System.currentTimeMillis() - this.lastComputeStart;
-        double timeInSeconds = timeDifference / 1000.0D;
+        long timeDifference = System.nanoTime() - this.lastComputeStart;
+        double timeInSeconds = timeDifference / 1000000000.0D;
 
         if (pixelBlockSize == DEFAULT_PIXEL_SIZE) {
             this.sceneDelegate.setRenderingStatus(this, false);
@@ -306,6 +311,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         point[1] = (-(pointY - graphArea[1]) / pixelSize);
 
         return point;
+    }
+
+    @Override
+    public void initialiseStrategy() {
+        this.fractalStrategy.initialise(this.viewWidth, this.viewHeight, this);
     }
 
     // IFractalComputeDelegate
@@ -434,7 +444,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.viewHeight = height;
 
         this.initialisePixelBuffers();
-        this.fractalStrategy.initialise(this.viewWidth, this.viewHeight, this);
+        this.initialiseStrategy();
         this.view.createNewFractalBitmap(new int[this.viewWidth * this.viewHeight]);
 
         this.sceneDelegate.onFractalViewReady(this);

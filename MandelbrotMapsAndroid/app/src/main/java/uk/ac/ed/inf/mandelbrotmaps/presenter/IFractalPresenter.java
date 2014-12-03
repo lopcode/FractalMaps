@@ -2,6 +2,7 @@ package uk.ac.ed.inf.mandelbrotmaps.presenter;
 
 import android.graphics.Matrix;
 
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.view.IFractalView;
 import uk.ac.ed.inf.mandelbrotmaps.view.IViewResizeListener;
@@ -27,9 +28,13 @@ public interface IFractalPresenter extends IFractalPresenterDelegate {
 
     public void setTouchHandler(IFractalTouchHandler touchHandler);
 
+    public void setComputeStrategy(IFractalComputeStrategy strategy);
+
     public double[] getGraphPositionFromClickedPosition(float touchX, float touchY);
 
     public double[] getPointFromGraphPosition(double pointX, double pointY);
+
+    public void initialiseStrategy();
 
     // Graph area affecting
 

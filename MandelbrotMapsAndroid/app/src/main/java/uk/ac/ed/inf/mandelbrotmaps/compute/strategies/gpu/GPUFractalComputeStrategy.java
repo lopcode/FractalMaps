@@ -225,8 +225,8 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         int[] primRowIndices = this.buildIntArray(row_indices);
 
         long setupEnd = System.nanoTime();
-        double setupTime = (setupEnd - setupStart) / 1000000D;
-        //Log.i("GFCS", "Took " + setupTime + " seconds to set up for GPU compute");
+        double setupTime = (setupEnd - setupStart) / 1000000000D;
+        Log.i("GFCS", "Took " + setupTime + " seconds to set up for GPU compute");
 
         for (int i = 0; i < numRows; i += arguments.linesPerProgressUpdate) {
             int[] indicesForUpdate = Arrays.copyOfRange(primRowIndices, i, i + arguments.linesPerProgressUpdate);

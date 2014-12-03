@@ -13,5 +13,5 @@ public interface MenuClickDelegate {
 
     public void onHelpClicked();
 
-    public void onSwitchLayoutClicked();
+    public void onSwitchRendererClicked();
 }

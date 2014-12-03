@@ -1,6 +1,8 @@
 package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu;
 
-public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaSeedSettable;
+
+public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy implements JuliaSeedSettable {
     private double juliaX = 0;
     private double juliaY = 0;
 
@@ -20,10 +22,12 @@ public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy {
         return -20;
     }
 
+    @Override
     public double[] getJuliaSeed() {
         return new double[]{this.juliaX, this.juliaY};
     }
 
+    @Override
     public void setJuliaSeed(double juliaX, double juliaY) {
         this.juliaX = juliaX;
         this.juliaY = juliaY;

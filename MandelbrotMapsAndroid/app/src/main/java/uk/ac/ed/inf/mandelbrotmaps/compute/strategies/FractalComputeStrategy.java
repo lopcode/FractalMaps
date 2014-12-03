@@ -22,7 +22,13 @@ public abstract class FractalComputeStrategy implements IFractalComputeStrategy 
         this.delegate = delegate;
     }
 
+    @Override
     public void setColourStrategy(IColourStrategy colourStrategy) {
         this.colourStrategy = colourStrategy;
+    }
+
+    @Override
+    public IColourStrategy getColourStrategy() {
+        return this.colourStrategy;
     }
 }

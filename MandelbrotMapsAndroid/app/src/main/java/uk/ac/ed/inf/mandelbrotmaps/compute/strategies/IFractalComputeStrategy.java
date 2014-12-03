@@ -15,6 +15,8 @@ public interface IFractalComputeStrategy {
 
     public void setColourStrategy(IColourStrategy colourStrategy);
 
+    public IColourStrategy getColourStrategy();
+
     public double getIterationBase();
 
     public double getIterationConstantFactor();
