@@ -35,6 +35,12 @@ public class GPURenderThread extends Thread {
                 FractalComputeArguments arguments = this.strategy.getNextRendering(threadID);
                 arguments.startTime = System.nanoTime();
 
+                if (this.strategy == null || this.abortSignalled())
+                    return;
+
+                if (this.strategy.getContext() == null)
+                    return;
+
                 this.strategy.computeFractalWithThreadID(arguments, threadID);
                 abortThisRendering = false;
             } catch (InterruptedException e) {

@@ -102,6 +102,9 @@ public class FractalView extends View implements IFractalView {
         if (this.width <= 0 || this.height <= 0 || this.fractalBitmap == null)
             return;
 
+        if (this.fractalBitmap.isRecycled())
+            return;
+
         canvas.drawBitmap(this.fractalBitmap, this.fractalTransformMatrix, this.fractalPaint);
 
         if (!drawOverlays)
@@ -136,5 +139,12 @@ public class FractalView extends View implements IFractalView {
     @Override
     public void postThreadSafeRedraw() {
         this.postInvalidate();
+    }
+
+    @Override
+    public void tearDown() {
+        if (this.fractalBitmap != null && !this.fractalBitmap.isRecycled()) {
+            this.fractalBitmap.recycle();
+        }
     }
 }

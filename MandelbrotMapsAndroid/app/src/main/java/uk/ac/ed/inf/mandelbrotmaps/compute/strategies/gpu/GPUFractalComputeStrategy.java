@@ -39,6 +39,10 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         this.context = context;
     }
 
+    public Context getContext() {
+        return this.context;
+    }
+
     @Override
     public void initialise(int width, int height, IFractalComputeDelegate delegate) {
         super.initialise(width, height, delegate);
@@ -185,10 +189,10 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
 
     @Override
     public synchronized void tearDown() {
-        this.destroyRenderscriptObjects();
-
         this.stopAllRendering();
         this.interruptThreads();
+
+        this.destroyRenderscriptObjects();
     }
 
     @Override
@@ -234,13 +238,19 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
             this.initialisePixelBufferSizesAllocation(size);
         }
 
-        this.pixelBufferAllocation.copyFrom(arguments.pixelBuffer);
-        this.pixelBufferSizesAllocation.copyFrom(arguments.pixelBufferSizes);
+        if (this.pixelBufferAllocation != null)
+            this.pixelBufferAllocation.copyFrom(arguments.pixelBuffer);
+
+        if (this.pixelBufferSizesAllocation != null)
+            this.pixelBufferSizesAllocation.copyFrom(arguments.pixelBufferSizes);
 
         //Log.i("GFCS", "Starting renderscript");
         //(int pixelBlockSize, int maxIterations, int defaultPixelSize,
         // int viewWidth, int viewHeight, double xMin, double yMax,
         // double pixelSize, int arraySize) {
+
+        if (renderThreadList.abortSignalled())
+            return;
 
         this.fractalRenderScript.set_pixelBlockSize(arguments.pixelBlockSize);
         this.fractalRenderScript.set_maxIterations(arguments.maxIterations);
@@ -281,12 +291,21 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
                 //Log.i("GFCS", "Created new allocation size");
             }
 
+            if (renderThreadList.abortSignalled())
+                return;
+
             row_indices_alloc.copyFrom(indices[i]);
+
+            if (this.fractalRenderScript == null)
+                return;
 
             this.invokeComputeFunction();
 
             if (arguments.pixelBuffer != null) {
                 //Log.i("GFCS", "Copying pixel buffer");
+                if (this.pixelBufferAllocation == null)
+                    return;
+
                 this.pixelBufferAllocation.copyTo(arguments.pixelBuffer);
             } else {
                 return;
@@ -294,6 +313,9 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
 
             if (arguments.pixelBufferSizes != null) {
                 //Log.i("GFCS", "Copying pixel buffer sizes");
+                if (this.pixelBufferSizesAllocation == null)
+                    return;
+
                 this.pixelBufferSizesAllocation.copyTo(arguments.pixelBufferSizes);
             } else {
                 return;

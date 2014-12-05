@@ -112,6 +112,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     private static boolean shouldGPURender = true;
     private boolean showingPinOverlay = true;
 
+    private long sceneStartTime = 0;
+
     // Android lifecycle
 
     @Override
@@ -122,6 +124,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         super.onCreate(savedInstanceState);
 
         Log.i("FA", "OnCreate");
+
+        this.sceneStartTime = System.nanoTime();
 
         this.settings = new SettingsManager(this);
         this.settings.setFractalSceneDelegate(this);
@@ -400,17 +404,22 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
+        Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
+
         switch (item.getItemId()) {
             case R.id.showMenu:
                 this.showMenuDialog();
                 return true;
 
             case R.id.switchLayout:
-                this.toggleLayoutType();
+                if (timeDiffInMS > 1000)
+                    this.toggleLayoutType();
                 return true;
 
             case R.id.switchViews:
-                this.onSwapViewsClicked();
+                if (timeDiffInMS > 1000)
+                    this.onSwapViewsClicked();
                 return true;
 
             default:
@@ -486,10 +495,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onSceneLayoutChanged(SceneLayoutEnum layoutType) {
-        this.saveGraphStates();
-        this.finish();
-        this.startActivity(this.getIntent());
-
+        this.reloadSelf();
         /*Log.i("FA", "Setting scene layout to " + layoutType.name());
         this.setContentViewFromLayoutType(layoutType);
         this.initialiseToolbar();
@@ -500,6 +506,15 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.mandelbrotFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);*/
     }
 
+    public void reloadSelf() {
+        this.mandelbrotStrategy.tearDown();
+        this.juliaStrategy.tearDown();
+        this.firstFractalView.tearDown();
+        this.secondFractalView.tearDown();
+
+        this.finish();
+        this.startActivity(this.getIntent());
+    }
     /*-----------------------------------------------------------------------------------*/
     /*Image saving/sharing*/
     /*-----------------------------------------------------------------------------------*/
@@ -784,10 +799,9 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onSwapViewsClicked() {
-        this.saveGraphStates();
-        this.finish();
         this.settings.setViewsSwitched(!this.settings.getViewsSwitched());
-        this.startActivity(this.getIntent());
+
+        this.reloadSelf();
     }
 
     // Detail control delegate

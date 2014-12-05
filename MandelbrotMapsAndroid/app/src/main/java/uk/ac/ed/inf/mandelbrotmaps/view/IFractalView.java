@@ -27,4 +27,6 @@ public interface IFractalView {
     public void setSceneOverlays(List<IFractalOverlay> overlays);
 
     public void setPresenterOverlays(List<IFractalOverlay> overlays);
+
+    public void tearDown();
 }
