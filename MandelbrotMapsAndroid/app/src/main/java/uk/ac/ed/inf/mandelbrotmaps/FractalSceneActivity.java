@@ -385,8 +385,9 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         }
     }
 
-    public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter) {
-        presenter.clearPixelSizes();
+    public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter, boolean fullRefresh) {
+        if (fullRefresh)
+            presenter.clearPixelSizes();
 
         if (settings.performCrudeFirst()) {
             presenter.recomputeGraph(FractalPresenter.CRUDE_PIXEL_BLOCK);
@@ -405,14 +406,14 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     public void onMandelbrotColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender) {
         this.firstFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
         if (reRender)
-            this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter);
+            this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter, true);
     }
 
     @Override
     public void onJuliaColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender) {
         this.secondFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
         if (reRender)
-            this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter);
+            this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter, true);
     }
 
     @Override
@@ -439,7 +440,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             presenter.setGraphArea(originalGraphPoint);
         }
 
-        this.scheduleRecomputeBasedOnPreferences(presenter);
+        this.scheduleRecomputeBasedOnPreferences(presenter, true);
     }
 
     @Override
@@ -730,7 +731,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.firstFractalPresenter.initialiseStrategy();
         this.secondFractalPresenter.initialiseStrategy();
 
-        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter);
+        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter, true);
         this.shouldGPURender = !this.shouldGPURender;
 
         this.dismissMenuDialog();
@@ -744,8 +745,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         this.firstFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
         this.secondFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.JULIA));
-        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter);
-        this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter);
+        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter, true);
+        this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter, true);
     }
 
     @Override

@@ -14,7 +14,7 @@ public interface IFractalSceneDelegate {
 
     public void onFractalRecomputed(IFractalPresenter presenter, double timeInSeconds);
 
-    public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter);
+    public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter, boolean fullRefresh);
 
     public void onPinColourChanged(PinColour colour);
 

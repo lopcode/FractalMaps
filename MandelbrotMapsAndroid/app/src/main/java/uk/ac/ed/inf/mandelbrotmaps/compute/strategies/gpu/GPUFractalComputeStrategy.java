@@ -5,12 +5,11 @@ import android.support.v8.renderscript.Allocation;
 import android.support.v8.renderscript.Element;
 import android.support.v8.renderscript.RenderScript;
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import uk.ac.ed.inf.mandelbrotmaps.R;
@@ -31,7 +30,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     private Boolean rendersComplete;
 
     private Allocation row_indices_alloc;
-    private Map<Integer, int[][]> rowIndices;
+    private SparseArray<int[][]> rowIndices;
 
     private int linesPerProgressUpdate;
 
@@ -51,7 +50,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     }
 
     public void initialiseRowIndexCache(List<Integer> pixelBlockSizesToPrecompute, int linesPerProgressUpdate) {
-        this.rowIndices = new HashMap<Integer, int[][]>(2);
+        this.rowIndices = new SparseArray<int[][]>(2);
         int size = this.width * this.height;
 
         for (Integer pixelBlockSize : pixelBlockSizesToPrecompute) {
@@ -336,7 +335,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         if (!this.renderQueueList.isEmpty())
             this.renderQueueList.clear();
 
-            this.renderThreadList.abortRendering();
+        this.renderThreadList.abortRendering();
     }
 
     public FractalComputeArguments getNextRendering(int threadID) throws InterruptedException {
