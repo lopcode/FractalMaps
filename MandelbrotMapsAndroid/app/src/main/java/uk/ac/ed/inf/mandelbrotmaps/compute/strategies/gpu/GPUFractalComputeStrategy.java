@@ -26,9 +26,9 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     private Allocation pixelBufferSizesAllocation;
     private Context context;
 
-    private ArrayList<LinkedBlockingQueue<FractalComputeArguments>> renderQueueList = new ArrayList<LinkedBlockingQueue<FractalComputeArguments>>();
-    private ArrayList<GPURenderThread> renderThreadList;
-    private ArrayList<Boolean> rendersComplete;
+    private LinkedBlockingQueue<FractalComputeArguments> renderQueueList = new LinkedBlockingQueue<FractalComputeArguments>();
+    private GPURenderThread renderThreadList;
+    private Boolean rendersComplete;
 
     private Allocation row_indices_alloc;
     private Map<Integer, int[][]> rowIndices;
@@ -114,25 +114,22 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     }
 
     public void initialiseRenderThread() {
-        if (this.renderThreadList != null && !this.renderThreadList.isEmpty()) {
+        if (this.renderThreadList != null && this.renderThreadList != null) {
             this.stopAllRendering();
             this.interruptThreads();
         }
 
-        this.renderThreadList = new ArrayList<GPURenderThread>();
-        this.rendersComplete = new ArrayList<Boolean>();
 
-        this.rendersComplete.add(false);
-        this.renderQueueList.add(new LinkedBlockingQueue<FractalComputeArguments>());
-        this.renderThreadList.add(new GPURenderThread(this, 0));
-        this.renderThreadList.get(0).start();
+        this.rendersComplete = false;
+        this.renderQueueList = new LinkedBlockingQueue<FractalComputeArguments>();
+        this.renderThreadList = new GPURenderThread(this, 0);
+        this.renderThreadList.start();
 
     }
 
     public void interruptThreads() {
-        for (GPURenderThread thread : renderThreadList) {
-            thread.interrupt();
-        }
+        if (renderThreadList != null)
+            renderThreadList.interrupt();
     }
 
     private void initialisePixelBufferAllocation(int size) {
@@ -198,10 +195,10 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     public void computeFractal(FractalComputeArguments arguments) {
         this.stopAllRendering();
 
-        rendersComplete.set(0, false);
+        rendersComplete = false;
 
-        Log.i("GFCS", "Scheduling renderscript render on separate thread");
         this.scheduleRendering(arguments);
+        //Log.i("GFCS", "Scheduling renderscript render on separate thread");
     }
 
     private int[] buildIntArray(List<Integer> integers) {
@@ -268,7 +265,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
 
         long setupEnd = System.nanoTime();
         double setupTime = (setupEnd - setupStart) / 1000000000D;
-        Log.i("GFCS", "Took " + setupTime + " seconds to set up for GPU compute");
+        //Log.i("GFCS", "Took " + setupTime + " seconds to set up for GPU compute");
 
         int[][] indices = this.rowIndices.get(arguments.pixelBlockSize);
         int progressUpdates = indices.length;
@@ -302,7 +299,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
                 return;
             }
 
-            if (!renderThreadList.get(0).abortSignalled() && arguments.linesPerProgressUpdate != arguments.viewHeight)
+            if (!renderThreadList.abortSignalled() && arguments.linesPerProgressUpdate != arguments.viewHeight)
                 this.delegate.postUpdate(arguments.pixelBuffer, arguments.pixelBufferSizes);
         }
 
@@ -314,14 +311,18 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
 //                Log.i("GFCS", "Not zero");
 //            }
 //        }
-        if (!renderThreadList.get(0).abortSignalled())
+        if (!renderThreadList.abortSignalled())
             this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize);
+
+        long endTime = System.nanoTime();
+        double allTime = (endTime - setupStart) / 1000000000D;
+        Log.i("GFCS", "Took " + allTime + " seconds to do GPU compute");
     }
 
     void scheduleRendering(FractalComputeArguments arguments) {
 
-        renderThreadList.get(0).allowRendering();
-        renderQueueList.get(0).add(arguments);
+        renderThreadList.allowRendering();
+        renderQueueList.add(arguments);
 
     }
 
@@ -333,14 +334,13 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     @Override
     public void stopAllRendering() {
         if (!this.renderQueueList.isEmpty())
-            this.renderQueueList.get(0).clear();
+            this.renderQueueList.clear();
 
-        if (!this.renderThreadList.isEmpty())
-            this.renderThreadList.get(0).abortRendering();
+            this.renderThreadList.abortRendering();
     }
 
     public FractalComputeArguments getNextRendering(int threadID) throws InterruptedException {
-        return this.renderQueueList.get(threadID).take();
+        return this.renderQueueList.take();
     }
 
     protected abstract void invokeComputeFunction();

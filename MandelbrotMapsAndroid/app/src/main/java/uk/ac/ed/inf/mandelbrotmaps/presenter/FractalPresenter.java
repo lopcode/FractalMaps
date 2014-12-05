@@ -214,7 +214,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public int getMaxIterations() {
         double absLnPixelSize = Math.abs(Math.log(getPixelSize()));
 
-        Log.i("FP", "Max iterations: " + absLnPixelSize);
+        Log.i("FP", "Abs ln pixel size: " + absLnPixelSize);
         double dblIterations = (this.detail / DETAIL_DIVISOR) * this.fractalStrategy.getIterationConstantFactor() * Math.pow(this.fractalStrategy.getIterationBase(), absLnPixelSize);
 
         int iterationsToPerform = (int) dblIterations;
@@ -322,7 +322,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void postUpdate(int[] pixels, int[] pixelSizes) {
-        Log.i("FP", "Got compute update");
+        //Log.i("FP", "Got compute update");
         this.pixelBuffer = pixels;
         this.pixelBufferSizes = pixelSizes;
         this.view.setBitmapPixels(this.pixelBuffer);
@@ -331,10 +331,14 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void postFinished(int[] pixels, int[] pixelSizes, int pixelBlockSize) {
-        Log.i("AFV", "Render finished");
+        long timeDifference = System.nanoTime() - this.lastComputeStart;
+        double timeInSeconds = timeDifference / 1000000000.0D;
+        Log.i("FP", "Time difference without post update " + timeInSeconds);
+
         this.postUpdate(pixels, pixelSizes);
 
         this.notifyRecomputeComplete(pixelBlockSize);
+        Log.i("AFV", "Render finished");
     }
 
     @Override

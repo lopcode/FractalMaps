@@ -114,6 +114,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         super.onCreate(savedInstanceState);
 
@@ -128,7 +129,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.setContentViewFromLayoutType(this.layoutType);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
 
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
