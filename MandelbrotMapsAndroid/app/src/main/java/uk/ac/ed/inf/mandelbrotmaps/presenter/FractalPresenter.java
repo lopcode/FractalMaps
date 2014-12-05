@@ -95,7 +95,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.view.setResizeListener(this);
         this.view.setTouchHandler(this.touchHandler);
         this.view.setPresenterOverlays(this.fractalPresenterOverlays);
-
     }
 
     @Override

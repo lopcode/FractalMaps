@@ -63,6 +63,9 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
     public static final String PREFERENCE_KEY_LAYOUT_TYPE = "LAYOUT_TYPE";
     public SceneLayoutEnum defaultLayoutType = SceneLayoutEnum.SIDE_BY_SIDE;
 
+    public static final String PREFERENCE_KEY_VIEWS_SWITCHED = "VIEWS_SWITCHED";
+    public boolean defaultViewsSwitched = false;
+
     private SharedPreferences getDefaultSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(this.context.getApplicationContext());
     }
@@ -170,6 +173,16 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
         editor.commit();
 
         this.sceneDelegate.onSceneLayoutChanged(layoutType);
+    }
+
+    public boolean getViewsSwitched() {
+        return this.getDefaultSharedPreferences().getBoolean(PREFERENCE_KEY_VIEWS_SWITCHED, this.defaultViewsSwitched);
+    }
+
+    public void setViewsSwitched(boolean viewsSwitched) {
+        SharedPreferences.Editor editor = this.getDefaultSharedPreferences().edit();
+        editor.putBoolean(PREFERENCE_KEY_VIEWS_SWITCHED, viewsSwitched);
+        editor.commit();
     }
 
     // OnSharedPreferenceChangeListener

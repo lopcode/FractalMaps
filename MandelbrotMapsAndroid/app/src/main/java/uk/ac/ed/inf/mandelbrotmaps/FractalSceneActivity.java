@@ -24,7 +24,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,8 +70,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
 
-    @InjectView(R.id.toolbarProgress)
-    ProgressBar toolbarProgress;
+    //@InjectView(R.id.toolbarProgress)
+    //ProgressBar toolbarProgress;
 
     @InjectView(R.id.firstFractalView)
     FractalView firstFractalView;
@@ -80,8 +79,11 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     @InjectView(R.id.secondFractalView)
     FractalView secondFractalView;
 
-    private FractalPresenter firstFractalPresenter;
-    private FractalPresenter secondFractalPresenter;
+    FractalView mandelbrotFractalView;
+    FractalView juliaFractalView;
+
+    private FractalPresenter mandelbrotFractalPresenter;
+    private FractalPresenter juliaFractalPresenter;
 
     private IFractalComputeStrategy mandelbrotStrategy;
     private IFractalComputeStrategy juliaStrategy;
@@ -108,6 +110,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     private SettingsManager settings;
 
     private static boolean shouldGPURender = true;
+    private boolean showingPinOverlay = true;
 
     // Android lifecycle
 
@@ -137,6 +140,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             showIntro();
         }
 
+        this.showingPinOverlay = (this.layoutType == SceneLayoutEnum.SIDE_BY_SIDE || (this.layoutType == SceneLayoutEnum.LARGE_SMALL && !this.settings.getViewsSwitched()));
+
         this.firstFractalView.initialise();
         this.secondFractalView.initialise();
 
@@ -144,6 +149,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         this.initialiseMandelbrotPresenter();
         this.initialiseJuliaPresenter();
+        this.initialiseViews();
 
         this.initialiseOverlays();
         this.settings.refreshColourSettings();
@@ -232,15 +238,17 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             this.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
         }
 
-        this.firstFractalPresenter = new FractalPresenter(this, this, mandelbrotStrategy);
-        MandelbrotTouchHandler mandelbrotTouchHandler = new MandelbrotTouchHandler(this, this.firstFractalPresenter);
-        mandelbrotTouchHandler.setPinMovementDelegate(this);
-        this.firstFractalPresenter.setTouchHandler(mandelbrotTouchHandler);
-//        this.firstFractalPresenter.fractalStrategy.setColourStrategy(new DefaultColourStrategy());
-        this.firstFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
-        this.firstFractalView.setResizeListener(this.firstFractalPresenter);
+        this.mandelbrotFractalPresenter = new FractalPresenter(this, this, mandelbrotStrategy);
 
-        this.firstFractalPresenter.setView(this.firstFractalView, new Matrix(), this.firstFractalPresenter);
+        if (this.showingPinOverlay) {
+            MandelbrotTouchHandler mandelbrotTouchHandler = new MandelbrotTouchHandler(this, this.mandelbrotFractalPresenter);
+            mandelbrotTouchHandler.setPinMovementDelegate(this);
+            this.mandelbrotFractalPresenter.setTouchHandler(mandelbrotTouchHandler);
+        } else {
+            this.mandelbrotFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.mandelbrotFractalPresenter));
+        }
+//        this.mandelbrotFractalPresenter.fractalStrategy.setColourStrategy(new DefaultColourStrategy());
+        this.mandelbrotFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
     }
 
     public void initialiseJuliaPresenter() {
@@ -251,54 +259,83 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             this.juliaStrategy = new JuliaCPUFractalComputeStrategy();
         }
 
-        this.secondFractalPresenter = new FractalPresenter(this, this, juliaStrategy);
-        this.secondFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.secondFractalPresenter));
-//        this.secondFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
-        this.secondFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.JULIA));
-        this.secondFractalView.setResizeListener(this.secondFractalPresenter);
+        this.juliaFractalPresenter = new FractalPresenter(this, this, juliaStrategy);
+        this.juliaFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.juliaFractalPresenter));
+//        this.juliaFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
+        this.juliaFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.JULIA));
+    }
 
-        this.secondFractalPresenter.setView(this.secondFractalView, new Matrix(), this.secondFractalPresenter);
+    public void initialiseViews() {
+        if (!this.settings.getViewsSwitched()) {
+            this.mandelbrotFractalView = this.firstFractalView;
+            this.juliaFractalView = this.secondFractalView;
+
+            this.firstFractalView.setResizeListener(this.mandelbrotFractalPresenter);
+            this.secondFractalView.setResizeListener(this.juliaFractalPresenter);
+
+            this.mandelbrotFractalPresenter.setView(this.firstFractalView, new Matrix(), this.mandelbrotFractalPresenter);
+            this.juliaFractalPresenter.setView(this.secondFractalView, new Matrix(), this.juliaFractalPresenter);
+        } else {
+            this.mandelbrotFractalView = this.secondFractalView;
+            this.juliaFractalView = this.firstFractalView;
+
+            this.firstFractalView.setResizeListener(this.juliaFractalPresenter);
+            this.secondFractalView.setResizeListener(this.mandelbrotFractalPresenter);
+
+            this.mandelbrotFractalPresenter.setView(this.secondFractalView, new Matrix(), this.mandelbrotFractalPresenter);
+            this.juliaFractalPresenter.setView(this.firstFractalView, new Matrix(), this.juliaFractalPresenter);
+        }
     }
 
     public void initialiseFractalParameters(MandelbrotJuliaLocation parameters) {
-        this.firstFractalPresenter.setGraphArea(parameters.getMandelbrotGraphArea());
-        this.secondFractalPresenter.setGraphArea(parameters.getJuliaGraphArea());
+        this.mandelbrotFractalPresenter.setGraphArea(parameters.getMandelbrotGraphArea());
+        this.juliaFractalPresenter.setGraphArea(parameters.getJuliaGraphArea());
         ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(parameters.getJuliaParam()[0], parameters.getJuliaParam()[1]);
     }
 
     public void initialiseRenderStates() {
-        this.UIRenderStates.put(this.firstFractalPresenter, false);
-        this.UIRenderStates.put(this.secondFractalPresenter, false);
+        this.UIRenderStates.put(this.mandelbrotFractalPresenter, false);
+        this.UIRenderStates.put(this.juliaFractalPresenter, false);
     }
 
     public void initialiseOverlays() {
         this.sceneOverlays = new ArrayList<IFractalOverlay>();
-        this.pinOverlay = new PinOverlay(this, 42.0f, 100f, 100f);
-        this.settings.refreshPinSettings();
-        this.sceneOverlays.add(this.pinOverlay);
-        this.firstFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);
+
+        if (this.showingPinOverlay) {
+            this.pinOverlay = new PinOverlay(this, 42.0f, 100f, 100f);
+            this.settings.refreshPinSettings();
+            this.sceneOverlays.add(this.pinOverlay);
+        }
+
+        this.mandelbrotFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        double[] mandelbrotGraphArea = this.firstFractalPresenter.getGraphArea();
-        double[] juliaGraphArea = this.secondFractalPresenter.getGraphArea();
+        this.saveGraphStates();
+
+        this.mandelbrotFractalPresenter.fractalStrategy.tearDown();
+        this.juliaFractalPresenter.fractalStrategy.tearDown();
+
+        PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext()).unregisterOnSharedPreferenceChangeListener(this.settings);
+    }
+
+    public void saveGraphStates() {
+        double[] mandelbrotGraphArea = this.mandelbrotFractalPresenter.getGraphArea();
+        double[] juliaGraphArea = this.juliaFractalPresenter.getGraphArea();
         double[] juliaParams = ((JuliaSeedSettable) this.juliaStrategy).getJuliaSeed();
 
         this.settings.savePreviousMandelbrotGraph(new SavedGraphArea(mandelbrotGraphArea[0], mandelbrotGraphArea[1], mandelbrotGraphArea[2]));
         this.settings.savePreviousJuliaGraph(new SavedJuliaGraph(juliaGraphArea[0], juliaGraphArea[1], juliaGraphArea[2], juliaParams[0], juliaParams[1]));
-
-        this.firstFractalPresenter.fractalStrategy.tearDown();
-        this.secondFractalPresenter.fractalStrategy.tearDown();
-
-        PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext()).unregisterOnSharedPreferenceChangeListener(this.settings);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+
+        this.saveGraphStates();
 
         if (savingDialog != null)
             savingDialog.dismiss();
@@ -318,8 +355,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         Log.i("FA", "Saving instance state");
 
-        outState.putDoubleArray(SettingsManager.PREVIOUS_MAIN_GRAPH_AREA, this.firstFractalPresenter.getGraphArea());
-        outState.putDoubleArray(SettingsManager.PREVIOUS_LITTLE_GRAPH_AREA, this.secondFractalPresenter.getGraphArea());
+        outState.putDoubleArray(SettingsManager.PREVIOUS_MAIN_GRAPH_AREA, this.mandelbrotFractalPresenter.getGraphArea());
+        outState.putDoubleArray(SettingsManager.PREVIOUS_LITTLE_GRAPH_AREA, this.juliaFractalPresenter.getGraphArea());
         outState.putDoubleArray(SettingsManager.PREVIOUS_JULIA_PARAMS, ((JuliaSeedSettable) this.juliaStrategy).getJuliaSeed());
     }
 
@@ -334,8 +371,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         double[] juliaParams = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_JULIA_PARAMS);
 
         ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(juliaParams[0], juliaParams[1]);
-        this.firstFractalPresenter.setGraphArea(mainGraphArea);
-        this.secondFractalPresenter.setGraphArea(juliaGraphArea);
+        this.mandelbrotFractalPresenter.setGraphArea(mainGraphArea);
+        this.juliaFractalPresenter.setGraphArea(juliaGraphArea);
     }
 
     // Menu creation and handling
@@ -372,6 +409,10 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 this.toggleLayoutType();
                 return true;
 
+            case R.id.switchViews:
+                this.onSwapViewsClicked();
+                return true;
+
             default:
                 return false;
         }
@@ -404,16 +445,16 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onMandelbrotColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender) {
-        this.firstFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
+        this.mandelbrotFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
         if (reRender)
-            this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter, true);
+            this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
     }
 
     @Override
     public void onJuliaColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender) {
-        this.secondFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
+        this.juliaFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
         if (reRender)
-            this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter, true);
+            this.scheduleRecomputeBasedOnPreferences(this.juliaFractalPresenter, true);
     }
 
     @Override
@@ -424,12 +465,12 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         //  Only if the graph area is the default, otherwise it got set manually
         View view = null;
         boolean isDefaultGraphArea = false;
-        if (presenter == this.firstFractalPresenter) {
+        if (presenter == this.mandelbrotFractalPresenter) {
             view = this.firstFractalView;
-            isDefaultGraphArea = this.firstFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultMandelbrotGraphArea;
-        } else if (presenter == this.secondFractalPresenter) {
+            isDefaultGraphArea = this.mandelbrotFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultMandelbrotGraphArea;
+        } else if (presenter == this.juliaFractalPresenter) {
             view = this.secondFractalView;
-            isDefaultGraphArea = this.secondFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultJuliaGraphArea;
+            isDefaultGraphArea = this.juliaFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultJuliaGraphArea;
         }
 
         if (isDefaultGraphArea) {
@@ -445,14 +486,18 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onSceneLayoutChanged(SceneLayoutEnum layoutType) {
-        Log.i("FA", "Setting scene layout to " + layoutType.name());
+        this.saveGraphStates();
+        this.finish();
+        this.startActivity(this.getIntent());
+
+        /*Log.i("FA", "Setting scene layout to " + layoutType.name());
         this.setContentViewFromLayoutType(layoutType);
         this.initialiseToolbar();
 
-        this.firstFractalPresenter.setView(this.firstFractalView, new Matrix(), this.firstFractalPresenter);
-        this.secondFractalPresenter.setView(this.secondFractalView, new Matrix(), this.secondFractalPresenter);
+        this.mandelbrotFractalPresenter.setView(this.firstFractalView, new Matrix(), this.mandelbrotFractalPresenter);
+        this.juliaFractalPresenter.setView(this.secondFractalView, new Matrix(), this.juliaFractalPresenter);
 
-        this.firstFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);
+        this.mandelbrotFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);*/
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -660,12 +705,12 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onResetClicked() {
-        this.firstFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultMandelbrotGraphArea);
-        this.secondFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultJuliaGraphArea);
+        this.mandelbrotFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultMandelbrotGraphArea);
+        this.juliaFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultJuliaGraphArea);
 
         ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(MandelbrotJuliaLocation.defaultJuliaParams[0], MandelbrotJuliaLocation.defaultJuliaParams[1]);
-        this.onFractalViewReady(this.firstFractalPresenter);
-        this.onFractalViewReady(this.secondFractalPresenter);
+        this.onFractalViewReady(this.mandelbrotFractalPresenter);
+        this.onFractalViewReady(this.juliaFractalPresenter);
 
         this.dismissMenuDialog();
     }
@@ -725,16 +770,24 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.mandelbrotStrategy.setColourStrategy(mandelbrotColourStrategy);
         this.juliaStrategy.setColourStrategy(juliaColourStrategy);
 
-        this.firstFractalPresenter.setComputeStrategy(this.mandelbrotStrategy);
-        this.secondFractalPresenter.setComputeStrategy(this.juliaStrategy);
+        this.mandelbrotFractalPresenter.setComputeStrategy(this.mandelbrotStrategy);
+        this.juliaFractalPresenter.setComputeStrategy(this.juliaStrategy);
 
-        this.firstFractalPresenter.initialiseStrategy();
-        this.secondFractalPresenter.initialiseStrategy();
+        this.mandelbrotFractalPresenter.initialiseStrategy();
+        this.juliaFractalPresenter.initialiseStrategy();
 
-        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter, true);
+        this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
         this.shouldGPURender = !this.shouldGPURender;
 
         this.dismissMenuDialog();
+    }
+
+    @Override
+    public void onSwapViewsClicked() {
+        this.saveGraphStates();
+        this.finish();
+        this.settings.setViewsSwitched(!this.settings.getViewsSwitched());
+        this.startActivity(this.getIntent());
     }
 
     // Detail control delegate
@@ -743,10 +796,10 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     public void onApplyChangesClicked() {
         this.dismissDetailDialog();
 
-        this.firstFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
-        this.secondFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.JULIA));
-        this.scheduleRecomputeBasedOnPreferences(this.firstFractalPresenter, true);
-        this.scheduleRecomputeBasedOnPreferences(this.secondFractalPresenter, true);
+        this.mandelbrotFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
+        this.juliaFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.JULIA));
+        this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
+        this.scheduleRecomputeBasedOnPreferences(this.juliaFractalPresenter, true);
     }
 
     @Override
@@ -768,7 +821,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 atLeastOnePresenterRendering = true;
         }
 
-        if (atLeastOnePresenterRendering) {
+        /*if (atLeastOnePresenterRendering) {
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -782,37 +835,41 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                     toolbarProgress.setVisibility(View.GONE);
                 }
             });
-        }
+        }*/
     }
 
     @Override
     public void onFractalLongClick(IFractalPresenter presenter, float x, float y) {
-        if (presenter != this.firstFractalPresenter)
+        if (presenter != this.mandelbrotFractalPresenter)
             return;
 
-        this.pinOverlay.setPosition(x, y);
-        double[] graphTapPosition = this.firstFractalPresenter.getGraphPositionFromClickedPosition(x, y);
-        this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.DEFAULT_PIXEL_SIZE);
-        //Log.i("FA", "First fractal long tap at " + x + " " + y + ", " + graphTapPosition[0] + " " + graphTapPosition[1]);
+        if (this.showingPinOverlay) {
+            this.pinOverlay.setPosition(x, y);
 
+            double[] graphTapPosition = this.mandelbrotFractalPresenter.getGraphPositionFromClickedPosition(x, y);
+            this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.DEFAULT_PIXEL_SIZE);
+        }
+        //Log.i("FA", "First fractal long tap at " + x + " " + y + ", " + graphTapPosition[0] + " " + graphTapPosition[1]);
     }
 
     private void setJuliaSeedAndRecompute(double[] juliaSeed, int pixelBlockSize) {
         ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(juliaSeed[0], juliaSeed[1]);
         this.firstFractalView.postUIThreadRedraw();
-        this.secondFractalPresenter.clearPixelSizes();
-        this.secondFractalPresenter.recomputeGraph(pixelBlockSize);
+        this.juliaFractalPresenter.clearPixelSizes();
+        this.juliaFractalPresenter.recomputeGraph(pixelBlockSize);
     }
 
     @Override
     public void onFractalRecomputeScheduled(IFractalPresenter presenter) {
-        if (presenter != this.firstFractalPresenter)
+        if (presenter != this.mandelbrotFractalPresenter)
             return;
 
         double[] juliaSeed = ((JuliaSeedSettable) this.juliaStrategy).getJuliaSeed();
-        double[] newPinPoint = this.firstFractalPresenter.getPointFromGraphPosition(juliaSeed[0], juliaSeed[1]);
+        double[] newPinPoint = this.mandelbrotFractalPresenter.getPointFromGraphPosition(juliaSeed[0], juliaSeed[1]);
 
-        this.pinOverlay.setPosition((float) newPinPoint[0], (float) newPinPoint[1]);
+        if (this.showingPinOverlay) {
+            this.pinOverlay.setPosition((float) newPinPoint[0], (float) newPinPoint[1]);
+        }
     }
 
     @Override
@@ -832,11 +889,12 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     @Override
     public void pinDragged(float x, float y, boolean forceUpdate) {
         this.pinOverlay.setPosition(x, y);
-        this.firstFractalView.postUIThreadRedraw();
+
+        this.mandelbrotFractalView.postUIThreadRedraw();
 
         double dragDistance = Math.sqrt(Math.pow(this.previousPinDragX - x, 2) + Math.pow(this.previousPinDragY - y, 2));
         if (dragDistance > 1 || forceUpdate) {
-            double[] graphTapPosition = this.firstFractalPresenter.getGraphPositionFromClickedPosition(x, y);
+            double[] graphTapPosition = this.mandelbrotFractalPresenter.getGraphPositionFromClickedPosition(x, y);
             this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.CRUDE_PIXEL_BLOCK);
 
             this.previousPinDragX = x;
@@ -868,7 +926,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     public void stoppedDraggingPin(float x, float y) {
         this.pinDragged(x, y, true);
         this.pinOverlay.setHilighted(false);
-        this.secondFractalPresenter.clearPixelSizes();
-        this.secondFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+        this.juliaFractalPresenter.clearPixelSizes();
+        this.juliaFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
     }
 }

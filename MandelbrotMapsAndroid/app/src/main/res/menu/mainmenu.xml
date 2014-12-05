@@ -9,6 +9,13 @@
         android:icon="@drawable/ic_action_view_as_grid"
         app:showAsAction="always"></item>
     <item
+        android:id="@+id/switchViews"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_swap_views"
+        android:icon="@drawable/ic_action_import_export"
+        app:showAsAction="always"></item>
+    <item
         android:id="@+id/showMenu"
         android:enabled="true"
         android:visible="true"
