@@ -31,9 +31,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     private Boolean rendersComplete;
 
     private Allocation row_indices_alloc;
-    private SparseArray<int[][]> rowIndices;
-
-    private int linesPerProgressUpdate;
+    private SparseArray<SparseArray<int[][]>> rowIndices;
 
     public void setContext(Context context) {
         this.context = context;
@@ -47,73 +45,77 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     public void initialise(int width, int height, IFractalComputeDelegate delegate) {
         super.initialise(width, height, delegate);
 
-        this.linesPerProgressUpdate = this.height / 4;
-
         this.initialiseRenderThread();
         this.initialiseRenderScript();
-        this.initialiseRowIndexCache(Arrays.asList(new Integer[]{FractalPresenter.CRUDE_PIXEL_BLOCK, FractalPresenter.DEFAULT_PIXEL_SIZE}), linesPerProgressUpdate);
+
+        this.initialiseRowIndexCache(Arrays.asList(new Integer[]{FractalPresenter.CRUDE_PIXEL_BLOCK, FractalPresenter.DEFAULT_PIXEL_SIZE}), this.height / 16, this.height / 2);
     }
 
-    public void initialiseRowIndexCache(List<Integer> pixelBlockSizesToPrecompute, int linesPerProgressUpdate) {
-        this.rowIndices = new SparseArray<int[][]>(2);
+    public void initialiseRowIndexCache(List<Integer> pixelBlockSizesToPrecompute, int minLinesPerUpdate, int maxLinesPerUpdate) {
+        this.rowIndices = new SparseArray<SparseArray<int[][]>>(20);
         int size = this.width * this.height;
 
-        for (Integer pixelBlockSize : pixelBlockSizesToPrecompute) {
-            ArrayList<Integer> row_indices = new ArrayList<Integer>(2000);
+        for (int linesPerProgressUpdate = minLinesPerUpdate; linesPerProgressUpdate <= maxLinesPerUpdate; linesPerProgressUpdate++) {
+            SparseArray<int[][]> pixelBlockArray = new SparseArray<int[][]>(2);
+            for (Integer pixelBlockSize : pixelBlockSizesToPrecompute) {
+                ArrayList<Integer> row_indices = new ArrayList<Integer>(2000);
 
-            int numberOfThreads = 4;
-            for (int threadID = 0; threadID < numberOfThreads; threadID++) {
-                int yStart = (this.height / 2) + (threadID * pixelBlockSize);
-                int yEnd = this.height;
+                int numberOfThreads = 4;
+                for (int threadID = 0; threadID < numberOfThreads; threadID++) {
+                    int yStart = (this.height / 2) + (threadID * pixelBlockSize);
+                    int yEnd = this.height;
 
-                int xPixelMin = 0;
-                int xPixelMax = this.width;
-                int yPixelMin = yStart;
-                int yPixelMax = yEnd;
+                    int xPixelMin = 0;
+                    int xPixelMax = this.width;
+                    int yPixelMin = yStart;
+                    int yPixelMax = yEnd;
 
-                int imgWidth = xPixelMax - xPixelMin;
-                int xPixel = 0;
-                int yPixel = 0;
-                int yIncrement = 0;
+                    int imgWidth = xPixelMax - xPixelMin;
+                    int xPixel = 0;
+                    int yPixel = 0;
+                    int yIncrement = 0;
 
-                int pixelIncrement = pixelBlockSize * numberOfThreads;
-                int originalIncrement = pixelIncrement;
+                    int pixelIncrement = pixelBlockSize * numberOfThreads;
+                    int originalIncrement = pixelIncrement;
 
-                int loopCount = 0;
+                    int loopCount = 0;
 
-                for (yIncrement = yPixelMin; yPixel < yPixelMax + (numberOfThreads * pixelBlockSize); yIncrement += pixelIncrement) {
-                    yPixel = yIncrement;
+                    for (yIncrement = yPixelMin; yPixel < yPixelMax + (numberOfThreads * pixelBlockSize); yIncrement += pixelIncrement) {
+                        yPixel = yIncrement;
 
-                    pixelIncrement = (loopCount * originalIncrement);
-                    if (loopCount % 2 == 0) {
-                        pixelIncrement *= -1;
+                        pixelIncrement = (loopCount * originalIncrement);
+                        if (loopCount % 2 == 0) {
+                            pixelIncrement *= -1;
+                        }
+
+                        loopCount++;
+
+                        if (((imgWidth * (yPixel + pixelBlockSize - 1)) + xPixelMax) > size || yPixel < 0) {
+                            //rsDebug("exceeded bounds of image", 0);
+                            //rsDebug("yPixel", yPixel);
+                            //rsDebug("pixelBufferSizesLength", arraySize);
+                            continue;
+                        }
+
+                        row_indices.add(yPixel);
                     }
-
-                    loopCount++;
-
-                    if (((imgWidth * (yPixel + pixelBlockSize - 1)) + xPixelMax) > size || yPixel < 0) {
-                        //rsDebug("exceeded bounds of image", 0);
-                        //rsDebug("yPixel", yPixel);
-                        //rsDebug("pixelBufferSizesLength", arraySize);
-                        continue;
-                    }
-
-                    row_indices.add(yPixel);
                 }
+
+                int numRows = row_indices.size();
+                int[] primRowIndices = this.buildIntArray(row_indices);
+                int progressUpdates = (int) Math.ceil(numRows / (double) linesPerProgressUpdate);
+                int[][] indices = new int[progressUpdates][];
+
+                int progressUpdate = 0;
+                for (int i = 0; i < numRows; i += linesPerProgressUpdate) {
+                    indices[progressUpdate] = Arrays.copyOfRange(primRowIndices, i, i + linesPerProgressUpdate);
+                    progressUpdate++;
+                }
+
+                pixelBlockArray.put(pixelBlockSize, indices);
             }
 
-            int numRows = row_indices.size();
-            int[] primRowIndices = this.buildIntArray(row_indices);
-            int progressUpdates = (int) Math.ceil(numRows / (double) linesPerProgressUpdate);
-            int[][] indices = new int[progressUpdates][];
-
-            int progressUpdate = 0;
-            for (int i = 0; i < numRows; i += linesPerProgressUpdate) {
-                indices[progressUpdate] = Arrays.copyOfRange(primRowIndices, i, i + linesPerProgressUpdate);
-                progressUpdate++;
-            }
-
-            rowIndices.put(pixelBlockSize, indices);
+            this.rowIndices.put(linesPerProgressUpdate, pixelBlockArray);
         }
     }
 
@@ -277,7 +279,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         double setupTime = (setupEnd - setupStart) / 1000000000D;
         //Log.i("GFCS", "Took " + setupTime + " seconds to set up for GPU compute");
 
-        int[][] indices = this.rowIndices.get(arguments.pixelBlockSize);
+        int[][] indices = this.rowIndices.get(arguments.linesPerProgressUpdate).get(arguments.pixelBlockSize);
         int progressUpdates = indices.length;
         for (int i = 0; i < progressUpdates; i++) {
             int linesInProgressUpdate = indices[i].length;
