@@ -37,8 +37,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     protected double detail;
 
-    private long lastComputeStart;
-
     private final int ZOOM_SLIDER_SCALING = 300;
     private double MINZOOM_LN_PIXEL = -3;
 
@@ -144,8 +142,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
             this.sceneDelegate.setRenderingStatus(this, true);
-
-        this.lastComputeStart = System.nanoTime();
 
         this.fractalStrategy.computeFractal(new FractalComputeArguments(pixelBlockSize,
                 this.getMaxIterations(),
@@ -280,14 +276,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     @Override
-    public void notifyRecomputeComplete(int pixelBlockSize) {
-        long timeDifference = System.nanoTime() - this.lastComputeStart;
-        double timeInSeconds = timeDifference / 1000000000.0D;
-
+    public void notifyRecomputeComplete(int pixelBlockSize, double timeTakenInSeconds) {
         if (pixelBlockSize == DEFAULT_PIXEL_SIZE) {
             this.sceneDelegate.setRenderingStatus(this, false);
 
-            this.sceneDelegate.onFractalRecomputed(this, timeInSeconds);
+            this.sceneDelegate.onFractalRecomputed(this, timeTakenInSeconds);
         }
     }
 
@@ -330,15 +323,9 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     @Override
-    public void postFinished(int[] pixels, int[] pixelSizes, int pixelBlockSize) {
-        long timeDifference = System.nanoTime() - this.lastComputeStart;
-        double timeInSeconds = timeDifference / 1000000000.0D;
-        Log.i("FP", "Time difference without post update " + timeInSeconds);
-
+    public void postFinished(int[] pixels, int[] pixelSizes, int pixelBlockSize, double timeTakenInSeconds) {
         this.postUpdate(pixels, pixelSizes);
-
-        this.notifyRecomputeComplete(pixelBlockSize);
-        Log.i("AFV", "Render finished");
+        this.notifyRecomputeComplete(pixelBlockSize, timeTakenInSeconds);
     }
 
     @Override

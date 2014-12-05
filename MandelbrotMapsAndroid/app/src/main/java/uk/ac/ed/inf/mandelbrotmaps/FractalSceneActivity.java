@@ -816,14 +816,14 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     }
 
     @Override
-    public void onFractalRecomputed(IFractalPresenter presenter, double timeInSeconds) {
-        Log.i("FP", presenter.getClass().getCanonicalName() + " took " + timeInSeconds + " seconds to finish render");
+    public void onFractalRecomputed(IFractalPresenter presenter, double timeTakenInSeconds) {
+        Log.i("FP", presenter.getClass().getCanonicalName() + " took " + timeTakenInSeconds + " seconds to finish render");
 
         String type = "CPU";
         if (this.shouldGPURender)
             type = "GPU";
 
-        String toastText = type + " took " + timeInSeconds + " seconds";
+        String toastText = type + " took " + timeTakenInSeconds + " seconds";
         this.showToastOnUIThread(toastText, toastText.length());
     }
 

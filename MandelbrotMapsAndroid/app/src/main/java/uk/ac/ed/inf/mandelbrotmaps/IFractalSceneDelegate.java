@@ -12,7 +12,7 @@ public interface IFractalSceneDelegate {
 
     public void onFractalRecomputeScheduled(IFractalPresenter presenter);
 
-    public void onFractalRecomputed(IFractalPresenter presenter, double timeInSeconds);
+    public void onFractalRecomputed(IFractalPresenter presenter, double timeTakenInSeconds);
 
     public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter, boolean fullRefresh);
 

@@ -16,7 +16,7 @@ public interface IFractalPresenter extends IFractalPresenterDelegate {
 
     public void recomputeGraph(int pixelBlockSize);
 
-    public void notifyRecomputeComplete(int pixelBlockSize);
+    public void notifyRecomputeComplete(int pixelBlockSize, double timeTakenInSeconds);
 
     public int getMaxIterations();
 

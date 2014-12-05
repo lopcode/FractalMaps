@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import uk.ac.ed.inf.mandelbrotmaps.R;
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
@@ -310,19 +311,19 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
 //                Log.i("GFCS", "Not zero");
 //            }
 //        }
-        if (!renderThreadList.abortSignalled())
-            this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize);
 
         long endTime = System.nanoTime();
+
+        if (!renderThreadList.abortSignalled())
+            this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize, (endTime - arguments.startTime) / 1000000000D);
+
         double allTime = (endTime - setupStart) / 1000000000D;
         Log.i("GFCS", "Took " + allTime + " seconds to do GPU compute");
     }
 
     void scheduleRendering(FractalComputeArguments arguments) {
-
         renderThreadList.allowRendering();
         renderQueueList.add(arguments);
-
     }
 
     @Override

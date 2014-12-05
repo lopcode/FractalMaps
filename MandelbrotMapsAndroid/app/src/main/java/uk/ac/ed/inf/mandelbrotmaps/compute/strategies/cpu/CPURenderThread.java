@@ -31,6 +31,8 @@ public class CPURenderThread extends Thread {
         while (true) {
             try {
                 FractalComputeArguments arguments = this.strategy.getNextRendering(threadID);
+                arguments.startTime = System.nanoTime();
+
                 this.strategy.computeFractalWithThreadID(arguments, threadID);
                 abortThisRendering = false;
             } catch (InterruptedException e) {

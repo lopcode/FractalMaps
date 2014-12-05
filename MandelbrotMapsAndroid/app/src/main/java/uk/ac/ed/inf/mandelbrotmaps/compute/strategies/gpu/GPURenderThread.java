@@ -1,5 +1,7 @@
 package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu;
 
+import android.util.Log;
+
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 
 public class GPURenderThread extends Thread {
@@ -31,6 +33,8 @@ public class GPURenderThread extends Thread {
         while (true) {
             try {
                 FractalComputeArguments arguments = this.strategy.getNextRendering(threadID);
+                arguments.startTime = System.nanoTime();
+
                 this.strategy.computeFractalWithThreadID(arguments, threadID);
                 abortThisRendering = false;
             } catch (InterruptedException e) {

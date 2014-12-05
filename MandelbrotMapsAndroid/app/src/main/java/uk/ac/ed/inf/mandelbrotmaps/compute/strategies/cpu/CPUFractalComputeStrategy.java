@@ -73,11 +73,15 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
 
             if (!this.renderThreadList.isEmpty())
                 this.renderThreadList.get(i).abortRendering();
+
+            this.rendersComplete.set(i, false);
         }
     }
 
     public FractalComputeArguments getNextRendering(int threadID) throws InterruptedException {
-        return this.renderQueueList.get(threadID).take();
+        FractalComputeArguments arguments = this.renderQueueList.get(threadID).take();
+        this.rendersComplete.set(threadID, false);
+        return arguments;
     }
 
     @Override
@@ -177,7 +181,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
             }
             // Show thread's work in progress
             if (showRenderProgress && (loopCount % arguments.linesPerProgressUpdate == 0) && !callingThread.abortSignalled()) {
-                Log.i("CFCS", "Posting update for thread " + threadID);
+                //Log.i("CFCS", "Posting update for thread " + threadID);
                 this.delegate.postUpdate(arguments.pixelBuffer, arguments.pixelBufferSizes);
             }
         }
@@ -192,7 +196,8 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
         }
 
         if (allComplete) {
-            this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize);
+            this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize, (System.nanoTime() - arguments.startTime) / 1000000000D);
+
         }
     }
 
