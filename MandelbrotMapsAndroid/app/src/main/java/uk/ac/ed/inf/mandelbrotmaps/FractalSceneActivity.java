@@ -113,6 +113,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     private boolean showingPinOverlay = true;
 
     private long sceneStartTime = 0;
+    private static final int BUTTON_SPAM_MINIMUM_MS = 1000;
 
     // Android lifecycle
 
@@ -413,12 +414,12 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 return true;
 
             case R.id.switchLayout:
-                if (timeDiffInMS > 1000)
+                if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS)
                     this.toggleLayoutType();
                 return true;
 
             case R.id.switchViews:
-                if (timeDiffInMS > 1000)
+                if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS)
                     this.onSwapViewsClicked();
                 return true;
 
