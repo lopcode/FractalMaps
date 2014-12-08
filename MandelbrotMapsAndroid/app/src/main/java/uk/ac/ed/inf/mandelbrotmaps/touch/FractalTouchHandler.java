@@ -20,6 +20,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
     private float totalDragX = 0;
     private float totalDragY = 0;
+    private float currentScaleFactor = 0;
 
     public FractalTouchHandler(Context context, IFractalTouchDelegate delegate) {
         this.setTouchDelegate(delegate);
@@ -132,7 +133,8 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-        this.delegate.scaleFractal(detector.getScaleFactor(), detector.getFocusX(), detector.getFocusY());
+        this.currentScaleFactor = detector.getScaleFactor();
+        this.delegate.scaleFractal(this.currentScaleFactor, detector.getFocusX(), detector.getFocusY());
         return true;
     }
 
@@ -140,6 +142,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
     public void onScaleEnd(ScaleGestureDetector detector) {
         this.totalDragX = 0;
         this.totalDragY = 0;
+        this.currentScaleFactor = 0;
 
         this.delegate.stopScaling();
         currentlyDragging = true;
@@ -158,7 +161,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 //            return true;
 //        }
 
-        if (!gestureDetector.isInProgress() && this.totalDragX < 1 && this.totalDragY < 1) {
+        if (!gestureDetector.isInProgress() && Math.abs(this.totalDragX) < 1 && Math.abs(this.totalDragY) < 1 && this.currentScaleFactor < 1.5f) {
             Log.i("FTH", "Long tap at " + this.dragLastX + " " + this.dragLastY);
             this.delegate.onLongClick(this.dragLastX, this.dragLastY);
             return true;

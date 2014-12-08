@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -69,6 +70,9 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     // Layout variables
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
+
+    @InjectView(R.id.toolbarProgress)
+    ProgressBar toolbarProgress;
 
     //@InjectView(R.id.toolbarProgress)
     //ProgressBar toolbarProgress;
@@ -844,7 +848,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 atLeastOnePresenterRendering = true;
         }
 
-        /*if (atLeastOnePresenterRendering) {
+        if (atLeastOnePresenterRendering) {
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -858,7 +862,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                     toolbarProgress.setVisibility(View.GONE);
                 }
             });
-        }*/
+        }
     }
 
     @Override
