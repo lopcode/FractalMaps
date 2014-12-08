@@ -140,15 +140,18 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         // Empirically determined lines per update
         double absLnPixelSize = Math.abs(Math.log(getPixelSize()));
-        double adjustedLog = (absLnPixelSize) / 6.0D;
+        double adjustedLog = ((absLnPixelSize - 9.0D) / 2.0D);
         if (adjustedLog < 2.0D)
             adjustedLog = 2.0D;
 
         if (adjustedLog > 16.0D)
             adjustedLog = 16.0D;
 
-        int linesPerUpdate = (int) (this.viewHeight / adjustedLog);
-        Log.i("AFV", "Notifying of update every " + linesPerUpdate + " lines");
+        int nextPowerOfTwo = this.nextClosestPowerOfTwo((int) Math.ceil(adjustedLog));
+
+        Log.i("FP", "Zoom power of two: " + nextPowerOfTwo);
+        int linesPerUpdate = (int) (this.viewHeight / nextPowerOfTwo);
+        Log.i("FP", "Notifying of update every " + linesPerUpdate + " lines");
 
         if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
             this.sceneDelegate.setRenderingStatus(this, true);
@@ -166,6 +169,14 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
                 this.pixelBufferSizes));
 
         this.sceneDelegate.onFractalRecomputeScheduled(this);
+    }
+
+    public int nextClosestPowerOfTwo(int x) {
+        int y = 1;
+        while (y < x) {
+            y = y << 1;
+        }
+        return y;
     }
 
     @Override

@@ -516,6 +516,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.finish();
         this.startActivity(this.getIntent());
     }
+
     /*-----------------------------------------------------------------------------------*/
     /*Image saving/sharing*/
     /*-----------------------------------------------------------------------------------*/

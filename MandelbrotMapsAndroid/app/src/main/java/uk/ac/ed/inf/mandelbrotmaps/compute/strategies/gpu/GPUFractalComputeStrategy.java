@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import uk.ac.ed.inf.mandelbrotmaps.R;
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
@@ -48,19 +47,21 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
         this.initialiseRenderThread();
         this.initialiseRenderScript();
 
-        this.initialiseRowIndexCache(Arrays.asList(new Integer[]{FractalPresenter.CRUDE_PIXEL_BLOCK, FractalPresenter.DEFAULT_PIXEL_SIZE}), this.height / 16, this.height / 2);
+        this.initialiseRowIndexCache(Arrays.asList(new Integer[]{FractalPresenter.CRUDE_PIXEL_BLOCK, FractalPresenter.DEFAULT_PIXEL_SIZE}), 1, 4);
     }
 
-    public void initialiseRowIndexCache(List<Integer> pixelBlockSizesToPrecompute, int minLinesPerUpdate, int maxLinesPerUpdate) {
+    public void initialiseRowIndexCache(List<Integer> pixelBlockSizesToPrecompute, int minPowerOfTwo, int maxPowerOfTwo) {
         this.rowIndices = new SparseArray<SparseArray<int[][]>>(20);
         int size = this.width * this.height;
 
-        for (int linesPerProgressUpdate = minLinesPerUpdate; linesPerProgressUpdate <= maxLinesPerUpdate; linesPerProgressUpdate++) {
+        for (int power = minPowerOfTwo; power <= maxPowerOfTwo; power++) {
+            int linesPerProgressUpdate = (int) (this.height / Math.pow(2, power));
+
             SparseArray<int[][]> pixelBlockArray = new SparseArray<int[][]>(2);
             for (Integer pixelBlockSize : pixelBlockSizesToPrecompute) {
                 ArrayList<Integer> row_indices = new ArrayList<Integer>(2000);
 
-                int numberOfThreads = 4;
+                int numberOfThreads = 2;
                 for (int threadID = 0; threadID < numberOfThreads; threadID++) {
                     int yStart = (this.height / 2) + (threadID * pixelBlockSize);
                     int yEnd = this.height;

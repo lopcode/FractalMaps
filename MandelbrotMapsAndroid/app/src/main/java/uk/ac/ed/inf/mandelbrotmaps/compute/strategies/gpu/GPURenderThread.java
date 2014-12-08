@@ -1,7 +1,5 @@
 package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu;
 
-import android.util.Log;
-
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 
 public class GPURenderThread extends Thread {
