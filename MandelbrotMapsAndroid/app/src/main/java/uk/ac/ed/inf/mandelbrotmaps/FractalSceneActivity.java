@@ -413,16 +413,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 this.showMenuDialog();
                 return true;
 
-            case R.id.switchLayout:
-                if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS)
-                    this.toggleLayoutType();
-                return true;
-
-            case R.id.switchViews:
-                if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS)
-                    this.onSwapViewsClicked();
-                return true;
-
             default:
                 return false;
         }
@@ -801,9 +791,26 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onSwapViewsClicked() {
-        this.settings.setViewsSwitched(!this.settings.getViewsSwitched());
+        long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
+        Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
 
-        this.reloadSelf();
+        if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS) {
+            this.settings.setViewsSwitched(!this.settings.getViewsSwitched());
+
+            this.reloadSelf();
+            this.dismissMenuDialog();
+        }
+    }
+
+    @Override
+    public void onSwitchLayoutClicked() {
+        long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
+        Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
+
+        if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS) {
+            this.toggleLayoutType();
+            this.dismissMenuDialog();
+        }
     }
 
     // Detail control delegate

@@ -78,4 +78,13 @@ public class MandelbrotTouchHandler extends FractalTouchHandler {
 
         return false;
     }
+
+    @Override
+    public boolean onLongClick(View v) {
+        if (!this.draggingPin) {
+            return super.onLongClick(v);
+        }
+
+        return false;
+    }
 }

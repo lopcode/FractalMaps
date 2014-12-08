@@ -79,4 +79,14 @@ public class MenuDialog extends DialogFragment {
     public void switchRendererClicked() {
         this.delegate.onSwitchRendererClicked();
     }
+
+    @OnClick(R.id.menuButtonSwapViews)
+    public void swapViewsClicked() {
+        this.delegate.onSwapViewsClicked();
+    }
+
+    @OnClick(R.id.menuButtonSwitchLayout)
+    public void switchLayoutClicked() {
+        this.delegate.onSwitchLayoutClicked();
+    }
 }
