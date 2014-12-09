@@ -17,7 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
-import android.view.KeyEvent;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,8 +48,7 @@ import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu.JuliaGPUFractalCompute
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu.MandelbrotGPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
-import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
-import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
+import uk.ac.ed.inf.mandelbrotmaps.menu.global.GlobalMenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.IPinMovementDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinColour;
@@ -66,7 +65,7 @@ import uk.ac.ed.inf.mandelbrotmaps.touch.FractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.touch.MandelbrotTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.view.FractalView;
 
-public class FractalSceneActivity extends ActionBarActivity implements IFractalSceneDelegate, IPinMovementDelegate, MenuClickDelegate, DetailControlDelegate {
+public class FractalSceneActivity extends ActionBarActivity implements IFractalSceneDelegate, IPinMovementDelegate, GlobalMenuClickDelegate, DetailControlDelegate {
     // Layout variables
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
@@ -97,7 +96,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     private File imagefile;
     private Boolean cancelledSave = false;
 
-    public static final String FRAGMENT_MENU_DIALOG_NAME = "menuDialog";
     public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
 
     private HashMap<IFractalPresenter, Boolean> UIRenderStates = new HashMap<IFractalPresenter, Boolean>();
@@ -118,6 +116,12 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     private long sceneStartTime = 0;
     private static final int BUTTON_SPAM_MINIMUM_MS = 1000;
+
+    // Context menus
+    private float pinContextX = 0;
+    private float pinContextY = 0;
+    private View viewContext;
+    private boolean contextFromTouchHandler = false;
 
     // Android lifecycle
 
@@ -294,6 +298,9 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             this.mandelbrotFractalPresenter.setView(this.secondFractalView, new Matrix(), this.mandelbrotFractalPresenter);
             this.juliaFractalPresenter.setView(this.firstFractalView, new Matrix(), this.juliaFractalPresenter);
         }
+
+        this.registerForContextMenu(this.mandelbrotFractalView);
+        this.registerForContextMenu(this.juliaFractalView);
     }
 
     public void initialiseFractalParameters(MandelbrotJuliaLocation parameters) {
@@ -386,35 +393,31 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     // Menu creation and handling
 
-    // Listen for hardware menu presses on older phones, show the menu dialog
-    @Override
-    public boolean onKeyDown(int keycode, KeyEvent e) {
-        switch (keycode) {
-            case KeyEvent.KEYCODE_MENU:
-                this.showMenuDialog();
-                return true;
-        }
-
-        return super.onKeyDown(keycode, e);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.mainmenu, menu);
+        inflater.inflate(R.menu.global_menu, menu);
 
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
-        Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
+        //long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
+        //Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
 
         switch (item.getItemId()) {
-            case R.id.showMenu:
-                this.showMenuDialog();
+            case R.id.menuResetAll:
+                this.onResetClicked();
+                return true;
+
+            case R.id.menuHelp:
+                this.onHelpClicked();
+                return true;
+
+            case R.id.menuSettings:
+                this.onSettingsClicked();
                 return true;
 
             default:
@@ -684,20 +687,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     // Dialogs
 
-    private void showMenuDialog() {
-        FragmentManager fm = getSupportFragmentManager();
-        MenuDialog menuDialog = new MenuDialog();
-        menuDialog.show(fm, FRAGMENT_MENU_DIALOG_NAME);
-    }
-
-    private void dismissMenuDialog() {
-        Fragment dialog = getSupportFragmentManager().findFragmentByTag(FRAGMENT_MENU_DIALOG_NAME);
-        if (dialog != null) {
-            DialogFragment df = (DialogFragment) dialog;
-            df.dismiss();
-        }
-    }
-
     private void showDetailDialog() {
         FragmentManager fm = getSupportFragmentManager();
         DetailControlDialog detailControlDialog = new DetailControlDialog();
@@ -712,29 +701,120 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         }
     }
 
+    // Context menus
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        if (!this.contextFromTouchHandler)
+            return;
+
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+
+        this.viewContext = v;
+
+        if (v == this.mandelbrotFractalView) {
+            inflater.inflate(R.menu.fractal_menu, menu);
+            MenuItem placePinItem = menu.findItem(R.id.menuPlacePin);
+            if (placePinItem != null)
+                placePinItem.setVisible(true);
+
+            Log.i("FSA", "Inflating Mandelbrot context menu");
+        } else if (v == this.juliaFractalView) {
+            inflater.inflate(R.menu.fractal_menu, menu);
+            MenuItem placePinItem = menu.findItem(R.id.menuPlacePin);
+            if (placePinItem != null)
+                placePinItem.setVisible(false);
+
+            Log.i("FSA", "Inflating Julia context menu");
+        }
+
+        this.contextFromTouchHandler = false;
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        boolean handled = false;
+
+        if (this.viewContext == this.mandelbrotFractalView) {
+            handled = this.onMandelbrotContextItemSelected(item);
+        } else if (this.viewContext == this.juliaFractalView) {
+            handled = this.onJuliaContextItemSelected(item);
+        }
+
+        if (handled)
+            return true;
+
+        switch (item.getItemId()) {
+            case R.id.menuSwapViews:
+                this.onSwapViewsClicked();
+                return true;
+
+            case R.id.menuSwitchLayout:
+                this.onSwitchLayoutClicked();
+                return true;
+
+            default:
+                Log.i("FSA", "Context item selected");
+                return true;
+        }
+    }
+
+    public boolean onMandelbrotContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menuPlacePin:
+                this.setPinPosition(this.pinContextX, this.pinContextY);
+                return true;
+
+            case R.id.menuResetFractal:
+                this.resetMandelbrotFractal();
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    public boolean onJuliaContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menuResetFractal:
+                this.resetJuliaFractal();
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
     // Menu Delegate
 
     @Override
     public void onResetClicked() {
+        this.resetMandelbrotFractal();
+        this.resetJuliaFractal();
+    }
+
+    public void resetMandelbrotFractal() {
         this.mandelbrotFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultMandelbrotGraphArea);
-        this.juliaFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultJuliaGraphArea);
-
-        ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(MandelbrotJuliaLocation.defaultJuliaParams[0], MandelbrotJuliaLocation.defaultJuliaParams[1]);
         this.onFractalViewReady(this.mandelbrotFractalPresenter);
-        this.onFractalViewReady(this.juliaFractalPresenter);
+    }
 
-        this.dismissMenuDialog();
+    public void resetJuliaFractal() {
+        this.juliaFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultJuliaGraphArea);
+        ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(MandelbrotJuliaLocation.defaultJuliaParams[0], MandelbrotJuliaLocation.defaultJuliaParams[1]);
+
+        double[] pinPosition = this.mandelbrotFractalPresenter.getPointFromGraphPosition(MandelbrotJuliaLocation.defaultJuliaParams[0], MandelbrotJuliaLocation.defaultJuliaParams[1]);
+        this.setPinPosition((float) pinPosition[0], (float) pinPosition[1]);
+        this.onFractalViewReady(this.juliaFractalPresenter);
     }
 
     @Override
     public void onSettingsClicked() {
         this.startActivity(new Intent(this, SettingsActivity.class));
-        this.dismissMenuDialog();
     }
 
     @Override
     public void onDetailClicked() {
-        this.dismissMenuDialog();
         this.showDetailDialog();
     }
 
@@ -753,7 +833,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     @Override
     public void onHelpClicked() {
         this.showHelpDialog();
-        this.dismissMenuDialog();
     }
 
     @Override
@@ -789,8 +868,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
         this.shouldGPURender = !this.shouldGPURender;
-
-        this.dismissMenuDialog();
     }
 
     @Override
@@ -802,7 +879,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             this.settings.setViewsSwitched(!this.settings.getViewsSwitched());
 
             this.reloadSelf();
-            this.dismissMenuDialog();
         }
     }
 
@@ -813,7 +889,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS) {
             this.toggleLayoutType();
-            this.dismissMenuDialog();
         }
     }
 
@@ -867,16 +942,26 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onFractalLongClick(IFractalPresenter presenter, float x, float y) {
-        if (presenter != this.mandelbrotFractalPresenter)
-            return;
+        this.contextFromTouchHandler = true;
 
-        if (this.showingPinOverlay) {
-            this.pinOverlay.setPosition(x, y);
+        if (presenter == this.mandelbrotFractalPresenter) {
+            this.openContextMenu(this.mandelbrotFractalView);
 
-            double[] graphTapPosition = this.mandelbrotFractalPresenter.getGraphPositionFromClickedPosition(x, y);
-            this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.DEFAULT_PIXEL_SIZE);
+            if (this.showingPinOverlay) {
+                this.pinContextX = x;
+                this.pinContextY = y;
+            }
+        } else {
+            this.openContextMenu(this.juliaFractalView);
         }
         //Log.i("FA", "First fractal long tap at " + x + " " + y + ", " + graphTapPosition[0] + " " + graphTapPosition[1]);
+    }
+
+    private void setPinPosition(float x, float y) {
+        this.pinOverlay.setPosition(x, y);
+
+        double[] graphTapPosition = this.mandelbrotFractalPresenter.getGraphPositionFromClickedPosition(x, y);
+        this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.DEFAULT_PIXEL_SIZE);
     }
 
     private void setJuliaSeedAndRecompute(double[] juliaSeed, int pixelBlockSize) {

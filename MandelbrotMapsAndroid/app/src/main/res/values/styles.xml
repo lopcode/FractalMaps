@@ -3,6 +3,12 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:actionOverflowButtonStyle">@style/OverflowIcon</item>
+    </style>
+
+    <!-- Styles -->
+    <style name="OverflowIcon" parent="@style/Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:src">@drawable/ic_action_overflow</item>
     </style>
 
 </resources>

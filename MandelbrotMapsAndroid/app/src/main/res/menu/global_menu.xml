@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menuResetAll"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_reset_all"
+        android:icon="@drawable/ic_action_refresh"
+        app:showAsAction="never"></item>
+    <item
+        android:id="@+id/menuHelp"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_help"
+        android:icon="@drawable/ic_action_help"
+        app:showAsAction="never"></item>
+    <item
+        android:id="@+id/menuSettings"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_settings"
+        android:icon="@drawable/ic_action_settings"
+        app:showAsAction="never"></item>
+</menu>

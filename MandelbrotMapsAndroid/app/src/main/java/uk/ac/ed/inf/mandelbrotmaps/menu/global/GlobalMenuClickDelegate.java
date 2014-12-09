@@ -1,6 +1,6 @@
-package uk.ac.ed.inf.mandelbrotmaps.menu;
+package uk.ac.ed.inf.mandelbrotmaps.menu.global;
 
-public interface MenuClickDelegate {
+public interface GlobalMenuClickDelegate {
     public void onResetClicked();
 
     public void onSettingsClicked();
