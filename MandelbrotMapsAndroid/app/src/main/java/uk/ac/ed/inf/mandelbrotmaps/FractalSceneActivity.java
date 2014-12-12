@@ -709,27 +709,102 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             return;
 
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getMenuInflater();
 
         this.viewContext = v;
 
         if (v == this.mandelbrotFractalView) {
-            inflater.inflate(R.menu.fractal_menu, menu);
-            MenuItem placePinItem = menu.findItem(R.id.menuPlacePin);
-            if (placePinItem != null)
-                placePinItem.setVisible(true);
-
             Log.i("FSA", "Inflating Mandelbrot context menu");
-        } else if (v == this.juliaFractalView) {
-            inflater.inflate(R.menu.fractal_menu, menu);
-            MenuItem placePinItem = menu.findItem(R.id.menuPlacePin);
-            if (placePinItem != null)
-                placePinItem.setVisible(false);
 
+            this.inflateMandelbrotContextMenu(menu);
+        } else if (v == this.juliaFractalView) {
             Log.i("FSA", "Inflating Julia context menu");
+
+            this.inflateJuliaContextMenu(menu);
         }
 
         this.contextFromTouchHandler = false;
+    }
+
+    public void inflateMandelbrotContextMenu(ContextMenu menu) {
+        MenuInflater inflater = getMenuInflater();
+
+        inflater.inflate(R.menu.fractal_menu, menu);
+        MenuItem placePinItem = menu.findItem(R.id.menuPlacePin);
+        if (placePinItem != null)
+            placePinItem.setVisible(true);
+
+        boolean viewsSwitched = this.settings.getViewsSwitched();
+
+        MenuItem resetItem = menu.findItem(R.id.menuResetFractal);
+        MenuItem changeLayoutItem = menu.findItem(R.id.menuChangeLayout);
+        MenuItem viewPositionItem = menu.findItem(R.id.menuSwapViews);
+
+        resetItem.setTitle(String.format(this.getResources().getString(R.string.context_reset), "Mandelbrot"));
+
+        if (this.layoutType == SceneLayoutEnum.SIDE_BY_SIDE) {
+            changeLayoutItem.setTitle(String.format(this.getResources().getString(R.string.context_make_big), "Mandelbrot"));
+
+            String movePosition = "";
+            if (viewsSwitched) {
+                movePosition = "left";
+            } else {
+                movePosition = "right";
+            }
+
+            viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), "Mandelbrot", movePosition));
+        } else if (this.layoutType == SceneLayoutEnum.LARGE_SMALL) {
+            changeLayoutItem.setTitle(String.format(this.getResources().getString(R.string.context_view_side_side), "Mandelbrot"));
+
+            String movePosition = "";
+            if (viewsSwitched) {
+                movePosition = "down";
+            } else {
+                movePosition = "up";
+            }
+
+            viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), "Mandelbrot", movePosition));
+        }
+    }
+
+    public void inflateJuliaContextMenu(ContextMenu menu) {
+        MenuInflater inflater = getMenuInflater();
+
+        inflater.inflate(R.menu.fractal_menu, menu);
+        MenuItem placePinItem = menu.findItem(R.id.menuPlacePin);
+        if (placePinItem != null)
+            placePinItem.setVisible(false);
+
+        boolean viewsSwitched = this.settings.getViewsSwitched();
+
+        MenuItem resetItem = menu.findItem(R.id.menuResetFractal);
+        MenuItem changeLayoutItem = menu.findItem(R.id.menuChangeLayout);
+        MenuItem viewPositionItem = menu.findItem(R.id.menuSwapViews);
+
+        resetItem.setTitle(String.format(this.getResources().getString(R.string.context_reset), "Julia"));
+
+        if (this.layoutType == SceneLayoutEnum.SIDE_BY_SIDE) {
+            changeLayoutItem.setTitle(String.format(this.getResources().getString(R.string.context_make_big), "Julia"));
+
+            String movePosition = "";
+            if (viewsSwitched) {
+                movePosition = "right";
+            } else {
+                movePosition = "left";
+            }
+
+            viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), "Julia", movePosition));
+        } else if (this.layoutType == SceneLayoutEnum.LARGE_SMALL) {
+            changeLayoutItem.setTitle(String.format(this.getResources().getString(R.string.context_view_side_side), "Julia"));
+
+            String movePosition = "";
+            if (viewsSwitched) {
+                movePosition = "up";
+            } else {
+                movePosition = "down";
+            }
+
+            viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), "Julia", movePosition));
+        }
     }
 
     @Override
@@ -750,8 +825,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 this.onSwapViewsClicked();
                 return true;
 
-            case R.id.menuSwitchLayout:
-                this.onSwitchLayoutClicked();
+            case R.id.menuChangeLayout:
+                this.onChangeLayoutClicked(this.viewContext);
                 return true;
 
             default:
@@ -882,12 +957,22 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         }
     }
 
-    @Override
-    public void onSwitchLayoutClicked() {
+    public void onChangeLayoutClicked(View viewContext) {
         long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
         Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
 
+        boolean viewsSwitched = this.settings.getViewsSwitched();
         if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS) {
+            if (this.layoutType == SceneLayoutEnum.SIDE_BY_SIDE) {
+                if (viewContext == this.mandelbrotFractalView) {
+                    if (viewsSwitched)
+                        this.settings.setViewsSwitched(false);
+                } else if (viewContext == this.juliaFractalView) {
+                    if (!viewsSwitched)
+                        this.settings.setViewsSwitched(true);
+                }
+            }
+
             this.toggleLayoutType();
         }
     }

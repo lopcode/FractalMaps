@@ -16,6 +16,4 @@ public interface GlobalMenuClickDelegate {
     public void onSwitchRendererClicked();
 
     public void onSwapViewsClicked();
-
-    public void onSwitchLayoutClicked();
 }

@@ -16,10 +16,10 @@
         android:icon="@drawable/ic_action_refresh"
         app:showAsAction="never"></item>
     <item
-        android:id="@+id/menuSwitchLayout"
+        android:id="@+id/menuChangeLayout"
         android:enabled="true"
         android:visible="true"
-        android:title="@string/menu_switch_layout"
+        android:title="@string/context_view_side_side"
         android:icon="@drawable/ic_action_view_as_grid"
         app:showAsAction="never"></item>
     <item
