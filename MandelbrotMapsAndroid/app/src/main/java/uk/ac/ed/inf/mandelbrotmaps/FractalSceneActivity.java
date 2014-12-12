@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Matrix;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -734,21 +735,38 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             placePinItem.setVisible(true);
 
         boolean viewsSwitched = this.settings.getViewsSwitched();
+        boolean stillRendering = this.UIRenderStates.get(this.mandelbrotFractalPresenter);
 
         MenuItem resetItem = menu.findItem(R.id.menuResetFractal);
         MenuItem changeLayoutItem = menu.findItem(R.id.menuChangeLayout);
         MenuItem viewPositionItem = menu.findItem(R.id.menuSwapViews);
+        MenuItem saveItem = menu.findItem(R.id.menuSave);
+        MenuItem shareItem = menu.findItem(R.id.menuShare);
+
+        saveItem.setEnabled(!stillRendering);
+        shareItem.setEnabled(!stillRendering);
 
         resetItem.setTitle(String.format(this.getResources().getString(R.string.context_reset), "Mandelbrot"));
 
         if (this.layoutType == SceneLayoutEnum.SIDE_BY_SIDE) {
             changeLayoutItem.setTitle(String.format(this.getResources().getString(R.string.context_make_big), "Mandelbrot"));
 
+            boolean portrait = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
+
             String movePosition = "";
-            if (viewsSwitched) {
-                movePosition = "left";
+
+            if (portrait) {
+                if (viewsSwitched) {
+                    movePosition = "up";
+                } else {
+                    movePosition = "down";
+                }
             } else {
-                movePosition = "right";
+                if (viewsSwitched) {
+                    movePosition = "left";
+                } else {
+                    movePosition = "right";
+                }
             }
 
             viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), "Mandelbrot", movePosition));
@@ -775,21 +793,38 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             placePinItem.setVisible(false);
 
         boolean viewsSwitched = this.settings.getViewsSwitched();
+        boolean stillRendering = this.UIRenderStates.get(this.juliaFractalPresenter);
 
         MenuItem resetItem = menu.findItem(R.id.menuResetFractal);
         MenuItem changeLayoutItem = menu.findItem(R.id.menuChangeLayout);
         MenuItem viewPositionItem = menu.findItem(R.id.menuSwapViews);
+        MenuItem saveItem = menu.findItem(R.id.menuSave);
+        MenuItem shareItem = menu.findItem(R.id.menuShare);
+
+        saveItem.setEnabled(!stillRendering);
+        shareItem.setEnabled(!stillRendering);
 
         resetItem.setTitle(String.format(this.getResources().getString(R.string.context_reset), "Julia"));
 
         if (this.layoutType == SceneLayoutEnum.SIDE_BY_SIDE) {
             changeLayoutItem.setTitle(String.format(this.getResources().getString(R.string.context_make_big), "Julia"));
 
+            boolean portrait = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
+
             String movePosition = "";
-            if (viewsSwitched) {
-                movePosition = "right";
+
+            if (portrait) {
+                if (viewsSwitched) {
+                    movePosition = "down";
+                } else {
+                    movePosition = "up";
+                }
             } else {
-                movePosition = "left";
+                if (viewsSwitched) {
+                    movePosition = "left";
+                } else {
+                    movePosition = "right";
+                }
             }
 
             viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), "Julia", movePosition));
