@@ -132,6 +132,9 @@ public abstract class AbstractFractalView extends View {
     // Tan Lei variables
     public float pointBoxHeight = 100.0f;
     public float pointBoxWidth = 150.0f;
+    float[] pointOneCoords = new float[2];
+    float[] pointTwoCoords = new float[2];
+    float[] pointThreeCoords = new float[2];
 
 
     /*-----------------------------------------------------------------------------------*/
@@ -356,6 +359,19 @@ public abstract class AbstractFractalView extends View {
 
             parentActivity.hideProgressSpinner();
         }
+    }
+
+    /*-----------------------------------------------------------------------------------*/
+    /* Rotation */
+    /*-----------------------------------------------------------------------------------*/
+	/*  */
+    public void startRotating() {
+
+    }
+
+    /*  */
+    public void stopRotating() {
+
     }
 
     /*-----------------------------------------------------------------------------------*/
@@ -822,6 +838,16 @@ public abstract class AbstractFractalView extends View {
 
         pointCoords[0] = (float) ((parentActivity.misPoints[2][0] - graphArea[0]) / pixelSize);
         pointCoords[1] = (float) (-(parentActivity.misPoints[2][1] - graphArea[1]) / pixelSize);
+
+        return pointCoords;
+    }
+
+    public float[] convertJuliaCoords(float[] center) {
+        float[] pointCoords = new float[2];
+        double pixelSize = getPixelSize();
+
+        pointCoords[0] = (float) ((center[0] - graphArea[0]) / pixelSize);
+        pointCoords[1] = (float) (-(center[1] - graphArea[1]) / pixelSize);
 
         return pointCoords;
     }

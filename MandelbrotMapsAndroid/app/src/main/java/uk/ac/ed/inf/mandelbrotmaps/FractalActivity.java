@@ -21,6 +21,7 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,7 +50,8 @@ import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 
 public class FractalActivity extends ActionBarActivity implements OnTouchListener, OnScaleGestureListener,
-        OnSharedPreferenceChangeListener, OnLongClickListener, MenuClickDelegate, DetailControlDelegate {
+        OnSharedPreferenceChangeListener, OnLongClickListener, MenuClickDelegate, DetailControlDelegate,
+        OnDoubleTapListener{
 
     private final String TAG = "MMaps";
 
@@ -112,6 +114,13 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             {-2.0f, 0.0f},
             {0.0f, 1.0f},
             {0.11031f, -0.67037f}};
+    public float[][] centerPoints = {
+            {-1f, 0f},
+            {2f, 0f},
+            {-0.30025f, 0.62481f},
+            {1.30025f, -0.62481f},
+            {-0.142051f, -0.52205f},
+            {0.142051f, 0.52205f}};
     public float tanLeiZoom;
     public float tanLeiRotate;
 
@@ -547,32 +556,38 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                 } else if (showingLittle && fractalType == FractalTypeEnum.MANDELBROT && !gestureDetector.isInProgress()
                         && !fractalView.holdingPin && (touchingPin(evt.getX(), evt.getY()))) {
                     // Take hold of the pin, reset the little fractal view.
+                    // Prioritize selecting pin over selecting Tan Lei boxes.
                     fractalView.holdingPin = true;
                     updateLittleJulia(evt.getX(), evt.getY());
-                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT
-                        && evt.getX() <= fractalView.getPointOneCoords()[0] + fractalView.pointBoxWidth/2
+                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT) {
+                    if (evt.getX() <= fractalView.getPointOneCoords()[0] + fractalView.pointBoxWidth/2
                         && evt.getX() >= fractalView.getPointOneCoords()[0] - fractalView.pointBoxWidth/2
                         && evt.getY() <= fractalView.getPointOneCoords()[1] + fractalView.pointBoxHeight/2
-                        && evt.getY() >= fractalView.getPointOneCoords()[1] - fractalView.pointBoxHeight/2) {
-                    ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[0][0],
-                            (double) misPoints[0][1]);
-                    littleFractalSelected = true;
-                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT
-                        && evt.getX() <= fractalView.getPointTwoCoords()[0] + fractalView.pointBoxWidth/2
+                        && evt.getY() >= fractalView.getPointOneCoords()[1] - fractalView.pointBoxHeight/2)
+                    {
+                        // Go to first sample Tan Lei point in Julia set.
+                        ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[0][0],
+                                (double) misPoints[0][1]);
+                        littleFractalSelected = true;
+                    } else if (evt.getX() <= fractalView.getPointTwoCoords()[0] + fractalView.pointBoxWidth/2
                         && evt.getX() >= fractalView.getPointTwoCoords()[0] - fractalView.pointBoxWidth/2
                         && evt.getY() <= fractalView.getPointTwoCoords()[1] + fractalView.pointBoxHeight/2
                         && evt.getY() >= fractalView.getPointTwoCoords()[1] - fractalView.pointBoxHeight/2) {
+                    // Go to second sample Tan Lei point in Julia set.
                     ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[1][0],
                             (double) misPoints[1][1]);
                     littleFractalSelected = true;
-                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT
-                        && evt.getX() <= fractalView.getPointThreeCoords()[0] + fractalView.pointBoxWidth/2
+                    } else if (evt.getX() <= fractalView.getPointThreeCoords()[0] + fractalView.pointBoxWidth/2
                         && evt.getX() >= fractalView.getPointThreeCoords()[0] - fractalView.pointBoxWidth/2
                         && evt.getY() <= fractalView.getPointThreeCoords()[1] + fractalView.pointBoxHeight/2
                         && evt.getY() >= fractalView.getPointThreeCoords()[1] - fractalView.pointBoxHeight/2) {
-                    ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[2][0],
-                            (double) misPoints[2][1]);
-                    littleFractalSelected = true;
+                        // Go to third sample Tan Lei point in Julia set.
+                        ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[2][0],
+                                (double) misPoints[2][1]);
+                        littleFractalSelected = true;
+                    }
+                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.JULIA) {
+                    // Zoom to selected point.
                 } else {
                     startDragging(evt);
                 }
@@ -727,6 +742,21 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             return true;
         }
 
+        return false;
+    }
+
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTapEvent(MotionEvent motionEvent) {
         return false;
     }
 
@@ -1033,4 +1063,5 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public void onCancelClicked() {
         this.dismissDetailDialog();
     }
+
 }

@@ -15,9 +15,6 @@ public class MandelbrotFractalView extends AbstractFractalView {
 
     public double[] currentJuliaParams = null;
     private float[] pinCoords = new float[2];
-    private float[] pointOneCoords = new float[2];
-    private float[] pointTwoCoords = new float[2];
-    private float[] pointThreeCoords = new float[2];
 
     Paint outerPinPaint;
     Paint innerPinPaint;
@@ -109,7 +106,7 @@ public class MandelbrotFractalView extends AbstractFractalView {
             float[] mappedCoordsTL1 = new float[2];
             float[] mappedCoordsTL2 = new float[2];
             float[] mappedCoordsTL3 = new float[2];
-                if (fractalViewSize == FractalViewSize.LARGE) {
+            if (fractalViewSize == FractalViewSize.LARGE) {
 
                 matrix.mapPoints(mappedCoordsTL1, pointOneCoords);
 
@@ -150,7 +147,7 @@ public class MandelbrotFractalView extends AbstractFractalView {
     }
 
     /* Runs when the view changes size.
-     * Sets the size of the pin based on screen size. */
+     * Sets the size of the pin and box based on screen size. */
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
