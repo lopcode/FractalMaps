@@ -1,15 +1,15 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript;
 
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 
-public class GPURenderThread extends Thread {
-    private GPUFractalComputeStrategy strategy;
+public class RenderscriptRenderThread extends Thread {
+    private RenderscriptFractalComputeStrategy strategy;
 
     private volatile boolean abortThisRendering = false;
     public boolean isRunning = false;
     private int threadID = -1;
 
-    public GPURenderThread(GPUFractalComputeStrategy strategy, int threadID) {
+    public RenderscriptRenderThread(RenderscriptFractalComputeStrategy strategy, int threadID) {
         this.strategy = strategy;
         this.threadID = threadID;
         //setPriority(Thread.MAX_PRIORITY);

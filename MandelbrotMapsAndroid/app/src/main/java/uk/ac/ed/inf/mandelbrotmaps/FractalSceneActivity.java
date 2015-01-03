@@ -44,12 +44,11 @@ import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaSeedSettable;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.MandelbrotCPUFractalComputeStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu.GPUFractalComputeStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu.JuliaGPUFractalComputeStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu.MandelbrotGPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.JuliaRenderscriptFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.RenderscriptFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.MandelbrotRenderscriptFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
-import uk.ac.ed.inf.mandelbrotmaps.menu.global.GlobalMenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.IPinMovementDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinColour;
@@ -66,7 +65,7 @@ import uk.ac.ed.inf.mandelbrotmaps.touch.FractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.touch.MandelbrotTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.view.FractalView;
 
-public class FractalSceneActivity extends ActionBarActivity implements IFractalSceneDelegate, IPinMovementDelegate, GlobalMenuClickDelegate, DetailControlDelegate {
+public class FractalSceneActivity extends ActionBarActivity implements IFractalSceneDelegate, IPinMovementDelegate, DetailControlDelegate {
     // Layout variables
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
@@ -112,7 +111,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     private SettingsManager settings;
 
-    private static boolean shouldGPURender = true;
+    private static boolean shouldRenderscriptRender = true;
     private boolean showingPinOverlay = true;
 
     private long sceneStartTime = 0;
@@ -245,9 +244,9 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     }
 
     public void initialiseMandelbrotPresenter() {
-        if (shouldGPURender) {
-            this.mandelbrotStrategy = new MandelbrotGPUFractalComputeStrategy();
-            ((GPUFractalComputeStrategy) this.mandelbrotStrategy).setContext(this);
+        if (shouldRenderscriptRender) {
+            this.mandelbrotStrategy = new MandelbrotRenderscriptFractalComputeStrategy();
+            ((RenderscriptFractalComputeStrategy) this.mandelbrotStrategy).setContext(this);
         } else {
             this.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
         }
@@ -266,9 +265,9 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     }
 
     public void initialiseJuliaPresenter() {
-        if (shouldGPURender) {
-            this.juliaStrategy = new JuliaGPUFractalComputeStrategy();
-            ((GPUFractalComputeStrategy) this.juliaStrategy).setContext(this);
+        if (shouldRenderscriptRender) {
+            this.juliaStrategy = new JuliaRenderscriptFractalComputeStrategy();
+            ((RenderscriptFractalComputeStrategy) this.juliaStrategy).setContext(this);
         } else {
             this.juliaStrategy = new JuliaCPUFractalComputeStrategy();
         }
@@ -902,7 +901,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     // Menu Delegate
 
-    @Override
     public void onResetClicked() {
         this.resetMandelbrotFractal();
         this.resetJuliaFractal();
@@ -922,12 +920,10 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.onFractalViewReady(this.juliaFractalPresenter);
     }
 
-    @Override
     public void onSettingsClicked() {
         this.startActivity(new Intent(this, SettingsActivity.class));
     }
 
-    @Override
     public void onDetailClicked() {
         this.showDetailDialog();
     }
@@ -944,12 +940,10 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 //        this.dismissMenuDialog();
 //    }
 
-    @Override
     public void onHelpClicked() {
         this.showHelpDialog();
     }
 
-    @Override
     public void onSwitchRendererClicked() {
         double[] juliaParams = ((JuliaSeedSettable) this.juliaStrategy).getJuliaSeed();
 
@@ -959,15 +953,15 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.mandelbrotStrategy.tearDown();
         this.juliaStrategy.tearDown();
 
-        if (this.shouldGPURender) {
+        if (this.shouldRenderscriptRender) {
             this.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
             this.juliaStrategy = new JuliaCPUFractalComputeStrategy();
         } else {
-            this.mandelbrotStrategy = new MandelbrotGPUFractalComputeStrategy();
-            ((GPUFractalComputeStrategy) this.mandelbrotStrategy).setContext(this);
+            this.mandelbrotStrategy = new MandelbrotRenderscriptFractalComputeStrategy();
+            ((RenderscriptFractalComputeStrategy) this.mandelbrotStrategy).setContext(this);
 
-            this.juliaStrategy = new JuliaGPUFractalComputeStrategy();
-            ((GPUFractalComputeStrategy) this.juliaStrategy).setContext(this);
+            this.juliaStrategy = new JuliaRenderscriptFractalComputeStrategy();
+            ((RenderscriptFractalComputeStrategy) this.juliaStrategy).setContext(this);
         }
 
         ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(juliaParams[0], juliaParams[1]);
@@ -981,10 +975,9 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.juliaFractalPresenter.initialiseStrategy();
 
         this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
-        this.shouldGPURender = !this.shouldGPURender;
+        this.shouldRenderscriptRender = !this.shouldRenderscriptRender;
     }
 
-    @Override
     public void onSwapViewsClicked() {
         long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
         Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
@@ -1113,8 +1106,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         Log.i("FP", presenter.getClass().getCanonicalName() + " took " + timeTakenInSeconds + " seconds to finish render");
 
         String type = "CPU";
-        if (this.shouldGPURender)
-            type = "GPU";
+        if (this.shouldRenderscriptRender)
+            type = "RS";
 
         String toastText = type + " took " + timeTakenInSeconds + " seconds";
         this.showToastOnUIThread(toastText, toastText.length());

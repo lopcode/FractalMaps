@@ -1,8 +1,8 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript;
 
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaSeedSettable;
 
-public class JuliaGPUFractalComputeStrategy extends GPUFractalComputeStrategy implements JuliaSeedSettable {
+public class JuliaRenderscriptFractalComputeStrategy extends RenderscriptFractalComputeStrategy implements JuliaSeedSettable {
     private double juliaX = 0;
     private double juliaY = 0;
 

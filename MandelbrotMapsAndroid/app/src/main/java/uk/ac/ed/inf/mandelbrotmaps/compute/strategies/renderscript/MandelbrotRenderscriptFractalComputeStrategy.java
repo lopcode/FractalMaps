@@ -1,6 +1,6 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript;
 
-public class MandelbrotGPUFractalComputeStrategy extends GPUFractalComputeStrategy {
+public class MandelbrotRenderscriptFractalComputeStrategy extends RenderscriptFractalComputeStrategy {
     @Override
     protected void invokeComputeFunction() {
         if (this.fractalRenderScript != null)

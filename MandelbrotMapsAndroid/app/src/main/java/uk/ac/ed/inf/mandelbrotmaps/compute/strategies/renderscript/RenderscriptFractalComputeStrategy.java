@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript;
 
 import android.content.Context;
 import android.support.v8.renderscript.Allocation;
@@ -18,7 +18,7 @@ import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.FractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.presenter.FractalPresenter;
 
-public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
+public abstract class RenderscriptFractalComputeStrategy extends FractalComputeStrategy {
     private RenderScript renderScript;
     protected ScriptC_mandelbrot fractalRenderScript;
     private Allocation pixelBufferAllocation;
@@ -26,7 +26,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
     private Context context;
 
     private LinkedBlockingQueue<FractalComputeArguments> renderQueueList = new LinkedBlockingQueue<FractalComputeArguments>();
-    private GPURenderThread renderThreadList;
+    private RenderscriptRenderThread renderThreadList;
     private Boolean rendersComplete;
 
     private Allocation row_indices_alloc;
@@ -129,7 +129,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
 
         this.rendersComplete = false;
         this.renderQueueList = new LinkedBlockingQueue<FractalComputeArguments>();
-        this.renderThreadList = new GPURenderThread(this, 0);
+        this.renderThreadList = new RenderscriptRenderThread(this, 0);
         this.renderThreadList.start();
 
     }
@@ -278,7 +278,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
 
         long setupEnd = System.nanoTime();
         double setupTime = (setupEnd - setupStart) / 1000000000D;
-        //Log.i("GFCS", "Took " + setupTime + " seconds to set up for GPU compute");
+        //Log.i("GFCS", "Took " + setupTime + " seconds to set up for RS compute");
 
         int[][] indices = this.rowIndices.get(arguments.linesPerProgressUpdate).get(arguments.pixelBlockSize);
         int progressUpdates = indices.length;
@@ -343,7 +343,7 @@ public abstract class GPUFractalComputeStrategy extends FractalComputeStrategy {
             this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize, (endTime - arguments.startTime) / 1000000000D);
 
         double allTime = (endTime - setupStart) / 1000000000D;
-        Log.i("GFCS", "Took " + allTime + " seconds to do GPU compute");
+        Log.i("GFCS", "Took " + allTime + " seconds to do RS compute");
     }
 
     void scheduleRendering(FractalComputeArguments arguments) {

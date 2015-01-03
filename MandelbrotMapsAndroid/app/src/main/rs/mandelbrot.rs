@@ -1,5 +1,5 @@
 #pragma version(1)
-#pragma rs java_package_name(uk.ac.ed.inf.mandelbrotmaps.compute.strategies.gpu)
+#pragma rs java_package_name(uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript)
 
 rs_allocation gIn;
 rs_allocation gOut;
