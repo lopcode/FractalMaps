@@ -110,10 +110,10 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     // Tan Lei variables
     public boolean tanLeiEnabled = true;
     public boolean TLPointSelected = false;
-    public float[][] misPoints = {
-            {-2.0f, 0.0f},
-            {0.0f, 1.0f},
-            {0.11031f, -0.67037f}};
+    public double[][] misPoints = {
+            {-2.0, 0.0},
+            {0.0, 1.0},
+            {0.11031, -0.67037}};
     public float[][] centerPoints = {
             {-1f, 0f},
             {2f, 0f},
@@ -560,34 +560,52 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                     fractalView.holdingPin = true;
                     updateLittleJulia(evt.getX(), evt.getY());
                 } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT) {
-                    if (evt.getX() <= fractalView.getPointOneCoords()[0] + fractalView.pointBoxWidth/2
-                        && evt.getX() >= fractalView.getPointOneCoords()[0] - fractalView.pointBoxWidth/2
-                        && evt.getY() <= fractalView.getPointOneCoords()[1] + fractalView.pointBoxHeight/2
-                        && evt.getY() >= fractalView.getPointOneCoords()[1] - fractalView.pointBoxHeight/2)
+                    if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointOneCoords(),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth))
                     {
                         // Go to first sample Tan Lei point in Julia set.
                         ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[0][0],
                                 (double) misPoints[0][1]);
                         littleFractalSelected = true;
-                    } else if (evt.getX() <= fractalView.getPointTwoCoords()[0] + fractalView.pointBoxWidth/2
-                        && evt.getX() >= fractalView.getPointTwoCoords()[0] - fractalView.pointBoxWidth/2
-                        && evt.getY() <= fractalView.getPointTwoCoords()[1] + fractalView.pointBoxHeight/2
-                        && evt.getY() >= fractalView.getPointTwoCoords()[1] - fractalView.pointBoxHeight/2) {
-                    // Go to second sample Tan Lei point in Julia set.
-                    ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[1][0],
+                    } else if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointTwoCoords(),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) {
+                        // Go to second sample Tan Lei point in Julia set.
+                        ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[1][0],
                             (double) misPoints[1][1]);
-                    littleFractalSelected = true;
-                    } else if (evt.getX() <= fractalView.getPointThreeCoords()[0] + fractalView.pointBoxWidth/2
-                        && evt.getX() >= fractalView.getPointThreeCoords()[0] - fractalView.pointBoxWidth/2
-                        && evt.getY() <= fractalView.getPointThreeCoords()[1] + fractalView.pointBoxHeight/2
-                        && evt.getY() >= fractalView.getPointThreeCoords()[1] - fractalView.pointBoxHeight/2) {
+                        littleFractalSelected = true;
+                    } else if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointThreeCoords(),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) {
                         // Go to third sample Tan Lei point in Julia set.
                         ((JuliaFractalView) littleFractalView).setJuliaParameter((double) misPoints[2][0],
                                 (double) misPoints[2][1]);
                         littleFractalSelected = true;
+                    } else {
+                        startDragging(evt);
                     }
-                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.JULIA) {
+                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.JULIA &&
+                        juliaIsMisPoint()) {
                     // Zoom to selected point.
+                    // TODO: fix to a seed's specific root points
+                    if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[0]),
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[1]),
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[2]),
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[3]),
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[4]),
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[5]),
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth)) {
+                        // zoom in on point
+                        fractalView.stopDragging(true);
+                        fractalView.startZooming(evt.getX(), evt.getY());
+                        currentlyDragging = false;
+                        littleFractalSelected = false;
+                    } else {
+                        startDragging(evt);
+                    }
                 } else {
                     startDragging(evt);
                 }
@@ -629,26 +647,37 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                         } else if (fractalType == FractalTypeEnum.JULIA) {
                             finish();
                         }
-                        // TODO: tidy this up later
                     } else if (tanLeiEnabled && fractalType == FractalTypeEnum.MANDELBROT
-                            && (evt.getX() <= fractalView.getPointOneCoords()[0] + fractalView.pointBoxWidth/2
-                            && evt.getX() >= fractalView.getPointOneCoords()[0] - fractalView.pointBoxWidth/2
-                            && evt.getY() <= fractalView.getPointOneCoords()[1] + fractalView.pointBoxHeight/2
-                            && evt.getY() >= fractalView.getPointOneCoords()[1] - fractalView.pointBoxHeight/2)
-                            || (evt.getX() <= fractalView.getPointTwoCoords()[0] + fractalView.pointBoxWidth/2
-                            && evt.getX() >= fractalView.getPointTwoCoords()[0] - fractalView.pointBoxWidth/2
-                            && evt.getY() <= fractalView.getPointTwoCoords()[1] + fractalView.pointBoxHeight/2
-                            && evt.getY() >= fractalView.getPointTwoCoords()[1] - fractalView.pointBoxHeight/2)
-                            || (evt.getX() <= fractalView.getPointThreeCoords()[0] + fractalView.pointBoxWidth/2
-                            && evt.getX() >= fractalView.getPointThreeCoords()[0] - fractalView.pointBoxWidth/2
-                            && evt.getY() <= fractalView.getPointThreeCoords()[1] + fractalView.pointBoxHeight/2
-                            && evt.getY() >= fractalView.getPointThreeCoords()[1] - fractalView.pointBoxHeight/2)) {
+                            && (touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointOneCoords(),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth))
+                            || (touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointTwoCoords(),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth))
+                            || (touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointThreeCoords(),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth))) {
                         if (fractalType == FractalTypeEnum.MANDELBROT) {
                             launchJulia(((JuliaFractalView) littleFractalView).getJuliaParam());
                         } else if (fractalType == FractalTypeEnum.JULIA) {
                             finish();
                         }
                     }
+                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.JULIA) {
+                    // TODO: figure out way to get proper scale factor
+                    // TODO: only activate if in proper pointbox
+                    /*if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[0]),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[1]),
+                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[2]),
+                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[3]),
+                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[4]),
+                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
+                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[5]),
+                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth)) {*/
+                    fractalView.zoomImage(evt.getX(), evt.getY(), 2.0f);
+                    fractalView.stopZooming();
+                    //}
                 } else if (fractalView.holdingPin) {
                     // If holding the pin, drop it, update screen (render won't display while dragging, might've finished in background)
                     fractalView.holdingPin = false;
@@ -660,6 +689,20 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                 break;
         }
         return false;
+    }
+
+    private boolean touchingInPointBox(float touchX, float touchY, float[] boxCoords, float boxHeight, float boxWidth) {
+        return touchX <= boxCoords[0] + boxWidth/2
+            && touchX >= boxCoords[0] - boxWidth/2
+            && touchY <= boxCoords[1] + boxHeight/2
+            && touchY >= boxCoords[1] - boxHeight/2;
+    }
+
+    private boolean juliaIsMisPoint() {
+        double[] juliaParam = ((JuliaFractalView) fractalView).getJuliaParam();
+        return ((juliaParam[0] == misPoints[0][0] && juliaParam[1] == misPoints[0][1]) ||
+                (juliaParam[0] == misPoints[1][0] && juliaParam[1] == misPoints[1][1]) ||
+                (juliaParam[0] == misPoints[2][0] && juliaParam[1] == misPoints[2][1]));
     }
 
     private boolean touchingPin(float x, float y) {
@@ -678,6 +721,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
         return touchingPin;
     }
+
 
     private void startDragging(MotionEvent evt) {
         dragLastX = (int) evt.getX();

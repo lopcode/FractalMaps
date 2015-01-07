@@ -69,21 +69,21 @@ public class JuliaFractalView extends AbstractFractalView {
                 if (juliaX == (double) parentActivity.misPoints[0][0] &&
                         juliaY == (double) parentActivity.misPoints[0][1]) {
                     // first Tan Lei point always at the seed
-                    pointOneCoords = convertJuliaCoords(new float[]{(float)juliaX,(float)juliaY});
-                    pointTwoCoords = convertJuliaCoords(parentActivity.centerPoints[0]);
-                    pointThreeCoords = convertJuliaCoords(parentActivity.centerPoints[1]);
+                    pointOneCoords = convertCoordsToPixels(new float[]{(float) juliaX, (float) juliaY});
+                    pointTwoCoords = convertCoordsToPixels(parentActivity.centerPoints[0]);
+                    pointThreeCoords = convertCoordsToPixels(parentActivity.centerPoints[1]);
                 } else if (juliaX == (double) parentActivity.misPoints[1][0] &&
                         juliaY == (double) parentActivity.misPoints[1][1]) {
                     // first Tan Lei point always at the seed
-                    pointOneCoords = convertJuliaCoords(new float[]{(float)juliaX,(float)juliaY});
-                    pointTwoCoords = convertJuliaCoords(parentActivity.centerPoints[2]);
-                    pointThreeCoords = convertJuliaCoords(parentActivity.centerPoints[3]);
+                    pointOneCoords = convertCoordsToPixels(new float[]{(float) juliaX, (float) juliaY});
+                    pointTwoCoords = convertCoordsToPixels(parentActivity.centerPoints[2]);
+                    pointThreeCoords = convertCoordsToPixels(parentActivity.centerPoints[3]);
                 } else if (juliaX == (double) parentActivity.misPoints[2][0] &&
                         juliaY == (double) parentActivity.misPoints[2][1]) {
                     // first Tan Lei point always at the seed
-                    pointOneCoords = convertJuliaCoords(new float[]{(float)juliaX,(float)juliaY});
-                    pointTwoCoords = convertJuliaCoords(parentActivity.centerPoints[4]);
-                    pointThreeCoords = convertJuliaCoords(parentActivity.centerPoints[5]);
+                    pointOneCoords = convertCoordsToPixels(new float[]{(float) juliaX, (float) juliaY});
+                    pointTwoCoords = convertCoordsToPixels(parentActivity.centerPoints[4]);
+                    pointThreeCoords = convertCoordsToPixels(parentActivity.centerPoints[5]);
                 }
             }
             float[] mappedCoordsTL1 = new float[2];

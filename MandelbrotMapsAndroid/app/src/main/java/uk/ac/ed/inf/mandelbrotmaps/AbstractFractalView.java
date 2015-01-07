@@ -842,7 +842,7 @@ public abstract class AbstractFractalView extends View {
         return pointCoords;
     }
 
-    public float[] convertJuliaCoords(float[] center) {
+    public float[] convertCoordsToPixels(float[] center) {
         float[] pointCoords = new float[2];
         double pixelSize = getPixelSize();
 
