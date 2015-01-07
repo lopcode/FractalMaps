@@ -852,6 +852,16 @@ public abstract class AbstractFractalView extends View {
         return pointCoords;
     }
 
+    public float[] convertDoubleCoordsToPixels(double[] center) {
+        float[] pointCoords = new float[2];
+        double pixelSize = getPixelSize();
+
+        pointCoords[0] = (float) ((center[0] - graphArea[0]) / pixelSize);
+        pointCoords[1] = (float) (-(center[1] - graphArea[1]) / pixelSize);
+
+        return pointCoords;
+    }
+
     /*-----------------------------------------------------------------------------------*/
     /* Abstract methods */
     /*-----------------------------------------------------------------------------------*/

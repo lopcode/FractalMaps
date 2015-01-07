@@ -110,6 +110,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     // Tan Lei variables
     public boolean tanLeiEnabled = true;
     public boolean TLPointSelected = false;
+    public boolean currentlyTLZooming = false;
     public double[][] misPoints = {
             {-2.0, 0.0},
             {0.0, 1.0},
@@ -585,24 +586,31 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                 } else if (tanLeiEnabled && fractalType == FractalTypeEnum.JULIA &&
                         juliaIsMisPoint()) {
                     // Zoom to selected point.
-                    // TODO: fix to a seed's specific root points
-                    if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[0]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[1]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[2]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[3]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[4]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                        touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[5]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth)) {
+                    // TODO: fix to a seed's specific root points and tidy up
+                    if ((touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[0]),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
+                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[1]),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
+                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertDoubleCoordsToPixels(misPoints[0]),
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
+                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[2]),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
+                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[3]),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
+                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertDoubleCoordsToPixels(misPoints[1]),
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
+                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[4]),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
+                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[5]),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
+                    (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertDoubleCoordsToPixels(misPoints[2]),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth))) {
                         // zoom in on point
                         fractalView.stopDragging(true);
                         fractalView.startZooming(evt.getX(), evt.getY());
                         currentlyDragging = false;
                         littleFractalSelected = false;
+                        currentlyTLZooming = true;
                     } else {
                         startDragging(evt);
                     }
@@ -661,23 +669,13 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                         }
                     }
                 } else if (tanLeiEnabled && fractalType == FractalTypeEnum.JULIA) {
-                    // TODO: figure out way to get proper scale factor
-                    // TODO: only activate if in proper pointbox
-                    /*if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[0]),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[1]),
-                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[2]),
-                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[3]),
-                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[4]),
-                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth) ||
-                            touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[5]),
-                                    fractalView.pointBoxHeight,fractalView.pointBoxWidth)) {*/
-                    fractalView.zoomImage(evt.getX(), evt.getY(), 2.0f);
-                    fractalView.stopZooming();
-                    //}
+                    // TODO: get proper scale factor
+                    // TODO: figure out why zoom gets so off-center
+                    if (currentlyTLZooming) {
+                        fractalView.zoomImage(evt.getX(), evt.getY(), 2.0f);
+                        fractalView.stopZooming();
+                        currentlyTLZooming = false;
+                    }
                 } else if (fractalView.holdingPin) {
                     // If holding the pin, drop it, update screen (render won't display while dragging, might've finished in background)
                     fractalView.holdingPin = false;
