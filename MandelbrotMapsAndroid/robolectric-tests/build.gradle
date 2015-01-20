@@ -1,0 +1,18 @@
+apply plugin: 'java'
+
+tasks.withType(Test) {
+    scanForTestClasses = false
+    include "**/*Test.class" // whatever Ant pattern matches your test class files
+}
+
+dependencies {
+    def androidModule = project(':app')
+    compile androidModule
+
+    testCompile androidModule.android.applicationVariants.toList().first().javaCompile.classpath
+    testCompile androidModule.android.applicationVariants.toList().first().javaCompile.outputs.files
+    testCompile files(androidModule.plugins.findPlugin("com.android.application").getBootClasspath())
+
+    testCompile 'junit:junit:4.+'
+    testCompile 'org.robolectric:robolectric:2.4'
+}
