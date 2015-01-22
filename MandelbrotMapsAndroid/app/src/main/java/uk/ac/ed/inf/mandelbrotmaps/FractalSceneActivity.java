@@ -420,6 +420,18 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 this.onSettingsClicked();
                 return true;
 
+            case R.id.menuSwitchRenderer:
+                this.onSwitchRendererClicked();
+                return true;
+
+            case R.id.menuBenchmarkOne:
+                this.onBenchmarkOneClicked();
+                return true;
+
+            case R.id.menuBenchmarkTwo:
+                this.onBenchmarkTwoClicked();
+                return true;
+
             default:
                 return false;
         }
@@ -976,6 +988,26 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
         this.shouldRenderscriptRender = !this.shouldRenderscriptRender;
+    }
+
+    public void onBenchmarkOneClicked() {
+        double[] benchmarkPoint = new double[3];
+
+        benchmarkPoint[0] = -1.631509065569354;
+        benchmarkPoint[1] = 0.0008548063308817164;
+        benchmarkPoint[2] = 0.0027763525271276013;
+
+        this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
+    }
+
+    public void onBenchmarkTwoClicked() {
+        double[] benchmarkPoint = new double[3];
+
+        benchmarkPoint[0] = -1.631509065569354;
+        benchmarkPoint[1] = 0.0008548063308817164;
+        benchmarkPoint[2] = 0.0027763525271276013;
+
+        this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
     }
 
     public void onSwapViewsClicked() {

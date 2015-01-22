@@ -297,6 +297,12 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     @Override
+    public void computeGraphAreaNow(double[] graphArea) {
+        this.setGraphArea(graphArea);
+        this.sceneDelegate.scheduleRecomputeBasedOnPreferences(this, true);
+    }
+
+    @Override
     public void notifyRecomputeComplete(int pixelBlockSize, double timeTakenInSeconds) {
         if (pixelBlockSize == DEFAULT_PIXEL_SIZE) {
             this.sceneDelegate.setRenderingStatus(this, false);

@@ -96,4 +96,7 @@
     <string name="context_change_view_position">Move fractal %1$s</string>
     <string name="context_reset">Reset fractal</string>
 
+    <string name="menu_benchmark_one">Benchmark Point One</string>
+    <string name="menu_benchmark_two">Benchmark Point Two</string>
+
 </resources>

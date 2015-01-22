@@ -45,4 +45,6 @@ public interface IFractalPresenter extends IFractalPresenterDelegate {
     public void setGraphArea(double[] graphArea);
 
     public double[] getGraphArea();
+
+    public void computeGraphAreaNow(double[] graphArea);
 }
