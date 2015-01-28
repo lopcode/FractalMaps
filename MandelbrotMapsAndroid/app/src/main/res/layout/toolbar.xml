@@ -13,6 +13,10 @@
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:visibility="gone"
     android:text="@string/toolbar_progress"
+    android:shadowColor="#000000"
+    android:shadowDx="1"
+    android:shadowDy="1"
+    android:shadowRadius="1"
     />
 <ProgressBar
     android:id="@+id/toolbarProgress"

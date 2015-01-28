@@ -1199,6 +1199,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     private void setPinPosition(float x, float y) {
         this.pinOverlay.setPosition(x, y);
+        this.mandelbrotFractalView.postUIThreadRedraw();
 
         double[] graphTapPosition = this.mandelbrotFractalPresenter.getGraphPositionFromClickedPosition(x, y);
         this.setJuliaSeedAndRecompute(graphTapPosition, FractalPresenter.DEFAULT_PIXEL_SIZE);
