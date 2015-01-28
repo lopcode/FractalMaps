@@ -28,7 +28,7 @@ public class RenderscriptRenderThread extends Thread {
                 try {
                     // Calling wait() will block this thread until another thread
                     // calls notify() on the object.
-                    Log.i("RRT", "Waiting for ready lock");
+                    //Log.i("RRT", "Waiting for ready lock");
                     this.isStopped = true;
                     this.readyLock.wait();
 
@@ -40,17 +40,17 @@ public class RenderscriptRenderThread extends Thread {
 
         this.isStopped = false;
 
-        Log.i("RRT", "Ready lock released");
+        //Log.i("RRT", "Ready lock released");
     }
 
     public void allowRendering() {
-        Log.i("RRT", "Rendering allowed to continue");
+        //Log.i("RRT", "Rendering allowed to continue");
 
         this.isStopped = false;
     }
 
     public boolean abortSignalled() {
-        Log.i("RRT", "Is abort signalled: " + this.isStopped);
+        //Log.i("RRT", "Is abort signalled: " + this.isStopped);
 
         return this.isStopped;
     }
@@ -61,14 +61,14 @@ public class RenderscriptRenderThread extends Thread {
                 this.allowRendering();
 
                 synchronized (readyLock) {
-                    Log.i("RRT", "Waiting for render...");
+                    //Log.i("RRT", "Waiting for render...");
                     this.waitingForRender = true;
                 }
 
                 FractalComputeArguments arguments = this.strategy.getNextRendering(threadID);
 
                 synchronized (readyLock) {
-                    Log.i("RRT", "Not waiting for render");
+                    //Log.i("RRT", "Not waiting for render");
                     this.waitingForRender = false;
                 }
 
@@ -79,7 +79,7 @@ public class RenderscriptRenderThread extends Thread {
                 }
 
                 synchronized (readyLock) {
-                    Log.i("RRT", "Notifying ready lock");
+                    //Log.i("RRT", "Notifying ready lock");
                     readyLock.notify();
                 }
             } catch (InterruptedException e) {

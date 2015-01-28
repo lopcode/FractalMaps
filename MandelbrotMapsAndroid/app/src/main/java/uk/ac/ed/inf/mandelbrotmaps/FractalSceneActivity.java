@@ -1201,7 +1201,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     private void setJuliaSeedAndRecompute(double[] juliaSeed, int pixelBlockSize) {
         ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(juliaSeed[0], juliaSeed[1]);
-        this.firstFractalView.postUIThreadRedraw();
+
         this.juliaFractalPresenter.clearPixelSizes();
         this.juliaFractalPresenter.recomputeGraph(pixelBlockSize);
     }
@@ -1273,6 +1273,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     public void stoppedDraggingPin(float x, float y) {
         this.pinDragged(x, y, true);
         this.pinOverlay.setHilighted(false);
+        this.juliaStrategy.stopAllRendering();
         this.juliaFractalPresenter.clearPixelSizes();
         this.juliaFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
     }

@@ -128,7 +128,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
 
 
         this.rendersComplete = false;
-        this.renderQueueList = new LinkedBlockingQueue<FractalComputeArguments>();
+        this.renderQueueList = new LinkedBlockingQueue<FractalComputeArguments>(2);
         this.renderThreadList = new RenderscriptRenderThread(this, 0);
         this.renderThreadList.start();
 
@@ -292,10 +292,10 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
                 //Log.i("GFCS", "Created new allocation size");
             }
 
-            Log.i("RFCS", "Checking if abort signalled");
+            //Log.i("RFCS", "Checking if abort signalled");
             if (renderThreadList.abortSignalled())
                 return;
-            Log.i("RFCS", "Abort not signalled");
+            //Log.i("RFCS", "Abort not signalled");
 
             row_indices_alloc.copyFrom(indices[i]);
 
@@ -324,11 +324,11 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
                 return;
             }
 
-            Log.i("RFCS", "Checking if abort signalled to do a progress update");
+            //Log.i("RFCS", "Checking if abort signalled to do a progress update");
             boolean abortSignalled = renderThreadList.abortSignalled();
-            Log.i("RFCS", "Result: " + abortSignalled);
+            //Log.i("RFCS", "Result: " + abortSignalled);
             if (!abortSignalled && arguments.linesPerProgressUpdate != arguments.viewHeight) {
-                Log.i("RFCS", "Done progress update");
+                //Log.i("RFCS", "Done progress update");
                 this.delegate.postUpdate(arguments.pixelBuffer, arguments.pixelBufferSizes);
             }
         }
@@ -344,9 +344,9 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
 
         long endTime = System.nanoTime();
 
-        Log.i("RFCS", "Checking if abort signalled to post finished");
+        //Log.i("RFCS", "Checking if abort signalled to post finished");
         boolean abortSignalled = renderThreadList.abortSignalled();
-        Log.i("RFCS", "Result: " + abortSignalled);
+        //Log.i("RFCS", "Result: " + abortSignalled);
 
         if (!abortSignalled)
             this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize, (endTime - arguments.startTime) / 1000000000D);
@@ -356,7 +356,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
     }
 
     void scheduleRendering(FractalComputeArguments arguments) {
-        renderQueueList.add(arguments);
+        boolean couldAddToQueue = renderQueueList.offer(arguments);
     }
 
     @Override
@@ -369,7 +369,8 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
         if (!this.renderQueueList.isEmpty())
             this.renderQueueList.clear();
 
-        this.renderThreadList.stopRendering();
+        if (!(this.renderThreadList == null))
+            this.renderThreadList.stopRendering();
 
     }
 
