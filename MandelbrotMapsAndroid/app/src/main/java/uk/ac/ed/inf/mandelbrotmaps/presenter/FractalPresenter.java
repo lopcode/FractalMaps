@@ -2,6 +2,7 @@ package uk.ac.ed.inf.mandelbrotmaps.presenter;
 
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.util.Log;
 import android.view.View;
 
@@ -13,6 +14,7 @@ import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
+import uk.ac.ed.inf.mandelbrotmaps.overlay.label.LabelOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.view.IFractalView;
@@ -56,6 +58,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     // Overlays
     private List<IFractalOverlay> fractalPresenterOverlays;
+    private LabelOverlay coordinatesOverlay;
 
     public FractalPresenter(Context context, IFractalSceneDelegate sceneDelegate, IFractalComputeStrategy fractalStrategy) {
         this.context = context;
@@ -69,6 +72,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     public void initialiseOverlays() {
         this.fractalPresenterOverlays = new ArrayList<IFractalOverlay>();
+
+        this.coordinatesOverlay = new LabelOverlay(this.context, "Coordinates not set yet", 10.0f, 10.0f);
+        this.coordinatesOverlay.setTextAlignment(Paint.Align.RIGHT);
+
+        this.fractalPresenterOverlays.add(this.coordinatesOverlay);
     }
 
     // IFractalPresenter
@@ -137,6 +145,12 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void recomputeGraph(int pixelBlockSize) {
         Log.i("AFV", "Starting new style render");
+
+        double[] graphArea = this.getGraphArea();
+
+        String coordinates = "Coordinates " + graphArea[0] + " " + graphArea[1] + " " + graphArea[2];
+        this.coordinatesOverlay.setText(coordinates);
+        Log.i("FP", "Computing: " + coordinates);
 
         // Empirically determined lines per update
         double absLnPixelSize = Math.abs(Math.log(getPixelSize()));
@@ -338,6 +352,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.fractalStrategy.initialise(this.viewWidth, this.viewHeight, this);
     }
 
+    @Override
+    public IFractalComputeStrategy getComputeStrategy() {
+        return this.fractalStrategy;
+    }
+
     // IFractalComputeDelegate
 
     @Override
@@ -464,6 +483,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.initialisePixelBuffers();
         this.initialiseStrategy();
         this.view.createNewFractalBitmap(new int[this.viewWidth * this.viewHeight]);
+
+        this.coordinatesOverlay.setPosition(this.viewWidth, 48.0f);
 
         this.sceneDelegate.onFractalViewReady(this);
     }

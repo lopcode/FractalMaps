@@ -88,8 +88,6 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     public void computeFractal(FractalComputeArguments arguments) {
         // Package parameters in a structure, add them to the render queue
 
-        this.stopAllRendering();
-
         // Reset all the tracking
         for (int i = 0; i < this.numberOfThreads; i++) {
             rendersComplete.set(i, false);

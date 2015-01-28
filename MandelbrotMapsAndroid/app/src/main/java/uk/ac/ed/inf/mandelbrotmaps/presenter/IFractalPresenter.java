@@ -36,6 +36,8 @@ public interface IFractalPresenter extends IFractalPresenterDelegate {
 
     public void initialiseStrategy();
 
+    public IFractalComputeStrategy getComputeStrategy();
+
     // Graph area affecting
 
     public void translateGraphArea(int dx, int dy);

@@ -29,6 +29,12 @@
         android:title="@string/menu_switch_renderer"
         app:showAsAction="never"></item>
     <item
+        android:id="@+id/menuBenchmarkOld"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_benchmark_old"
+        app:showAsAction="never"></item>
+    <item
         android:id="@+id/menuBenchmarkOne"
         android:enabled="true"
         android:visible="true"
@@ -39,5 +45,35 @@
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_benchmark_two"
+        app:showAsAction="never"></item>
+    <item
+        android:id="@+id/menuBenchmarkThree"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_benchmark_three"
+        app:showAsAction="never"></item>
+    <item
+        android:id="@+id/menuBenchmarkFour"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_benchmark_four"
+        app:showAsAction="never"></item>
+    <item
+        android:id="@+id/menuBenchmarkFive"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_benchmark_five"
+        app:showAsAction="never"></item>
+    <item
+        android:id="@+id/menuBenchmarkSix"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_benchmark_six"
+        app:showAsAction="never"></item>
+    <item
+        android:id="@+id/menuBenchmarkSeven"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_benchmark_seven"
         app:showAsAction="never"></item>
 </menu>

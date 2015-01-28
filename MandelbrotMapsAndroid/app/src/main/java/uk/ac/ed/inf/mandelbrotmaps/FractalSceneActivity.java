@@ -45,8 +45,8 @@ import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaSeedSettable;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.JuliaCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.MandelbrotCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.JuliaRenderscriptFractalComputeStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.RenderscriptFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.MandelbrotRenderscriptFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.RenderscriptFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
@@ -424,12 +424,36 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 this.onSwitchRendererClicked();
                 return true;
 
+            case R.id.menuBenchmarkOld:
+                this.onBenchmarkOldClicked();
+                return true;
+
             case R.id.menuBenchmarkOne:
                 this.onBenchmarkOneClicked();
                 return true;
 
             case R.id.menuBenchmarkTwo:
                 this.onBenchmarkTwoClicked();
+                return true;
+
+            case R.id.menuBenchmarkThree:
+                this.onBenchmarkThreeClicked();
+                return true;
+
+            case R.id.menuBenchmarkFour:
+                this.onBenchmarkFourClicked();
+                return true;
+
+            case R.id.menuBenchmarkFive:
+                this.onBenchmarkFiveClicked();
+                return true;
+
+            case R.id.menuBenchmarkSix:
+                this.onBenchmarkSixClicked();
+                return true;
+
+            case R.id.menuBenchmarkSeven:
+                this.onBenchmarkSevenClicked();
                 return true;
 
             default:
@@ -446,6 +470,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     }
 
     public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter, boolean fullRefresh) {
+        presenter.getComputeStrategy().stopAllRendering();
+
         if (fullRefresh)
             presenter.clearPixelSizes();
 
@@ -990,7 +1016,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.shouldRenderscriptRender = !this.shouldRenderscriptRender;
     }
 
-    public void onBenchmarkOneClicked() {
+    public void onBenchmarkOldClicked() {
         double[] benchmarkPoint = new double[3];
 
         benchmarkPoint[0] = -1.631509065569354;
@@ -1000,12 +1026,72 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
     }
 
+    public void onBenchmarkOneClicked() {
+        double[] benchmarkPoint = new double[3];
+
+        benchmarkPoint[0] = -3.1;
+        benchmarkPoint[1] = 1.5625;
+        benchmarkPoint[2] = 5.0;
+
+        this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
+    }
+
     public void onBenchmarkTwoClicked() {
         double[] benchmarkPoint = new double[3];
 
-        benchmarkPoint[0] = -1.631509065569354;
-        benchmarkPoint[1] = 0.0008548063308817164;
-        benchmarkPoint[2] = 0.0027763525271276013;
+        benchmarkPoint[0] = -1.7906918092188577;
+        benchmarkPoint[1] = 0.015713398761235824;
+        benchmarkPoint[2] = 0.054304181944388796;
+
+        this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
+    }
+
+    public void onBenchmarkThreeClicked() {
+        double[] benchmarkPoint = new double[3];
+
+        benchmarkPoint[0] = -1.7866528244733257;
+        benchmarkPoint[1] = 3.767225355612155E-4;
+        benchmarkPoint[2] = 0.001246485714778256;
+
+        this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
+    }
+
+    public void onBenchmarkFourClicked() {
+        double[] benchmarkPoint = new double[3];
+
+        benchmarkPoint[0] = -1.7864416057489034;
+        benchmarkPoint[1] = 5.070184209076404E-6;
+        benchmarkPoint[2] = 1.6176061854888957E-5;
+
+        this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
+    }
+
+    public void onBenchmarkFiveClicked() {
+        double[] benchmarkPoint = new double[3];
+
+        benchmarkPoint[0] = -1.7864403263654793;
+        benchmarkPoint[1] = 1.1249847143000328E-7;
+        benchmarkPoint[2] = 3.449179104553224E-7;
+
+        this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
+    }
+
+    public void onBenchmarkSixClicked() {
+        double[] benchmarkPoint = new double[3];
+
+        benchmarkPoint[0] = -1.7864402559061188;
+        benchmarkPoint[1] = 1.7764552729039504E-9;
+        benchmarkPoint[2] = 6.143618724863131E-9;
+
+        this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
+    }
+
+    public void onBenchmarkSevenClicked() {
+        double[] benchmarkPoint = new double[3];
+
+        benchmarkPoint[0] = -1.786440255616136;
+        benchmarkPoint[1] = 4.880132782623177E-11;
+        benchmarkPoint[2] = 1.6752488285476375E-10;
 
         this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
     }
@@ -1072,7 +1158,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 atLeastOnePresenterRendering = true;
         }
 
-        if (atLeastOnePresenterRendering) {
+        if (atLeastOnePresenterRendering && false) {
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

@@ -96,7 +96,13 @@
     <string name="context_change_view_position">Move fractal %1$s</string>
     <string name="context_reset">Reset fractal</string>
 
+    <string name="menu_benchmark_old">Benchmark Alasdair\'s Point</string>
     <string name="menu_benchmark_one">Benchmark Point One</string>
     <string name="menu_benchmark_two">Benchmark Point Two</string>
+    <string name="menu_benchmark_three">Benchmark Point Three</string>
+    <string name="menu_benchmark_four">Benchmark Point Four</string>
+    <string name="menu_benchmark_five">Benchmark Point Five</string>
+    <string name="menu_benchmark_six">Benchmark Point Six</string>
+    <string name="menu_benchmark_seven">Benchmark Point Seven</string>
 
 </resources>

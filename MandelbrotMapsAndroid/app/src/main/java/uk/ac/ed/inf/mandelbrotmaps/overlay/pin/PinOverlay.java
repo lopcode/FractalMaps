@@ -24,8 +24,7 @@ public class PinOverlay implements IFractalOverlay {
         this.pinOuterPaint = new Paint();
         this.pinInnerPaint = new Paint();
         this.pinRadius = pinRadius;
-        this.x = initialX;
-        this.y = initialY;
+        this.setPosition(initialX, initialY);
     }
 
     @Override

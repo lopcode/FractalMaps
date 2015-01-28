@@ -200,8 +200,6 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
 
     @Override
     public void computeFractal(FractalComputeArguments arguments) {
-        this.stopAllRendering();
-
         rendersComplete = false;
 
         this.scheduleRendering(arguments);
@@ -294,8 +292,10 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
                 //Log.i("GFCS", "Created new allocation size");
             }
 
+            Log.i("RFCS", "Checking if abort signalled");
             if (renderThreadList.abortSignalled())
                 return;
+            Log.i("RFCS", "Abort not signalled");
 
             row_indices_alloc.copyFrom(indices[i]);
 
@@ -324,8 +324,13 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
                 return;
             }
 
-            if (!renderThreadList.abortSignalled() && arguments.linesPerProgressUpdate != arguments.viewHeight)
+            Log.i("RFCS", "Checking if abort signalled to do a progress update");
+            boolean abortSignalled = renderThreadList.abortSignalled();
+            Log.i("RFCS", "Result: " + abortSignalled);
+            if (!abortSignalled && arguments.linesPerProgressUpdate != arguments.viewHeight) {
+                Log.i("RFCS", "Done progress update");
                 this.delegate.postUpdate(arguments.pixelBuffer, arguments.pixelBufferSizes);
+            }
         }
 
 
@@ -339,7 +344,11 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
 
         long endTime = System.nanoTime();
 
-        if (!renderThreadList.abortSignalled())
+        Log.i("RFCS", "Checking if abort signalled to post finished");
+        boolean abortSignalled = renderThreadList.abortSignalled();
+        Log.i("RFCS", "Result: " + abortSignalled);
+
+        if (!abortSignalled)
             this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize, (endTime - arguments.startTime) / 1000000000D);
 
         double allTime = (endTime - setupStart) / 1000000000D;
@@ -347,7 +356,6 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
     }
 
     void scheduleRendering(FractalComputeArguments arguments) {
-        renderThreadList.allowRendering();
         renderQueueList.add(arguments);
     }
 
@@ -361,7 +369,8 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
         if (!this.renderQueueList.isEmpty())
             this.renderQueueList.clear();
 
-        this.renderThreadList.abortRendering();
+        this.renderThreadList.stopRendering();
+
     }
 
     public FractalComputeArguments getNextRendering(int threadID) throws InterruptedException {
