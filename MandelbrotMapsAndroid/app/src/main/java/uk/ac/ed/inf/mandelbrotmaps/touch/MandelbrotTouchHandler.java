@@ -1,13 +1,17 @@
 package uk.ac.ed.inf.mandelbrotmaps.touch;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.IPinMovementDelegate;
 
 public class MandelbrotTouchHandler extends FractalTouchHandler {
+    private final Logger LOGGER = LoggerFactory.getLogger(MandelbrotTouchHandler.class);
+
     private IPinMovementDelegate delegate;
     private boolean draggingPin;
 
@@ -38,10 +42,10 @@ public class MandelbrotTouchHandler extends FractalTouchHandler {
 
         switch (evt.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
-                Log.i("MTH", "Touch down");
+                LOGGER.debug("Touch down");
 
                 if (isTouchingPin(evt.getX(), evt.getY()) && evt.getPointerCount() == 1) {
-                    Log.i("MTH", "Started dragging pin");
+                    LOGGER.debug("Started dragging pin");
                     this.draggingPin = true;
                     this.delegate.startedDraggingPin();
                     return true;
@@ -59,9 +63,9 @@ public class MandelbrotTouchHandler extends FractalTouchHandler {
                 break;
 
             case MotionEvent.ACTION_UP:
-                Log.i("MTH", "Touch removed");
+                LOGGER.debug("Touch removed");
                 if (this.draggingPin) {
-                    Log.i("MTH", "Stopped dragging pin");
+                    LOGGER.debug("Stopped dragging pin");
                     this.draggingPin = false;
                     stopDraggingPin = true;
                     this.delegate.stoppedDraggingPin(evt.getX(), evt.getY());

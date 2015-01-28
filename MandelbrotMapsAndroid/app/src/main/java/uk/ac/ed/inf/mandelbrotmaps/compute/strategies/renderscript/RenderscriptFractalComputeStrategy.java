@@ -4,8 +4,10 @@ import android.content.Context;
 import android.support.v8.renderscript.Allocation;
 import android.support.v8.renderscript.Element;
 import android.support.v8.renderscript.RenderScript;
-import android.util.Log;
 import android.util.SparseArray;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +21,8 @@ import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.FractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.presenter.FractalPresenter;
 
 public abstract class RenderscriptFractalComputeStrategy extends FractalComputeStrategy {
+    final Logger LOGGER = LoggerFactory.getLogger(RenderscriptFractalComputeStrategy.class);
+
     private RenderScript renderScript;
     protected ScriptC_mandelbrot fractalRenderScript;
     private Allocation pixelBufferAllocation;
@@ -129,7 +133,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
 
         this.rendersComplete = false;
         this.renderQueueList = new LinkedBlockingQueue<FractalComputeArguments>(2);
-        this.renderThreadList = new RenderscriptRenderThread(this, 0);
+        this.renderThreadList = new RenderscriptRenderThread(this);
         this.renderThreadList.start();
 
     }
@@ -154,7 +158,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
             this.renderScript = RenderScript.create(this.context);
             this.fractalRenderScript = new ScriptC_mandelbrot(this.renderScript, context.getResources(), R.raw.mandelbrot);
         } catch (Throwable throwable) {
-            Log.e("GFCS", "Failed to initialise renderscript: " + throwable.getLocalizedMessage());
+            LOGGER.error("Failed to initialise renderscript: " + throwable.getLocalizedMessage());
             return false;
         }
 
@@ -163,7 +167,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
         this.initialisePixelBufferAllocation(this.width * this.height);
         this.initialisePixelBufferSizesAllocation(this.width * this.height);
 
-        Log.i("GFCS", "Initialised renderscript objects successfully");
+        LOGGER.debug("Initialised renderscript objects successfully");
 
         return true;
     }
@@ -203,7 +207,6 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
         rendersComplete = false;
 
         this.scheduleRendering(arguments);
-        //Log.i("GFCS", "Scheduling renderscript render on separate thread");
     }
 
     private int[] buildIntArray(List<Integer> integers) {
@@ -215,7 +218,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
         return ints;
     }
 
-    public void computeFractalWithThreadID(FractalComputeArguments arguments, int _threadID) {
+    public void computeFractalWithThreadID(FractalComputeArguments arguments) {
         if (this.renderScript == null)
             return;
 
@@ -352,7 +355,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
             this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize, (endTime - arguments.startTime) / 1000000000D);
 
         double allTime = (endTime - setupStart) / 1000000000D;
-        Log.i("GFCS", "Took " + allTime + " seconds to do RS compute");
+        LOGGER.info("Took {} seconds to do RS compute", allTime);
     }
 
     void scheduleRendering(FractalComputeArguments arguments) {
@@ -374,7 +377,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
 
     }
 
-    public FractalComputeArguments getNextRendering(int threadID) throws InterruptedException {
+    public FractalComputeArguments getNextRendering() throws InterruptedException {
         return this.renderQueueList.take();
     }
 

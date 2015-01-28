@@ -105,4 +105,6 @@
     <string name="menu_benchmark_six">Benchmark Point Six</string>
     <string name="menu_benchmark_seven">Benchmark Point Seven</string>
 
+    <string name="toolbar_progress">Rendering...</string>
+
 </resources>

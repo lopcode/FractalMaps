@@ -6,8 +6,10 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -15,6 +17,8 @@ import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
 
 public class FractalView extends View implements IFractalView {
+    private final Logger LOGGER = LoggerFactory.getLogger(FractalView.class);
+
     private IViewResizeListener resizeListener;
     private Matrix fractalTransformMatrix;
 
@@ -92,7 +96,7 @@ public class FractalView extends View implements IFractalView {
         this.height = height;
 
         if (this.resizeListener != null) {
-            Log.i("FV", "Firing onViewResized " + width + " " + height);
+            LOGGER.debug("Firing onViewResized {} {}", width, height);
             this.resizeListener.onViewResized(this, width, height);
         }
     }

@@ -1,6 +1,7 @@
 package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu;
 
-import android.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -10,6 +11,8 @@ import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.FractalComputeStrategy;
 
 public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
+    private final Logger LOGGER = LoggerFactory.getLogger(CPUFractalComputeStrategy.class);
+
     private ArrayList<LinkedBlockingQueue<FractalComputeArguments>> renderQueueList = new ArrayList<LinkedBlockingQueue<FractalComputeArguments>>();
     private ArrayList<CPURenderThread> renderThreadList;
     private ArrayList<Boolean> rendersComplete;
@@ -41,7 +44,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
         // Create the render threads
         this.numberOfThreads = Runtime.getRuntime().availableProcessors();
 //        this.numberOfThreads = 1;
-        //Log.d(TAG, "Using " + noOfThreads + " cores");
+        LOGGER.debug("Using {} cores", this.numberOfThreads);
 
         for (int i = 0; i < this.numberOfThreads; i++) {
             this.rendersComplete.add(false);
@@ -93,7 +96,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
             rendersComplete.set(i, false);
         }
 
-        Log.i("CFCS", "Scheduling render on " + this.numberOfThreads + " threads");
+        LOGGER.debug("Scheduling render on " + this.numberOfThreads + " threads");
         this.scheduleRendering(arguments);
     }
 
@@ -179,7 +182,7 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
             }
             // Show thread's work in progress
             if (showRenderProgress && (loopCount % arguments.linesPerProgressUpdate == 0) && !callingThread.abortSignalled()) {
-                //Log.i("CFCS", "Posting update for thread " + threadID);
+                LOGGER.debug("Posting update for thread {}", threadID);
                 this.delegate.postUpdate(arguments.pixelBuffer, arguments.pixelBufferSizes);
             }
         }

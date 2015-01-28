@@ -3,9 +3,11 @@ package uk.ac.ed.inf.mandelbrotmaps.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.google.gson.Gson;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.ac.ed.inf.mandelbrotmaps.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.R;
@@ -19,6 +21,8 @@ import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedGraphArea;
 import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedJuliaGraph;
 
 public class SettingsManager implements SharedPreferences.OnSharedPreferenceChangeListener {
+    private final Logger LOGGER = LoggerFactory.getLogger(SettingsManager.class);
+
     public static final double DEFAULT_DETAIL_LEVEL = 15;
     private Context context;
     private IFractalSceneDelegate sceneDelegate;
@@ -73,7 +77,7 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
 
     public boolean performCrudeFirst() {
         boolean result = this.getDefaultSharedPreferences().getBoolean(PREFERENCE_KEY_CRUDE_FIRST, PREFERENCE_CRUDE_FIRST_DEFAULT);
-        Log.i("SM", "Perform crude first: " + result);
+        LOGGER.debug("Perform crude first: " + result);
         return result;
     }
 

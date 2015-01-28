@@ -3,8 +3,10 @@ package uk.ac.ed.inf.mandelbrotmaps.presenter;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.View;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,8 @@ import uk.ac.ed.inf.mandelbrotmaps.view.IFractalView;
 import uk.ac.ed.inf.mandelbrotmaps.view.IViewResizeListener;
 
 public class FractalPresenter implements IFractalPresenter, IFractalComputeDelegate, IFractalTouchDelegate, IViewResizeListener {
+    private final Logger LOGGER = LoggerFactory.getLogger(FractalPresenter.class);
+
     public IFractalComputeStrategy fractalStrategy;
     public IFractalView view;
     public IFractalTouchHandler touchHandler;
@@ -76,7 +80,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.coordinatesOverlay = new LabelOverlay(this.context, "Coordinates not set yet", 10.0f, 10.0f);
         this.coordinatesOverlay.setTextAlignment(Paint.Align.RIGHT);
 
-        this.fractalPresenterOverlays.add(this.coordinatesOverlay);
+//        this.fractalPresenterOverlays.add(this.coordinatesOverlay);
     }
 
     // IFractalPresenter
@@ -144,13 +148,13 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void recomputeGraph(int pixelBlockSize) {
-        Log.i("AFV", "Starting new style render");
+        LOGGER.debug("Starting new style render");
 
         double[] graphArea = this.getGraphArea();
 
         String coordinates = "Coordinates " + graphArea[0] + " " + graphArea[1] + " " + graphArea[2];
         this.coordinatesOverlay.setText(coordinates);
-        Log.i("FP", "Computing: " + coordinates);
+        LOGGER.info("Computing: " + coordinates);
 
         // Empirically determined lines per update
         double absLnPixelSize = Math.abs(Math.log(getPixelSize()));
@@ -163,9 +167,9 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         int nextPowerOfTwo = this.nextClosestPowerOfTwo((int) Math.ceil(adjustedLog));
 
-        Log.i("FP", "Zoom power of two: " + nextPowerOfTwo);
+        LOGGER.debug("Zoom power of two: " + nextPowerOfTwo);
         int linesPerUpdate = (int) (this.viewHeight / nextPowerOfTwo);
-        Log.i("FP", "Notifying of update every " + linesPerUpdate + " lines");
+        LOGGER.debug("Notifying of update every " + linesPerUpdate + " lines");
 
         if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
             this.sceneDelegate.setRenderingStatus(this, true);
@@ -245,7 +249,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public int getMaxIterations() {
         double absLnPixelSize = Math.abs(Math.log(getPixelSize()));
 
-        Log.i("FP", "Abs ln pixel size: " + absLnPixelSize);
+        LOGGER.debug("Abs ln pixel size: " + absLnPixelSize);
         double dblIterations = (this.detail / DETAIL_DIVISOR) * this.fractalStrategy.getIterationConstantFactor() * Math.pow(this.fractalStrategy.getIterationBase(), absLnPixelSize);
 
         int iterationsToPerform = (int) dblIterations;
@@ -294,7 +298,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     // Reset pixel sizes to force a full render on the next pass
     public void clearPixelSizes() {
-        Log.i("FP", "Clearing pixel sizes");
+        LOGGER.debug("Clearing pixel sizes");
         for (int i = 0; i < this.pixelBufferSizes.length; i++) {
             this.pixelBufferSizes[i] = 1000;
         }
@@ -384,7 +388,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void startDragging() {
-        Log.i("FP", "Started dragging");
+        LOGGER.debug("Started dragging");
 
         this.fractalStrategy.stopAllRendering();
 
@@ -403,7 +407,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     public void stopDragging(boolean stoppedOnZoom, float totalDragX, float totalDragY) {
-        Log.i("FP", "Stopped dragging: " + totalDragX + " " + totalDragY);
+        LOGGER.debug("Stopped dragging: {} {}", totalDragX, totalDragY);
 
         if (totalDragX < -this.viewWidth)
             totalDragX = -this.viewWidth;
@@ -440,13 +444,13 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     public void startScaling(float x, float y) {
-        Log.i("FP", "Started scaling");
+        LOGGER.debug("Started scaling");
         hasZoomed = true;
         this.clearPixelSizes();
     }
 
     public void stopScaling() {
-        Log.i("FP", "Stopped scaling");
+        LOGGER.debug("Stopped scaling");
         this.clearPixelSizes();
 
         this.view.cacheCurrentBitmap(this.pixelBuffer);
@@ -457,7 +461,10 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void scaleFractal(float scaleFactor, float midX, float midY) {
         if (!this.saneZoomLevel()) {
-            Log.w("FP", "Zoom level not sane!");
+            LOGGER.info("Zoom level not sane!");
+
+            this.view.postUIThreadRedraw();
+            return;
         }
 
         this.zoomGraphArea((int) midX, (int) midY, 1 / scaleFactor);
@@ -493,7 +500,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void onSceneOverlaysChanged(List<IFractalOverlay> overlays) {
-        Log.i("FP", "Changing scene overlays");
+        LOGGER.debug("Changing scene overlays");
         this.view.setSceneOverlays(overlays);
     }
 }

@@ -1,12 +1,16 @@
 package uk.ac.ed.inf.mandelbrotmaps.touch;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class FractalTouchHandler implements IFractalTouchHandler {
+    private final Logger LOGGER = LoggerFactory.getLogger(FractalTouchHandler.class);
+
     private IFractalTouchDelegate delegate;
     private Context context;
 
@@ -40,7 +44,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
         switch (evt.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
-                Log.i("FA", "Touch down");
+                LOGGER.debug("Touch down");
                 startDragging(evt);
 
                 return false;
@@ -70,7 +74,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
                 break;
 
             case MotionEvent.ACTION_UP:
-                Log.i("FA", "Touch removed");
+                LOGGER.debug("Touch removed");
                 if (currentlyDragging) {
                     stopDragging();
                 }
@@ -162,7 +166,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 //        }
 
         if (!gestureDetector.isInProgress() && Math.abs(this.totalDragX) < 2 && Math.abs(this.totalDragY) < 2 && this.currentScaleFactor < 1.2f) {
-            Log.i("FTH", "Long tap at " + this.dragLastX + " " + this.dragLastY);
+            LOGGER.info("Long tap at {} {}", this.dragLastX, this.dragLastY);
             this.delegate.onLongClick(this.dragLastX, this.dragLastY);
             return true;
         }

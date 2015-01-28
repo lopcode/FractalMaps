@@ -1,27 +1,25 @@
 package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript;
 
-import android.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 
 public class RenderscriptRenderThread extends Thread {
+    private final Logger LOGGER = LoggerFactory.getLogger(RenderscriptRenderThread.class);
+
     private RenderscriptFractalComputeStrategy strategy;
-
     private final Boolean readyLock = false;
-
     private boolean waitingForRender = false;
-
     private volatile boolean isStopped = false;
-    private int threadID = -1;
 
-    public RenderscriptRenderThread(RenderscriptFractalComputeStrategy strategy, int threadID) {
+    public RenderscriptRenderThread(RenderscriptFractalComputeStrategy strategy) {
         this.strategy = strategy;
-        this.threadID = threadID;
         //setPriority(Thread.MAX_PRIORITY);
     }
 
     public synchronized void stopRendering() {
-        Log.i("RRT", "Aborting render...");
+        LOGGER.debug("Aborting render...");
 
         synchronized (this.readyLock) {
             if (!this.waitingForRender) {
@@ -65,7 +63,7 @@ public class RenderscriptRenderThread extends Thread {
                     this.waitingForRender = true;
                 }
 
-                FractalComputeArguments arguments = this.strategy.getNextRendering(threadID);
+                FractalComputeArguments arguments = this.strategy.getNextRendering();
 
                 synchronized (readyLock) {
                     //Log.i("RRT", "Not waiting for render");
@@ -75,7 +73,7 @@ public class RenderscriptRenderThread extends Thread {
                 arguments.startTime = System.nanoTime();
 
                 if (!(this.strategy == null || this.abortSignalled() || this.strategy.getContext() == null)) {
-                    this.strategy.computeFractalWithThreadID(arguments, threadID);
+                    this.strategy.computeFractalWithThreadID(arguments);
                 }
 
                 synchronized (readyLock) {

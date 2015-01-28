@@ -13,7 +13,6 @@ public class FractalComputeArguments {
     public int[] pixelBuffer;
     public int[] pixelBufferSizes;
     public long startTime;
-    public boolean killed = false;
 
     public FractalComputeArguments(int pixelBlockSize,
                                    final int maxIterations,

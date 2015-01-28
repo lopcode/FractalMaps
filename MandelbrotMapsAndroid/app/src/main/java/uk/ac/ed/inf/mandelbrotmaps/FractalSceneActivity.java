@@ -17,7 +17,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,6 +28,9 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -66,6 +68,8 @@ import uk.ac.ed.inf.mandelbrotmaps.touch.MandelbrotTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.view.FractalView;
 
 public class FractalSceneActivity extends ActionBarActivity implements IFractalSceneDelegate, IPinMovementDelegate, DetailControlDelegate {
+    private final Logger LOGGER = LoggerFactory.getLogger(FractalSceneActivity.class);
+
     // Layout variables
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
@@ -75,6 +79,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     //@InjectView(R.id.toolbarProgress)
     //ProgressBar toolbarProgress;
+    @InjectView(R.id.toolbarTextProgress)
+    TextView toolbarTextProgress;
 
     @InjectView(R.id.firstFractalView)
     FractalView firstFractalView;
@@ -132,7 +138,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         super.onCreate(savedInstanceState);
 
-        Log.i("FA", "OnCreate");
+        LOGGER.debug("OnCreate");
 
         this.sceneStartTime = System.nanoTime();
 
@@ -179,23 +185,23 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         double[] mainGraphArea = MandelbrotJuliaLocation.defaultMandelbrotGraphArea.clone();
 
         if (savedInstanceState != null) {
-            Log.i("FA", "Restoring instance state");
+            LOGGER.debug("Restoring instance state");
 
             try {
                 mainGraphArea = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_MAIN_GRAPH_AREA);
                 juliaGraphArea = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_LITTLE_GRAPH_AREA);
                 juliaParams = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_JULIA_PARAMS);
             } catch (Exception e) {
-                Log.i("FA", "Failed to restore instance state, using some defaults");
+                LOGGER.warn("Failed to restore instance state, using some defaults");
             }
         } else {
-            Log.i("FA", "No saved instance state bundle, trying shared preferences");
+            LOGGER.debug("No saved instance state bundle, trying shared preferences");
 
             SavedGraphArea savedMandelbrotGraph = this.settings.getPreviousMandelbrotGraph();
             SavedJuliaGraph savedJuliaGraph = this.settings.getPreviousJuliaGraph();
 
             if (savedMandelbrotGraph != null) {
-                Log.i("FA", "Restoring Mandelbrot from SharedPrefs");
+                LOGGER.debug("Restoring Mandelbrot from SharedPrefs");
 
                 mainGraphArea[0] = savedMandelbrotGraph.graphX;
                 mainGraphArea[1] = savedMandelbrotGraph.graphY;
@@ -203,7 +209,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             }
 
             if (savedJuliaGraph != null) {
-                Log.i("FA", "Restoring Julia from SharedPrefs");
+                LOGGER.debug("Restoring Julia from SharedPrefs");
 
                 juliaGraphArea[0] = savedJuliaGraph.graphX;
                 juliaGraphArea[1] = savedJuliaGraph.graphY;
@@ -369,7 +375,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        Log.i("FA", "Saving instance state");
+        LOGGER.debug("Saving instance state");
 
         outState.putDoubleArray(SettingsManager.PREVIOUS_MAIN_GRAPH_AREA, this.mandelbrotFractalPresenter.getGraphArea());
         outState.putDoubleArray(SettingsManager.PREVIOUS_LITTLE_GRAPH_AREA, this.juliaFractalPresenter.getGraphArea());
@@ -380,7 +386,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        Log.i("FA", "Restoring instance state");
+        LOGGER.debug("Restoring instance state");
 
         double[] mainGraphArea = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_MAIN_GRAPH_AREA);
         double[] juliaGraphArea = savedInstanceState.getDoubleArray(SettingsManager.PREVIOUS_LITTLE_GRAPH_AREA);
@@ -404,8 +410,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        //long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
-        //Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
+        long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
+        LOGGER.debug("Time (ms) since start of scene {}", timeDiffInMS);
 
         switch (item.getItemId()) {
             case R.id.menuResetAll:
@@ -504,7 +510,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onFractalViewReady(IFractalPresenter presenter) {
-        Log.i("FA", "Fractal view ready");
+        LOGGER.debug("Fractal view ready");
 
         // Move the fractal down a to the mid point of the view
         //  Only if the graph area is the default, otherwise it got set manually
@@ -519,7 +525,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         }
 
         if (isDefaultGraphArea) {
-            Log.i("FA", "Moved default graph area to midpoint of view");
+            LOGGER.debug("Moved default graph area to midpoint of view");
             double[] graphMidPoint = presenter.getGraphPositionFromClickedPosition(view.getWidth() / 2.0f, view.getHeight() / 2.0f);
             double[] originalGraphPoint = presenter.getGraphArea();
             originalGraphPoint[1] -= graphMidPoint[1];
@@ -751,11 +757,11 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.viewContext = v;
 
         if (v == this.mandelbrotFractalView) {
-            Log.i("FSA", "Inflating Mandelbrot context menu");
+            LOGGER.debug("Inflating Mandelbrot context menu");
 
             this.inflateMandelbrotContextMenu(menu);
         } else if (v == this.juliaFractalView) {
-            Log.i("FSA", "Inflating Julia context menu");
+            LOGGER.debug("Inflating Julia context menu");
 
             this.inflateJuliaContextMenu(menu);
         }
@@ -906,7 +912,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 return true;
 
             default:
-                Log.i("FSA", "Context item selected");
+                LOGGER.debug("Context item selected");
                 return true;
         }
     }
@@ -1098,7 +1104,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     public void onSwapViewsClicked() {
         long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
-        Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
+        LOGGER.debug("Time (ms) since start of scene {}", timeDiffInMS);
 
         if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS) {
             this.settings.setViewsSwitched(!this.settings.getViewsSwitched());
@@ -1109,7 +1115,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     public void onChangeLayoutClicked(View viewContext) {
         long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
-        Log.i("FSA", "Time (ms) since start of scene " + timeDiffInMS);
+        LOGGER.debug("Time (ms) since start of scene " + timeDiffInMS);
 
         boolean viewsSwitched = this.settings.getViewsSwitched();
         if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS) {
@@ -1158,18 +1164,18 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 atLeastOnePresenterRendering = true;
         }
 
-        if (atLeastOnePresenterRendering && false) {
+        if (atLeastOnePresenterRendering) {
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    toolbarProgress.setVisibility(View.VISIBLE);
+                    toolbarTextProgress.setVisibility(View.VISIBLE);
                 }
             });
         } else {
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    toolbarProgress.setVisibility(View.GONE);
+                    toolbarTextProgress.setVisibility(View.GONE);
                 }
             });
         }
@@ -1189,7 +1195,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         } else {
             this.openContextMenu(this.juliaFractalView);
         }
-        //Log.i("FA", "First fractal long tap at " + x + " " + y + ", " + graphTapPosition[0] + " " + graphTapPosition[1]);
     }
 
     private void setPinPosition(float x, float y) {
@@ -1221,8 +1226,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onFractalRecomputed(IFractalPresenter presenter, double timeTakenInSeconds) {
-        Log.i("FP", presenter.getClass().getCanonicalName() + " took " + timeTakenInSeconds + " seconds to finish render");
-
         String type = "CPU";
         if (this.shouldRenderscriptRender)
             type = "RS";
@@ -1276,5 +1279,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.juliaStrategy.stopAllRendering();
         this.juliaFractalPresenter.clearPixelSizes();
         this.juliaFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+
+        int z = 1;
     }
 }
