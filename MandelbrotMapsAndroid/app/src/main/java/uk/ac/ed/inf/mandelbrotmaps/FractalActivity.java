@@ -106,7 +106,10 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
 
     // Tan Lei variables
+    // is the theorem support currently on?
     public boolean tanLeiEnabled = true;
+    // should the theorem support be on if it is appropriate?
+    public boolean tanLeiToggled = true;
     public boolean TLPointSelected = false;
     public boolean currentlyTLZooming = false;
     public double[][] misPoints = {
@@ -584,7 +587,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                         juliaIsMisPoint()) {
                     // Zoom to selected point.
                     // TODO: fix to a seed's specific root points and tidy up
-                    if ((touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[0]),
+                    /*if ((touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[0]),
                             fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
                         (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[1]),
                             fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
@@ -601,7 +604,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                         (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[5]),
                             fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
                         (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertDoubleCoordsToPixels(misPoints[2]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth))) {
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth))) {*/
+                    if (touchingInJuliaPointBox(evt.getX(), evt.getY())) {
                         // zoom in on point
                         currentlyDragging = false;
                         currentlyTLZooming = true;
@@ -692,6 +696,22 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             && touchX >= boxCoords[0] - boxWidth/2
             && touchY <= boxCoords[1] + boxHeight/2
             && touchY >= boxCoords[1] - boxHeight/2;
+    }
+
+    private boolean touchingInJuliaPointBox(float touchX, float touchY) {
+        double[] juliaParam = ((JuliaFractalView) fractalView).getJuliaParam();
+        for (int offset=0; offset <= 2; offset++) {
+            if ((touchingInPointBox(touchX, touchY, fractalView.convertCoordsToPixels(centerPoints[offset * 2]),
+                    fractalView.pointBoxHeight, fractalView.pointBoxWidth) ||
+                    touchingInPointBox(touchX, touchY, fractalView.convertCoordsToPixels(centerPoints[(offset * 2) + 1]),
+                            fractalView.pointBoxHeight, fractalView.pointBoxWidth) ||
+                    touchingInPointBox(touchX, touchY, fractalView.convertDoubleCoordsToPixels(misPoints[offset]),
+                            fractalView.pointBoxHeight, fractalView.pointBoxWidth)) &&
+                    juliaParam[0] == misPoints[offset][0] &&
+                            juliaParam[1] == misPoints[offset][1])
+                return true;
+        }
+        return false;
     }
 
     private boolean juliaIsMisPoint() {
@@ -1029,8 +1049,10 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public void onToggleSmallClicked() {
         if (showingLittle) {
             removeLittleView();
+            tanLeiEnabled = false;
         } else {
             addLittleView(true);
+            if (tanLeiToggled) { tanLeiEnabled = true; }
         }
 
         this.dismissMenuDialog();
@@ -1038,7 +1060,9 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
 
     @Override
     public void onTheoremClicked() {
-        tanLeiEnabled = !tanLeiEnabled;
+        if (tanLeiEnabled && tanLeiToggled) { tanLeiEnabled = false; }
+        else { tanLeiEnabled = true; }
+        tanLeiToggled = !tanLeiToggled;
 
         this.dismissMenuDialog();
     }

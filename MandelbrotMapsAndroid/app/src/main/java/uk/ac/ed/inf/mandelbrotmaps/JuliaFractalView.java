@@ -43,6 +43,8 @@ public class JuliaFractalView extends AbstractFractalView {
         MAXZOOM_LN_PIXEL = -20; // Beyond -21, "double"s break down(!).
 
         int pinColour = Color.parseColor(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("PIN_COLOUR", "blue"));
+        int fixedPointColour = Color.parseColor("green");
+        if (fixedPointColour == pinColour) { fixedPointColour = Color.parseColor("blue"); }
 
         pointOnePaint = new Paint();
         pointOnePaint.setColor(pinColour);
@@ -50,12 +52,12 @@ public class JuliaFractalView extends AbstractFractalView {
         pointOnePaint.setStyle(Paint.Style.STROKE);
 
         pointTwoPaint = new Paint();
-        pointTwoPaint.setColor(pinColour);
+        pointTwoPaint.setColor(fixedPointColour);
         pointTwoPaint.setAlpha(pointTwoAlpha);
         pointTwoPaint.setStyle(Paint.Style.STROKE);
 
         pointThreePaint = new Paint();
-        pointThreePaint.setColor(pinColour);
+        pointThreePaint.setColor(fixedPointColour);
         pointThreePaint.setAlpha(pointThreeAlpha);
         pointThreePaint.setStyle(Paint.Style.STROKE);
     }
