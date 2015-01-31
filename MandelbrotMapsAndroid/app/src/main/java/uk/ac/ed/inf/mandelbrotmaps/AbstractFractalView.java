@@ -54,8 +54,7 @@ public abstract class AbstractFractalView extends View {
     public static enum ControlMode {
         ZOOMING,
         DRAGGING,
-        STATIC,
-        ROTATING
+        STATIC
     }
 
     public ControlMode controlmode = ControlMode.STATIC;
@@ -104,9 +103,6 @@ public abstract class AbstractFractalView extends View {
 
     boolean hasZoomed = false;
     boolean hasPassedMaxDepth = false;
-
-    // Rotation state
-    boolean hasRotated = false;
 
     // Tracks scaling/ dragging position
     public Matrix matrix;
@@ -359,19 +355,6 @@ public abstract class AbstractFractalView extends View {
 
             parentActivity.hideProgressSpinner();
         }
-    }
-
-    /*-----------------------------------------------------------------------------------*/
-    /* Rotation */
-    /*-----------------------------------------------------------------------------------*/
-	/*  */
-    public void startRotating() {
-
-    }
-
-    /*  */
-    public void stopRotating() {
-
     }
 
     /*-----------------------------------------------------------------------------------*/

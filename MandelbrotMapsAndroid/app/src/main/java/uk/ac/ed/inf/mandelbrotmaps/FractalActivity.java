@@ -21,7 +21,6 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -50,8 +49,7 @@ import uk.ac.ed.inf.mandelbrotmaps.menu.MenuClickDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.menu.MenuDialog;
 
 public class FractalActivity extends ActionBarActivity implements OnTouchListener, OnScaleGestureListener,
-        OnSharedPreferenceChangeListener, OnLongClickListener, MenuClickDelegate, DetailControlDelegate,
-        OnDoubleTapListener{
+        OnSharedPreferenceChangeListener, OnLongClickListener, MenuClickDelegate, DetailControlDelegate{
 
     private final String TAG = "MMaps";
 
@@ -114,16 +112,15 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public double[][] misPoints = {
             {-2.0, 0.0},
             {0.0, 1.0},
-            {0.11031, -0.67037}};
+            //{0.11031, -0.67037}};
+            {-0.10109636384548, -0.95628651080904}};
     public float[][] centerPoints = {
             {-1f, 0f},
             {2f, 0f},
             {-0.30025f, 0.62481f},
             {1.30025f, -0.62481f},
-            {-0.142051f, -0.52205f},
-            {0.142051f, 0.52205f}};
-    public float tanLeiZoom;
-    public float tanLeiRotate;
+            {-0.32758618f, -0.57776453f},
+            {1.32758618f, 0.57776453f}};
 
     // Android lifecycle
 
@@ -603,14 +600,14 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                             fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
                         (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[5]),
                             fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
-                    (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertDoubleCoordsToPixels(misPoints[2]),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth))) {
+                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertDoubleCoordsToPixels(misPoints[2]),
+                                fractalView.pointBoxHeight,fractalView.pointBoxWidth))) {
                         // zoom in on point
+                        currentlyDragging = false;
+                        currentlyTLZooming = true;
                         fractalView.stopDragging(true);
                         fractalView.startZooming(evt.getX(), evt.getY());
-                        currentlyDragging = false;
-                        littleFractalSelected = false;
-                        currentlyTLZooming = true;
+                        fractalView.zoomImage(evt.getX(), evt.getY(), 2.0f);
                     } else {
                         startDragging(evt);
                     }
@@ -668,14 +665,15 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                             finish();
                         }
                     }
-                } else if (tanLeiEnabled && fractalType == FractalTypeEnum.JULIA) {
+                } else if (currentlyTLZooming) {//if (tanLeiEnabled && fractalType == FractalTypeEnum.JULIA) {
                     // TODO: get proper scale factor
                     // TODO: figure out why zoom gets so off-center
-                    if (currentlyTLZooming) {
-                        fractalView.zoomImage(evt.getX(), evt.getY(), 2.0f);
+                    //if (currentlyTLZooming) {
                         fractalView.stopZooming();
+                        // set dragLastX and dragLastY to be updated WRT zoom
+                        startDragging(evt);
                         currentlyTLZooming = false;
-                    }
+                    //}
                 } else if (fractalView.holdingPin) {
                     // If holding the pin, drop it, update screen (render won't display while dragging, might've finished in background)
                     fractalView.holdingPin = false;
@@ -784,21 +782,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             return true;
         }
 
-        return false;
-    }
-
-    @Override
-    public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
-        return false;
-    }
-
-    @Override
-    public boolean onDoubleTap(MotionEvent motionEvent) {
-        return false;
-    }
-
-    @Override
-    public boolean onDoubleTapEvent(MotionEvent motionEvent) {
         return false;
     }
 
