@@ -127,7 +127,9 @@ public abstract class AbstractFractalView extends View {
 
     // Tan Lei variables
     public float pointBoxHeight = 100.0f;
+    public float switchBoxHeight = 50.0f;
     public float pointBoxWidth = 150.0f;
+    public float switchBoxWidth = 75.0f;
     float[] pointOneCoords = new float[2];
     float[] pointTwoCoords = new float[2];
     float[] pointThreeCoords = new float[2];

@@ -123,6 +123,8 @@ public class JuliaFractalView extends AbstractFractalView {
         if (fractalViewSize == FractalViewSize.LARGE) {
             pointBoxHeight = getHeight() / 6;
             pointBoxWidth = getWidth() / 6;
+            switchBoxHeight = getHeight() / 9;
+            switchBoxWidth = getWidth() / 9;
         }
     }
 

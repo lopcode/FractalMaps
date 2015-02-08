@@ -113,18 +113,24 @@ public class MandelbrotFractalView extends AbstractFractalView {
                 pointOnePaint.setStrokeWidth(10);
                 canvas.drawRect(mappedCoordsTL1[0] - pointBoxWidth / 2, mappedCoordsTL1[1] - pointBoxHeight / 2,
                         mappedCoordsTL1[0] + pointBoxWidth / 2, mappedCoordsTL1[1] + pointBoxHeight / 2, pointOnePaint);
+                canvas.drawRect(mappedCoordsTL1[0], mappedCoordsTL1[1],
+                        mappedCoordsTL1[0] + switchBoxWidth, mappedCoordsTL1[1] + switchBoxHeight, pointOnePaint);
 
                 matrix.mapPoints(mappedCoordsTL2, pointTwoCoords);
 
                 pointTwoPaint.setStrokeWidth(10);
                 canvas.drawRect(mappedCoordsTL2[0] - pointBoxWidth / 2, mappedCoordsTL2[1] - pointBoxHeight / 2,
                         mappedCoordsTL2[0] + pointBoxWidth / 2, mappedCoordsTL2[1] + pointBoxHeight / 2, pointTwoPaint);
+                canvas.drawRect(mappedCoordsTL2[0], mappedCoordsTL2[1],
+                        mappedCoordsTL2[0] + switchBoxWidth, mappedCoordsTL2[1] + switchBoxHeight, pointTwoPaint);
 
                 matrix.mapPoints(mappedCoordsTL3, pointThreeCoords);
 
                 pointThreePaint.setStrokeWidth(10);
                 canvas.drawRect(mappedCoordsTL3[0] - pointBoxWidth / 2, mappedCoordsTL3[1] - pointBoxHeight / 2,
                         mappedCoordsTL3[0] + pointBoxWidth / 2, mappedCoordsTL3[1] + pointBoxHeight / 2, pointThreePaint);
+                canvas.drawRect(mappedCoordsTL3[0], mappedCoordsTL3[1],
+                        mappedCoordsTL3[0] + switchBoxWidth, mappedCoordsTL3[1] + switchBoxHeight, pointThreePaint);
             }
         }
         if (parentActivity.showingLittle && drawPin) {
@@ -163,6 +169,8 @@ public class MandelbrotFractalView extends AbstractFractalView {
 
             pointBoxHeight = getHeight() / 6;
             pointBoxWidth = getWidth() / 6;
+            switchBoxHeight = getHeight() / 9;
+            switchBoxWidth = getWidth() / 9;
         }
     }
 
