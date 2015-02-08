@@ -115,7 +115,6 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
     public double[][] misPoints = {
             {-2.0, 0.0},
             {0.0, 1.0},
-            //{0.11031, -0.67037}};
             {-0.10109636384548, -0.95628651080904}};
     public float[][] centerPoints = {
             {-1f, 0f},
@@ -124,6 +123,18 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             {1.30025f, -0.62481f},
             {-0.32758618f, -0.57776453f},
             {1.32758618f, 0.57776453f}};
+    // rotation stored in radians
+    public float[][] mandelbrotZoomRotate = {
+            {4f, 0f},               // {-2.0, 0.0}
+            {2f, 3.14149f},         // {-1f, 0f}
+            {4f, 0f},               // {2f, 0f}
+            {5.6568f, 0.78540f},    // {0.0, 1.0}
+            {1.38642f, 2.0188f},    // {-0.30025f, 0.62481f}
+            {2.88516f, 5.83523f},   // {1.30025f, -0.62481f}
+            {1.32632f, 2.0854f},    // {-0.10109636384548, -0.95628651080904}
+            {1.32834f, 2.0866f},    // {-0.32758618f, -0.57776453f}
+            {2.89572f, 0.4105f}     // {1.32758618f, 0.57776453f}
+    };
 
     // Android lifecycle
 
@@ -587,31 +598,13 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                         juliaIsMisPoint()) {
                     // Zoom to selected point.
                     // TODO: fix to a seed's specific root points and tidy up
-                    /*if ((touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[0]),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
-                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[1]),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
-                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertDoubleCoordsToPixels(misPoints[0]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
-                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[2]),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
-                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[3]),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
-                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertDoubleCoordsToPixels(misPoints[1]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
-                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[4]),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
-                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertCoordsToPixels(centerPoints[5]),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) ||
-                        (touchingInPointBox(evt.getX(), evt.getY(), fractalView.convertDoubleCoordsToPixels(misPoints[2]),
-                                fractalView.pointBoxHeight,fractalView.pointBoxWidth))) {*/
                     if (touchingInJuliaPointBox(evt.getX(), evt.getY())) {
                         // zoom in on point
                         currentlyDragging = false;
                         currentlyTLZooming = true;
                         fractalView.stopDragging(true);
                         fractalView.startZooming(evt.getX(), evt.getY());
-                        fractalView.zoomImage(evt.getX(), evt.getY(), 2.0f);
+                        fractalView.zoomImage(evt.getX(), evt.getY(), calculateTLZoom(evt.getX(),evt.getY()));
                     } else {
                         startDragging(evt);
                     }
@@ -691,6 +684,51 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
         return false;
     }
 
+    /* Find zoom level for Tan Lei points (by finding radius in polar coordinates)
+    * Increases zoom by factor of 2 or 3 if too close to 1 to make a difference
+    * */
+    public float calculateTLZoom(float xPixel, float yPixel) {
+        double r = 2.0f;
+        if (fractalType == FractalTypeEnum.MANDELBROT) {
+            if (touchingInPointBox(xPixel, yPixel, fractalView.getPointOneCoords(),
+                    fractalView.pointBoxHeight,fractalView.pointBoxWidth)){
+                r = mandelbrotZoomRotate[0][0];
+            } else if (touchingInPointBox(xPixel, yPixel, fractalView.getPointTwoCoords(),
+                    fractalView.pointBoxHeight,fractalView.pointBoxWidth)){
+                r = mandelbrotZoomRotate[3][0];
+            } else if (touchingInPointBox(xPixel, yPixel, fractalView.getPointThreeCoords(),
+                    fractalView.pointBoxHeight,fractalView.pointBoxWidth)){
+                r = mandelbrotZoomRotate[6][0];
+            }
+        } else if (fractalType == FractalTypeEnum.JULIA) {
+            double[] juliaParam = ((JuliaFractalView) fractalView).getJuliaParam();
+            for (int offset=0; offset <= 2; offset++) {
+                if ((touchingInPointBox(xPixel, yPixel, fractalView.convertCoordsToPixels(centerPoints[offset * 2]),
+                        fractalView.pointBoxHeight, fractalView.pointBoxWidth) ) &&
+                        juliaParam[0] == misPoints[offset][0] &&
+                        juliaParam[1] == misPoints[offset][1]){
+                    r = mandelbrotZoomRotate[offset*3+1][0];
+                    break;
+                } else if (touchingInPointBox(xPixel, yPixel, fractalView.convertCoordsToPixels(centerPoints[(offset * 2) + 1]),
+                                fractalView.pointBoxHeight, fractalView.pointBoxWidth) &&
+                        juliaParam[0] == misPoints[offset][0] &&
+                        juliaParam[1] == misPoints[offset][1]){
+                    r = mandelbrotZoomRotate[offset*3+2][0];
+                    break;
+                } else if (touchingInPointBox(xPixel, yPixel, fractalView.convertDoubleCoordsToPixels(misPoints[offset]),
+                                fractalView.pointBoxHeight, fractalView.pointBoxWidth) &&
+                        juliaParam[0] == misPoints[offset][0] &&
+                        juliaParam[1] == misPoints[offset][1]) {
+                    r = mandelbrotZoomRotate[offset*3][0];
+                    break;
+                }
+            }
+        }
+
+        return (float) r;
+    }
+
+    /* Check to see if input x and y are in one particular point box */
     private boolean touchingInPointBox(float touchX, float touchY, float[] boxCoords, float boxHeight, float boxWidth) {
         return touchX <= boxCoords[0] + boxWidth/2
             && touchX >= boxCoords[0] - boxWidth/2
@@ -698,6 +736,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             && touchY >= boxCoords[1] - boxHeight/2;
     }
 
+    /* Check to see if input x and y are in any of the Julia point boxes*/
     private boolean touchingInJuliaPointBox(float touchX, float touchY) {
         double[] juliaParam = ((JuliaFractalView) fractalView).getJuliaParam();
         for (int offset=0; offset <= 2; offset++) {
@@ -708,12 +747,14 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                     touchingInPointBox(touchX, touchY, fractalView.convertDoubleCoordsToPixels(misPoints[offset]),
                             fractalView.pointBoxHeight, fractalView.pointBoxWidth)) &&
                     juliaParam[0] == misPoints[offset][0] &&
-                            juliaParam[1] == misPoints[offset][1])
+                            juliaParam[1] == misPoints[offset][1]) {
                 return true;
+            }
         }
         return false;
     }
 
+    /* Check to see if the current Julia parameter is in the list of Misiurewicz points */
     private boolean juliaIsMisPoint() {
         double[] juliaParam = ((JuliaFractalView) fractalView).getJuliaParam();
         return ((juliaParam[0] == misPoints[0][0] && juliaParam[1] == misPoints[0][1]) ||
