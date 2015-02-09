@@ -5,6 +5,4 @@ import android.view.View;
 
 public interface IFractalTouchHandler extends View.OnTouchListener, View.OnLongClickListener, ScaleGestureDetector.OnScaleGestureListener {
     public void setTouchDelegate(IFractalTouchDelegate delegate);
-
-
 }

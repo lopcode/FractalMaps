@@ -9,9 +9,6 @@ public abstract class FractalComputeStrategy implements IFractalComputeStrategy 
     protected IFractalComputeDelegate delegate;
     protected EnumColourStrategy colourStrategy;
 
-    //protected double[] graphArea; // {x_min, y_max, width}
-    //protected double[] homeGraphArea;
-
     // Render calculating variables
     protected double xMin, yMax, pixelSize;
 

@@ -60,11 +60,10 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
                 return true;
 
-
             case MotionEvent.ACTION_POINTER_UP:
-                if (evt.getPointerCount() == 1)
+                if (evt.getPointerCount() == 1) {
                     break;
-                else {
+                } else {
                     try {
                         chooseNewActivePointer(evt);
                     } catch (IllegalArgumentException iae) {
@@ -142,6 +141,16 @@ public class FractalTouchHandler implements IFractalTouchHandler {
         return true;
     }
 
+    public boolean onLongClick(View v) {
+        if (!gestureDetector.isInProgress() && Math.abs(this.totalDragX) < 2 && Math.abs(this.totalDragY) < 2 && this.currentScaleFactor < 1.2f) {
+            LOGGER.info("Long tap at {} {}", this.dragLastX, this.dragLastY);
+            this.delegate.onLongClick(this.dragLastX, this.dragLastY);
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
         this.totalDragX = 0;
@@ -154,28 +163,8 @@ public class FractalTouchHandler implements IFractalTouchHandler {
         this.delegate.startDragging();
     }
 
-    /* Detect a long click, place the Julia pin */
-    public boolean onLongClick(View v) {
-        // Check that it's not scaling, dragging (check for dragging is a little hacky, but seems to work), or already holding the pin
-//        if (!gestureDetector.isInProgress() && this.totalDragX < 1 && this.totalDragY < 1 && !fractalView.holdingPin) {
-//            updateLittleJulia(dragLastX, dragLastY);
-//            if (currentlyDragging) {
-//                stopDragging();
-//            }
-//            return true;
-//        }
-
-        if (!gestureDetector.isInProgress() && Math.abs(this.totalDragX) < 2 && Math.abs(this.totalDragY) < 2 && this.currentScaleFactor < 1.2f) {
-            LOGGER.info("Long tap at {} {}", this.dragLastX, this.dragLastY);
-            this.delegate.onLongClick(this.dragLastX, this.dragLastY);
-            return true;
-        }
-
-        return false;
-    }
-
-    /* Choose a new active pointer from the available ones
-  * Used during/at the end of scaling to pick the new dragging pointer*/
+    // Choose a new active pointer, from available pointers
+    // Applicable during and after scaling operations, to decide which pointer to drag with
     private void chooseNewActivePointer(MotionEvent evt) {
         // Extract the index of the pointer that came up
         final int pointerIndex = (evt.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;

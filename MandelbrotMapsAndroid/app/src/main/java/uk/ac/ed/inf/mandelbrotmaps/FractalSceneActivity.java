@@ -255,7 +255,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         } else {
             this.mandelbrotFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.mandelbrotFractalPresenter));
         }
-//        this.mandelbrotFractalPresenter.fractalStrategy.setColourStrategy(new DefaultColourStrategy());
+
         this.mandelbrotFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
     }
 
@@ -269,7 +269,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         this.juliaFractalPresenter = new FractalPresenter(this, this, juliaStrategy);
         this.juliaFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.juliaFractalPresenter));
-//        this.juliaFractalPresenter.fractalStrategy.setColourStrategy(new JuliaColourStrategy());
+
         this.juliaFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.JULIA));
     }
 
@@ -490,10 +490,10 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         inflater.inflate(R.menu.fractal_menu, menu);
         MenuItem placePinItem = menu.findItem(R.id.menuPlacePin);
-        if (placePinItem != null)
+        if (placePinItem != null) {
             placePinItem.setVisible(true);
-
-        placePinItem.setEnabled(this.showingPinOverlay);
+            placePinItem.setEnabled(this.showingPinOverlay);
+        }
 
         menu.setHeaderTitle("Mandelbrot fractal");
 
@@ -834,12 +834,12 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onSaveFractalClicked(View viewContext) {
-
+        this.saveImage(viewContext);
     }
 
     @Override
     public void onShareFractalClicked(View viewContext) {
-
+        this.shareImage(viewContext);
     }
 
     public void resetMandelbrotFractal() {
@@ -941,11 +941,11 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     // Image saving and sharing
 
-    private void saveImage() {
+    private void saveImage(View viewContext) {
         LOGGER.warn("Saving image is not implemented yet");
     }
 
-    private void shareImage() {
+    private void shareImage(View viewContext) {
         LOGGER.warn("Sharing image is not implemented yet");
     }
 

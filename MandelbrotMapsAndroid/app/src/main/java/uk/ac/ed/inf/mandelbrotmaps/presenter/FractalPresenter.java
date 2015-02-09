@@ -425,7 +425,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.translateGraphArea((int) totalDragX, (int) totalDragY);
 
         if (!stoppedOnZoom) {
-            //this.clearPixelSizes();
             this.setGraphArea(graphArea);
             this.sceneDelegate.scheduleRecomputeBasedOnPreferences(this, false);
         }
