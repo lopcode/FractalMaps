@@ -16,18 +16,18 @@
 
     <PreferenceCategory android:title="Colours">
         <ListPreference
-            android:key="MANDELBROT_COLOURS"
+            android:key="MANDELBROT_COLOURS_V4"
             android:title="Mandelbrot Set colouring scheme"
             android:summary="Colours are determined by how many iterations it takes to eliminate a point from the Mandelbrot Set."
-            android:defaultValue="MandelbrotDefault"
+            android:defaultValue="PURPLE_RED"
             android:entries="@array/colourSchemeEntries"
             android:entryValues="@array/colourSchemeValues" />
 
         <ListPreference
-            android:key="JULIA_COLOURS"
+            android:key="JULIA_COLOURS_V4"
             android:title="Julia Set colouring scheme"
             android:summary="Colours are determined by how many iterations it takes to eliminate a point from the Julia Set."
-            android:defaultValue="JuliaDefault"
+            android:defaultValue="PURPLE_YELLOW"
             android:entries="@array/colourSchemeEntries"
             android:entryValues="@array/colourSchemeValues" />
 

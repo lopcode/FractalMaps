@@ -9,10 +9,10 @@
     </string-array>
 
     <string-array name="colourSchemeValues">
-        <item>MandelbrotDefault</item>
-        <item>JuliaDefault</item>
-        <item>RGBWalk</item>
-        <item>Psychadelic</item>
+        <item>PURPLE_RED</item>
+        <item>PURPLE_YELLOW</item>
+        <item>RGB</item>
+        <item>PASTEL</item>
     </string-array>
 
     <string-array name="pinColourEntries">

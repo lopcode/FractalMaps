@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.colouring;
+package uk.ac.ed.inf.mandelbrotmaps.colouring.old;
 
 /**
  * Defines a colour scheme that moves from black to blue, cyan, green, yellow,

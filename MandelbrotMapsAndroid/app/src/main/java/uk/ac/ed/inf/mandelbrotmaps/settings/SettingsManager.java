@@ -5,17 +5,14 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.ed.inf.mandelbrotmaps.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.R;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.DefaultColourStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.JuliaColourStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.PsychadelicColourStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.RGBWalkColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.EnumColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinColour;
 import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedGraphArea;
 import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedJuliaGraph;
@@ -47,11 +44,11 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
     private static final String PREFERENCE_KEY_PIN_COLOUR = "PIN_COLOUR";
     private static final String PREFERENCE_PIN_COLOUR_DEFAULT = "blue";
 
-    private static final String PREFERENCE_KEY_MANDELBROT_COLOUR = "MANDELBROT_COLOURS";
-    private static final String PREFERENCE_MANDELBROT_COLOUR_DEFAULT = "MandelbrotDefault";
+    private static final String PREFERENCE_KEY_MANDELBROT_COLOUR = "MANDELBROT_COLOURS_V4";
+    private static final EnumColourStrategy PREFERENCE_MANDELBROT_COLOUR_DEFAULT = EnumColourStrategy.PURPLE_RED;
 
-    private static final String PREFERENCE_KEY_JULIA_COLOUR = "JULIA_COLOURS";
-    private static final String PREFERENCE_JULIA_COLOUR_DEFAULT = "JuliaDefault";
+    private static final String PREFERENCE_KEY_JULIA_COLOUR = "JULIA_COLOURS_V4";
+    private static final EnumColourStrategy PREFERENCE_JULIA_COLOUR_DEFAULT = EnumColourStrategy.PURPLE_YELLOW;
 
     public static final String PREVIOUS_MAIN_GRAPH_AREA = "prevMainGraphArea";
     public static final String PREVIOUS_LITTLE_GRAPH_AREA = "prevLittleGraphArea";
@@ -90,26 +87,31 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
     }
 
     public void refreshColourSettings() {
-        IColourStrategy colourStrategy = strategyFromPreference(this.getDefaultSharedPreferences().getString(PREFERENCE_KEY_MANDELBROT_COLOUR, PREFERENCE_MANDELBROT_COLOUR_DEFAULT));
+        EnumColourStrategy colourStrategy = strategyFromPreference(this.getDefaultSharedPreferences().getString(PREFERENCE_KEY_MANDELBROT_COLOUR, ""), PREFERENCE_MANDELBROT_COLOUR_DEFAULT);
+
         if (colourStrategy != null)
             this.sceneDelegate.onMandelbrotColourSchemeChanged(colourStrategy, false);
 
-        colourStrategy = strategyFromPreference(this.getDefaultSharedPreferences().getString(PREFERENCE_KEY_JULIA_COLOUR, PREFERENCE_JULIA_COLOUR_DEFAULT));
+        colourStrategy = strategyFromPreference(this.getDefaultSharedPreferences().getString(PREFERENCE_KEY_JULIA_COLOUR, ""), PREFERENCE_JULIA_COLOUR_DEFAULT);
         if (colourStrategy != null)
             this.sceneDelegate.onJuliaColourSchemeChanged(colourStrategy, false);
     }
 
-    private IColourStrategy strategyFromPreference(String preference) {
-        if (preference.equals("MandelbrotDefault"))
-            return new DefaultColourStrategy();
-        else if (preference.equals("JuliaDefault"))
-            return new JuliaColourStrategy();
-        else if (preference.equals("RGBWalk"))
-            return new RGBWalkColourStrategy();
-        else if (preference.equals("Psychadelic"))
-            return new PsychadelicColourStrategy();
+    private EnumColourStrategy strategyFromPreference(String preference, EnumColourStrategy defaultStrategy) {
+        EnumColourStrategy colourStrategy;
 
-        return null;
+        try {
+            colourStrategy = new Gson().fromJson(preference, EnumColourStrategy.class);
+        } catch (JsonSyntaxException e) {
+            LOGGER.error("Failed to load colour strategy from preference, using default");
+            colourStrategy = defaultStrategy;
+        }
+
+        if (colourStrategy == null) {
+            colourStrategy = defaultStrategy;
+        }
+
+        return colourStrategy;
     }
 
     public SavedGraphArea getPreviousMandelbrotGraph() {
@@ -203,11 +205,17 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
 
             this.sceneDelegate.onPinColourChanged(pinColour);
         } else if (key.equalsIgnoreCase(PREFERENCE_KEY_MANDELBROT_COLOUR)) {
-            IColourStrategy colourStrategy = strategyFromPreference(sharedPreferences.getString(key, PREFERENCE_MANDELBROT_COLOUR_DEFAULT));
+            EnumColourStrategy colourStrategy = strategyFromPreference(sharedPreferences.getString(key, ""), PREFERENCE_MANDELBROT_COLOUR_DEFAULT);
+
+            LOGGER.info("Mandelbrot colour strategy changed to: {}", colourStrategy.toString());
+
             if (colourStrategy != null)
                 this.sceneDelegate.onMandelbrotColourSchemeChanged(colourStrategy, true);
         } else if (key.equalsIgnoreCase(PREFERENCE_KEY_JULIA_COLOUR)) {
-            IColourStrategy colourStrategy = strategyFromPreference(sharedPreferences.getString(key, PREFERENCE_JULIA_COLOUR_DEFAULT));
+            EnumColourStrategy colourStrategy = strategyFromPreference(sharedPreferences.getString(key, ""), PREFERENCE_JULIA_COLOUR_DEFAULT);
+
+            LOGGER.info("Julia colour strategy changed to: {}", colourStrategy.toString());
+
             if (colourStrategy != null)
                 this.sceneDelegate.onJuliaColourSchemeChanged(colourStrategy, true);
         }

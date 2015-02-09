@@ -1,6 +1,6 @@
 package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
 
-import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.EnumColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 
@@ -13,9 +13,9 @@ public interface IFractalComputeStrategy {
 
     public boolean shouldPerformCrudeFirst();
 
-    public void setColourStrategy(IColourStrategy colourStrategy);
+    public void setColourStrategy(EnumColourStrategy colourStrategy);
 
-    public IColourStrategy getColourStrategy();
+    public EnumColourStrategy getColourStrategy();
 
     public double getIterationBase();
 

@@ -1,6 +1,8 @@
 #pragma version(1)
 #pragma rs java_package_name(uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript)
 
+#include "colouring.rsh"
+
 rs_allocation gIn;
 rs_allocation gOut;
 rs_script gScript;
@@ -25,82 +27,11 @@ int32_t xPixelMin;
 int32_t xPixelMax;
 int32_t imgWidth;
 
-int mandelbrotMode;
-int juliaMode;
+// 0 is Mandelbrot, 1 is Julia
+int fractalMode;
 
-static double PI = 3.1415926535;
-
-static int colourOutsideMandelbrotPoint(int iterations, int maxIterations) {
-    if (iterations <= 0) {
-        return 0xFF000000;
-    }
-
-    int colourCodeR, colourCodeG, colourCodeB;
-    double colourCode;
-
-    // Percentage (0.0 -- 1.0)
-    colourCode = (double) iterations / (double) maxIterations;
-
-    // Red
-    colourCodeR = (int) (255 * 6 * colourCode);
-    if (255 < colourCodeR) {
-        colourCodeR = 255;
-    }
-
-    // Green
-    colourCodeG = (int) (255 * colourCode);
-
-    float c = 7 * PI * colourCode;
-    // Blue
-    colourCodeB = (int) (127.5 - 127.5 * cos(c));
-
-    //Compute colour from the three components
-    int colourCodeHex = (0xFF << 24) + (colourCodeR << 16) + (colourCodeG << 8) + (colourCodeB);
-
-    return colourCodeHex;
-}
-
-static int colourInsideMandelbrotPoint() {
-    return 0xFFFFFFFF;
-}
-
-static int colourOutsideJuliaPoint(int iterations, int maxIterations) {
-    if (iterations <= 0) {
-        return 0xFF000000;
-    }
-
-    int colourCodeR, colourCodeG, colourCodeB;
-    double colourCode;
-
-
-    // Percentage (0.0 -- 1.0)
-    colourCode = (double) iterations / (double) maxIterations;
-
-    // Red
-    colourCodeR = (int) (255 * 2 * colourCode);
-    if (255 < colourCodeR) {
-        colourCodeR = 255;
-    }
-
-    // Green
-    colourCodeG = (int) (255 * colourCode);
-
-    // Blue
-    float c = 3 * PI * colourCode;
-    colourCodeB = (int) (
-            127.5 - 127.5 * cos(c)
-    );
-
-    //Compute colour from the three components
-    int colourCodeHex = (0xFF << 24) + (colourCodeR << 16) + (colourCodeG << 8) + (colourCodeB);
-
-    return colourCodeHex;
-}
-
-static int colourInsideJuliaPoint() {
-    return 0xFFFFFFFF;
-}
-
+// 0 is Purple-Red, 1 is Purple-Yellow, 2 is RGB, 3 is Pastels
+int colourMode;
 
 static int pixelInMandelbrotSet(int32_t xPixel, int32_t yPixel, double xMin, double yMax, double pixelSize, int32_t maxIterations) {
     int inside = 1;
@@ -131,22 +62,38 @@ static int pixelInMandelbrotSet(int32_t xPixel, int32_t yPixel, double xMin, dou
     }
 
     if (inside == 1) {
-        return colourInsideMandelbrotPoint();
+        return colourInsidePoint();
     } else {
-        return colourOutsideMandelbrotPoint(iterationNumber, maxIterations);
+        switch(colourMode) {
+            case 1:
+                return colourPurpleYellowPoint(iterationNumber, maxIterations);
+                break;
+
+            case 2:
+                return colourRGBPoint(iterationNumber, maxIterations);
+                break;
+
+            case 3:
+                return colourPastelPoint(iterationNumber, maxIterations);
+                break;
+
+            default:
+                return colourPurpleRedPoint(iterationNumber, maxIterations);
+                break;
+        }
     }
 }
 
 static int pixelInJuliaSet(int32_t xPixel, int32_t yPixel, double xMin, double yMax, double pixelSize, int32_t maxIterations) {
     int inside = 1;
-    int iterationNr;
+    int iterationNumber;
     double newx, newy;
     double x, y;
 
     x = xMin + ((double) xPixel * pixelSize);
     y = yMax - ((double) yPixel * pixelSize);
 
-    for (iterationNr = 0; iterationNr < maxIterations; iterationNr++) {
+    for (iterationNumber = 0; iterationNumber < maxIterations; iterationNumber++) {
         // z^2 + c
         newx = (x * x) - (y * y) + juliaX;
         newy = (2 * x * y) + juliaY;
@@ -162,9 +109,25 @@ static int pixelInJuliaSet(int32_t xPixel, int32_t yPixel, double xMin, double y
     }
 
     if (inside == 1) {
-        return colourInsideJuliaPoint();
+        return colourInsidePoint();
     } else {
-        return colourOutsideJuliaPoint(iterationNr, maxIterations);
+        switch(colourMode) {
+            case 1:
+                return colourPurpleYellowPoint(iterationNumber, maxIterations);
+                break;
+
+            case 2:
+                return colourRGBPoint(iterationNumber, maxIterations);
+                break;
+
+            case 3:
+                return colourPastelPoint(iterationNumber, maxIterations);
+                break;
+
+            default:
+                return colourPurpleRedPoint(iterationNumber, maxIterations);
+                break;
+        }
     }
 }
 
@@ -188,9 +151,9 @@ void root(const int32_t *v_in, int32_t *v_out, const void *usrData, uint32_t x, 
         }
 
         //rsDebug("inner loop", 0);
-        if (mandelbrotMode == 1) {
+        if (fractalMode == 0) {
             colourCodeHex = pixelInMandelbrotSet(xPixel, yPixel, xMin, yMax, pixelSize, maxIterations);
-        } else if(juliaMode == 1) {
+        } else if(fractalMode == 1) {
             colourCodeHex = pixelInJuliaSet(xPixel, yPixel, xMin, yMax, pixelSize, maxIterations);
         }
         //if (value != 0) {
@@ -218,8 +181,7 @@ void mandelbrot() {
     xPixelMin = 0;
     xPixelMax = viewWidth;
 
-    mandelbrotMode = 1;
-    juliaMode = 0;
+    fractalMode = 0;
 
     rsForEach(gScript, gIn, gOut);
 }
@@ -230,8 +192,7 @@ void julia() {
     xPixelMin = 0;
     xPixelMax = viewWidth;
 
-    mandelbrotMode = 0;
-    juliaMode = 1;
+    fractalMode = 1;
 
     rsForEach(gScript, gIn, gOut);
 }

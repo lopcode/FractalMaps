@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.colouring;
+package uk.ac.ed.inf.mandelbrotmaps.colouring.old;
 
 /**
  * A colouring scheme based on a conical spiral function.  Recall that a conical

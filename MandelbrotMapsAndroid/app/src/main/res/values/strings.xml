@@ -105,6 +105,9 @@
     <string name="menu_benchmark_six">Benchmark Point Six</string>
     <string name="menu_benchmark_seven">Benchmark Point Seven</string>
 
+    <string name="menu_show_mandelbrot_menu">Mandelbrot Menu</string>
+    <string name="menu_show_julia_menu">Julia Menu</string>
+
     <string name="toolbar_progress">Rendering...</string>
 
 </resources>

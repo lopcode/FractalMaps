@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.colouring;
+package uk.ac.ed.inf.mandelbrotmaps.colouring.old;
 
 public interface IColourStrategy {
 

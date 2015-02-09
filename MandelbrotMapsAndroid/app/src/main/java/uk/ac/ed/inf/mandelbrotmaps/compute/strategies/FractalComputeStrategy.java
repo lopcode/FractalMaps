@@ -1,13 +1,13 @@
 package uk.ac.ed.inf.mandelbrotmaps.compute.strategies;
 
-import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.EnumColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 
 public abstract class FractalComputeStrategy implements IFractalComputeStrategy {
     protected int width;
     protected int height;
     protected IFractalComputeDelegate delegate;
-    protected IColourStrategy colourStrategy;
+    protected EnumColourStrategy colourStrategy;
 
     //protected double[] graphArea; // {x_min, y_max, width}
     //protected double[] homeGraphArea;
@@ -23,12 +23,12 @@ public abstract class FractalComputeStrategy implements IFractalComputeStrategy 
     }
 
     @Override
-    public void setColourStrategy(IColourStrategy colourStrategy) {
+    public void setColourStrategy(EnumColourStrategy colourStrategy) {
         this.colourStrategy = colourStrategy;
     }
 
     @Override
-    public IColourStrategy getColourStrategy() {
+    public EnumColourStrategy getColourStrategy() {
         return this.colourStrategy;
     }
 }

@@ -1,6 +1,6 @@
 package uk.ac.ed.inf.mandelbrotmaps;
 
-import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.EnumColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinColour;
 import uk.ac.ed.inf.mandelbrotmaps.presenter.IFractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.settings.SceneLayoutEnum;
@@ -18,9 +18,9 @@ public interface IFractalSceneDelegate {
 
     public void onPinColourChanged(PinColour colour);
 
-    public void onMandelbrotColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender);
+    public void onMandelbrotColourSchemeChanged(EnumColourStrategy colourStrategy, boolean reRender);
 
-    public void onJuliaColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender);
+    public void onJuliaColourSchemeChanged(EnumColourStrategy colourStrategy, boolean reRender);
 
     public void onFractalViewReady(IFractalPresenter presenter);
 

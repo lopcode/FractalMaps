@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.colouring;
+package uk.ac.ed.inf.mandelbrotmaps.colouring.old;
 
 /**
  * Defines a colour scheme that moves from black to blue, cyan, green, yellow,
@@ -6,7 +6,7 @@ package uk.ac.ed.inf.mandelbrotmaps.colouring;
  *
  * @author mallia
  */
-public class DefaultColourStrategy implements IColourStrategy {
+public class JuliaColourStrategy implements IColourStrategy {
     /**
      * The spacing of the colours.  For example, when creating blue colours, the
      * next blue colour will be new = old + COLOUR_SPACING.
@@ -36,17 +36,22 @@ public class DefaultColourStrategy implements IColourStrategy {
         int colourCodeR, colourCodeG, colourCodeB;
         double colourCode;
 
+
         // Percentage (0.0 -- 1.0)
         colourCode = (double) iterations / (double) maxIterations;
 
         // Red
-        colourCodeR = Math.min((int) (255 * 6 * colourCode), 255);
+        colourCodeR = Math.min((int) (255 * 2 * colourCode), 255);
 
         // Green
         colourCodeG = (int) (255 * colourCode);
 
         // Blue
-        colourCodeB = (int) (127.5 - 127.5 * Math.cos(7 * Math.PI * colourCode));
+        colourCodeB = (int) (
+                127.5 - 127.5 * Math.cos(
+                        3 * Math.PI * colourCode
+                )
+        );
 
         //Compute colour from the three components
         int colourCodeHex = (0xFF << 24) + (colourCodeR << 16) + (colourCodeG << 8) + (colourCodeB);

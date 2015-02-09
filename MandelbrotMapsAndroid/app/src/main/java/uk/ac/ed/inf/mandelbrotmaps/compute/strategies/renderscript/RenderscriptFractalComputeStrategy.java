@@ -51,7 +51,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
         this.initialiseRenderThread();
         this.initialiseRenderScript();
 
-        this.initialiseRowIndexCache(Arrays.asList(new Integer[]{FractalPresenter.CRUDE_PIXEL_BLOCK, FractalPresenter.DEFAULT_PIXEL_SIZE}), 1, 4);
+        this.initialiseRowIndexCache(Arrays.asList(new Integer[]{FractalPresenter.CRUDE_PIXEL_BLOCK, FractalPresenter.DEFAULT_PIXEL_SIZE}), 1, 8);
     }
 
     public void initialiseRowIndexCache(List<Integer> pixelBlockSizesToPrecompute, int minPowerOfTwo, int maxPowerOfTwo) {
@@ -265,6 +265,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
         this.fractalRenderScript.set_yMax(arguments.yMax);
         this.fractalRenderScript.set_pixelSize(arguments.pixelSize);
         this.fractalRenderScript.set_arraySize(size);
+        this.fractalRenderScript.set_colourMode(this.getColourStrategy().ordinal());
 
         if (this.row_indices_alloc == null || this.row_indices_alloc.getType().getCount() != size) {
             if (this.row_indices_alloc != null)

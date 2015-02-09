@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.old.cpu;
 
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 

@@ -75,7 +75,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     public void initialiseOverlays() {
-        this.fractalPresenterOverlays = new ArrayList<IFractalOverlay>();
+        this.fractalPresenterOverlays = new ArrayList<>();
 
         this.coordinatesOverlay = new LabelOverlay(this.context, "Coordinates not set yet", 10.0f, 10.0f);
         this.coordinatesOverlay.setTextAlignment(Paint.Align.RIGHT);
@@ -168,7 +168,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         int nextPowerOfTwo = this.nextClosestPowerOfTwo((int) Math.ceil(adjustedLog));
 
         LOGGER.debug("Zoom power of two: " + nextPowerOfTwo);
-        int linesPerUpdate = (int) (this.viewHeight / nextPowerOfTwo);
+        int linesPerUpdate = this.viewHeight / nextPowerOfTwo;
         LOGGER.debug("Notifying of update every " + linesPerUpdate + " lines");
 
         if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
@@ -219,7 +219,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         double[] oldGraphArea = graphArea;
         double[] newGraphArea = new double[3];
 
-        double zoomPercentChange = (double) scale; //= (double)(100 + (zoomAmount)) / 100;
+        double zoomPercentChange = scale;
 
         // What is the zoom centre?
         double zoomCentreX = oldGraphArea[0] + ((double) x * pixelSize);
@@ -283,11 +283,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     boolean saneZoomLevel() {
         int zoomLevel = getZoomLevel();
 
-        if ((zoomLevel >= 1) && (zoomLevel <= ZOOM_SLIDER_SCALING)) {
-            return true;
-        } else {
-            return false;
-        }
+        return ((zoomLevel >= 1) && (zoomLevel <= ZOOM_SLIDER_SCALING));
     }
 
     public void initialisePixelBuffers() {

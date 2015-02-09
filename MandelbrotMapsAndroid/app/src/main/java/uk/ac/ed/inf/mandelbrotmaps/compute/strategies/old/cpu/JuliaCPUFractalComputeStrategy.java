@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.old.cpu;
 
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaSeedSettable;
 
@@ -59,9 +59,9 @@ public class JuliaCPUFractalComputeStrategy extends CPUFractalComputeStrategy im
         }
 
         if (inside)
-            return this.colourStrategy.colourInsidePoint();
+            return this.cpuColourStrategy.colourInsidePoint();
         else
-            return this.colourStrategy.colourOutsidePoint(iterationNr, maxIterations);
+            return this.cpuColourStrategy.colourOutsidePoint(iterationNr, maxIterations);
     }
 
     @Override

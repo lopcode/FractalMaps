@@ -1,7 +1,6 @@
 package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +9,7 @@ import android.graphics.Matrix;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -24,7 +24,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,7 +31,6 @@ import android.widget.Toast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,16 +39,18 @@ import java.util.Map;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import uk.ac.ed.inf.mandelbrotmaps.colouring.IColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.EnumColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaSeedSettable;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.JuliaCPUFractalComputeStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu.MandelbrotCPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.old.cpu.JuliaCPUFractalComputeStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.old.cpu.MandelbrotCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.JuliaRenderscriptFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.MandelbrotRenderscriptFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.RenderscriptFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.detail.DetailControlDialog;
+import uk.ac.ed.inf.mandelbrotmaps.menu.IFractalMenuDelegate;
+import uk.ac.ed.inf.mandelbrotmaps.menu.ISceneMenuDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.IFractalOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.IPinMovementDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinColour;
@@ -67,18 +67,13 @@ import uk.ac.ed.inf.mandelbrotmaps.touch.FractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.touch.MandelbrotTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.view.FractalView;
 
-public class FractalSceneActivity extends ActionBarActivity implements IFractalSceneDelegate, IPinMovementDelegate, DetailControlDelegate {
+public class FractalSceneActivity extends ActionBarActivity implements IFractalSceneDelegate, IPinMovementDelegate, DetailControlDelegate, ISceneMenuDelegate, IFractalMenuDelegate {
     private final Logger LOGGER = LoggerFactory.getLogger(FractalSceneActivity.class);
 
     // Layout variables
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
 
-    @InjectView(R.id.toolbarProgress)
-    ProgressBar toolbarProgress;
-
-    //@InjectView(R.id.toolbarProgress)
-    //ProgressBar toolbarProgress;
     @InjectView(R.id.toolbarTextProgress)
     TextView toolbarTextProgress;
 
@@ -97,14 +92,9 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     private IFractalComputeStrategy mandelbrotStrategy;
     private IFractalComputeStrategy juliaStrategy;
 
-    // File saving variables
-    private ProgressDialog savingDialog;
-    private File imagefile;
-    private Boolean cancelledSave = false;
-
     public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
 
-    private HashMap<IFractalPresenter, Boolean> UIRenderStates = new HashMap<IFractalPresenter, Boolean>();
+    private Map<IFractalPresenter, Boolean> UIRenderStates = new HashMap<>();
 
     private SceneLayoutEnum layoutType;
 
@@ -151,7 +141,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.setContentViewFromLayoutType(this.layoutType);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
 
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
@@ -321,7 +310,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     }
 
     public void initialiseOverlays() {
-        this.sceneOverlays = new ArrayList<IFractalOverlay>();
+        this.sceneOverlays = new ArrayList<>();
 
         if (this.showingPinOverlay) {
             this.pinOverlay = new PinOverlay(this, 42.0f, 100f, 100f);
@@ -358,9 +347,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         super.onPause();
 
         this.saveGraphStates();
-
-        if (savingDialog != null)
-            savingDialog.dismiss();
     }
 
     @Override
@@ -383,7 +369,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
         LOGGER.debug("Restoring instance state");
@@ -415,11 +401,19 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         switch (item.getItemId()) {
             case R.id.menuResetAll:
-                this.onResetClicked();
+                this.onResetAllClicked();
                 return true;
 
             case R.id.menuHelp:
                 this.onHelpClicked();
+                return true;
+
+            case R.id.menuShowMandelbrotMenu:
+                this.onShowMandelbrotMenuClicked();
+                return true;
+
+            case R.id.menuShowJuliaMenu:
+                this.onShowJuliaMenuClicked();
                 return true;
 
             case R.id.menuSettings:
@@ -427,7 +421,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 return true;
 
             case R.id.menuSwitchRenderer:
-                this.onSwitchRendererClicked();
+                this.onToggleCPURenderscriptClicked();
                 return true;
 
             case R.id.menuBenchmarkOld:
@@ -467,284 +461,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         }
     }
 
-    public void toggleLayoutType() {
-        if (this.layoutType == SceneLayoutEnum.LARGE_SMALL) {
-            this.settings.setLayoutType(SceneLayoutEnum.SIDE_BY_SIDE);
-        } else {
-            this.settings.setLayoutType(SceneLayoutEnum.LARGE_SMALL);
-        }
-    }
-
-    public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter, boolean fullRefresh) {
-        presenter.getComputeStrategy().stopAllRendering();
-
-        if (fullRefresh)
-            presenter.clearPixelSizes();
-
-        if (settings.performCrudeFirst()) {
-            presenter.recomputeGraph(FractalPresenter.CRUDE_PIXEL_BLOCK);
-        }
-
-        presenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
-    }
-
-    @Override
-    public void onPinColourChanged(PinColour colour) {
-        this.pinOverlay.setPinColour(colour);
-        this.firstFractalView.postUIThreadRedraw();
-    }
-
-    @Override
-    public void onMandelbrotColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender) {
-        this.mandelbrotFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
-        if (reRender)
-            this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
-    }
-
-    @Override
-    public void onJuliaColourSchemeChanged(IColourStrategy colourStrategy, boolean reRender) {
-        this.juliaFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
-        if (reRender)
-            this.scheduleRecomputeBasedOnPreferences(this.juliaFractalPresenter, true);
-    }
-
-    @Override
-    public void onFractalViewReady(IFractalPresenter presenter) {
-        LOGGER.debug("Fractal view ready");
-
-        // Move the fractal down a to the mid point of the view
-        //  Only if the graph area is the default, otherwise it got set manually
-        View view = null;
-        boolean isDefaultGraphArea = false;
-        if (presenter == this.mandelbrotFractalPresenter) {
-            view = this.firstFractalView;
-            isDefaultGraphArea = this.mandelbrotFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultMandelbrotGraphArea;
-        } else if (presenter == this.juliaFractalPresenter) {
-            view = this.secondFractalView;
-            isDefaultGraphArea = this.juliaFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultJuliaGraphArea;
-        }
-
-        if (isDefaultGraphArea) {
-            LOGGER.debug("Moved default graph area to midpoint of view");
-            double[] graphMidPoint = presenter.getGraphPositionFromClickedPosition(view.getWidth() / 2.0f, view.getHeight() / 2.0f);
-            double[] originalGraphPoint = presenter.getGraphArea();
-            originalGraphPoint[1] -= graphMidPoint[1];
-            presenter.setGraphArea(originalGraphPoint);
-        }
-
-        this.scheduleRecomputeBasedOnPreferences(presenter, true);
-    }
-
-    @Override
-    public void onSceneLayoutChanged(SceneLayoutEnum layoutType) {
-        this.reloadSelf();
-        /*Log.i("FA", "Setting scene layout to " + layoutType.name());
-        this.setContentViewFromLayoutType(layoutType);
-        this.initialiseToolbar();
-
-        this.mandelbrotFractalPresenter.setView(this.firstFractalView, new Matrix(), this.mandelbrotFractalPresenter);
-        this.juliaFractalPresenter.setView(this.secondFractalView, new Matrix(), this.juliaFractalPresenter);
-
-        this.mandelbrotFractalPresenter.onSceneOverlaysChanged(this.sceneOverlays);*/
-    }
-
-    public void reloadSelf() {
-        this.mandelbrotStrategy.tearDown();
-        this.juliaStrategy.tearDown();
-        this.firstFractalView.tearDown();
-        this.secondFractalView.tearDown();
-
-        this.finish();
-        this.startActivity(this.getIntent());
-    }
-
-    /*-----------------------------------------------------------------------------------*/
-    /*Image saving/sharing*/
-    /*-----------------------------------------------------------------------------------*/
-   /* TODO: Tidy up this code. Possibly switch to using Handlers and postDelayed.
-   */
-    //Wait for render to finish, then save the fractal image
-    private void saveImage() {
-//        cancelledSave = false;
-//
-//        if (fractalView.isRendering()) {
-//            savingDialog = new ProgressDialog(this);
-//            savingDialog.setMessage("Waiting for render to finish...");
-//            savingDialog.setCancelable(true);
-//            savingDialog.setIndeterminate(true);
-//            savingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-//                public void onCancel(DialogInterface dialog) {
-//                    FractalActivity.this.cancelledSave = true;
-//                }
-//            });
-//            savingDialog.show();
-//
-//            //Launch a thread to wait for completion
-//            new Thread(new Runnable() {
-//                public void run() {
-//                    if (fractalView.isRendering()) {
-//                        while (!cancelledSave && fractalView.isRendering()) {
-//                            try {
-//                                Thread.sleep(100);
-//                            } catch (InterruptedException e) {
-//                            }
-//                        }
-//
-//                        if (!cancelledSave) {
-//                            savingDialog.dismiss();
-//                            imagefile = fractalView.saveImage();
-//                            String toastText;
-//                            if (imagefile == null)
-//                                toastText = "Unable to save fractal - filename already in use.";
-//                            else toastText = "Saved fractal as " + imagefile.getAbsolutePath();
-//                            showToastOnUIThread(toastText, Toast.LENGTH_LONG);
-//                        }
-//                    }
-//                    return;
-//                }
-//            }).start();
-//        } else {
-//            imagefile = fractalView.saveImage();
-//            String toastText;
-//            if (imagefile == null) toastText = "Unable to save fractal - filename already in use.";
-//            else toastText = "Saved fractal as " + imagefile.getAbsolutePath();
-//            showToastOnUIThread(toastText, Toast.LENGTH_LONG);
-//        }
-    }
-
-    //Wait for the render to finish, then share the fractal image
-    private void shareImage() {
-//        cancelledSave = false;
-//
-//        if (fractalView.isRendering()) {
-//            savingDialog = new ProgressDialog(this);
-//            savingDialog.setMessage("Waiting for render to finish...");
-//            savingDialog.setCancelable(true);
-//            savingDialog.setIndeterminate(true);
-//            savingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-//                public void onCancel(DialogInterface dialog) {
-//                    FractalActivity.this.cancelledSave = true;
-//                }
-//            });
-//            savingDialog.show();
-//
-//            //Launch a thread to wait for completion
-//            new Thread(new Runnable() {
-//                public void run() {
-//                    if (fractalView.isRendering()) {
-//                        while (!cancelledSave && fractalView.isRendering()) {
-//                            try {
-//                                Thread.sleep(100);
-//                            } catch (InterruptedException e) {
-//                            }
-//                        }
-//
-//                        if (!cancelledSave) {
-//                            savingDialog.dismiss();
-//                            imagefile = fractalView.saveImage();
-//                            if (imagefile != null) {
-//                                Intent imageIntent = new Intent(Intent.ACTION_SEND);
-//                                imageIntent.setType("image/jpg");
-//                                imageIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imagefile));
-//
-//                                startActivityForResult(Intent.createChooser(imageIntent, "Share picture using:"), SHARE_IMAGE_REQUEST);
-//                            } else {
-//                                showToastOnUIThread("Unable to share image - couldn't save temporary file", Toast.LENGTH_LONG);
-//                            }
-//                        }
-//                    }
-//                    return;
-//                }
-//            }).start();
-//        } else {
-//            imagefile = fractalView.saveImage();
-//
-//            if (imagefile != null) {
-//                Intent imageIntent = new Intent(Intent.ACTION_SEND);
-//                imageIntent.setType("image/png");
-//                imageIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imagefile));
-//
-//                startActivityForResult(Intent.createChooser(imageIntent, "Share picture using:"), SHARE_IMAGE_REQUEST);
-//            } else {
-//                showToastOnUIThread("Unable to share image - couldn't save temporary file", Toast.LENGTH_LONG);
-//            }
-//        }
-    }
-
-    /*-----------------------------------------------------------------------------------*/
-    /*Utilities*/
-    /*-----------------------------------------------------------------------------------*/
-    /*A single method for running toasts on the UI thread, rather than
-       creating new Runnables each time. */
-    public void showToastOnUIThread(final String toastText, final int length) {
-        runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(getApplicationContext(), toastText, length).show();
-            }
-        });
-    }
-
-    /* Show the short tutorial/intro dialog */
-    private void showIntro() {
-        TextView text = new TextView(this);
-        text.setMovementMethod(LinkMovementMethod.getInstance());
-        text.setText(Html.fromHtml(getString(R.string.intro_text)));
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true)
-                .setView(text)
-                .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-        ;
-        builder.create().show();
-
-        this.settings.setFirstTimeUse(false);
-    }
-
-    /* Show the large help dialog */
-    private void showHelpDialog() {
-        ScrollView scrollView = new ScrollView(this);
-        TextView text = new TextView(this);
-        text.setText(Html.fromHtml(getString(R.string.help_text)));
-        scrollView.addView(text);
-
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true)
-                .setView(scrollView)
-                .setPositiveButton("Okay", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-
-        AlertDialog helpDialog = builder.create();
-        helpDialog.getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        helpDialog.show();
-    }
-
-    // Dialogs
-
-    private void showDetailDialog() {
-        FragmentManager fm = getSupportFragmentManager();
-        DetailControlDialog detailControlDialog = new DetailControlDialog();
-        detailControlDialog.show(fm, FRAGMENT_DETAIL_DIALOG_NAME);
-    }
-
-    private void dismissDetailDialog() {
-        Fragment dialog = getSupportFragmentManager().findFragmentByTag(FRAGMENT_DETAIL_DIALOG_NAME);
-        if (dialog != null) {
-            DialogFragment df = (DialogFragment) dialog;
-            df.dismiss();
-        }
-    }
-
     // Context menus
 
     @Override
@@ -777,6 +493,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         if (placePinItem != null)
             placePinItem.setVisible(true);
 
+        placePinItem.setEnabled(this.showingPinOverlay);
+
         menu.setHeaderTitle("Mandelbrot fractal");
 
         boolean viewsSwitched = this.settings.getViewsSwitched();
@@ -798,32 +516,19 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
             boolean portrait = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
 
-            String movePosition = "";
+            String movePosition;
 
             if (portrait) {
-                if (viewsSwitched) {
-                    movePosition = "up";
-                } else {
-                    movePosition = "down";
-                }
+                movePosition = viewsSwitched ? "up" : "down";
             } else {
-                if (viewsSwitched) {
-                    movePosition = "left";
-                } else {
-                    movePosition = "right";
-                }
+                movePosition = viewsSwitched ? "left" : "right";
             }
 
             viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), movePosition));
         } else if (this.layoutType == SceneLayoutEnum.LARGE_SMALL) {
             changeLayoutItem.setTitle(R.string.context_view_side_side);
 
-            String movePosition = "";
-            if (viewsSwitched) {
-                movePosition = "down";
-            } else {
-                movePosition = "up";
-            }
+            String movePosition = viewsSwitched ? "down" : "up";
 
             viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), movePosition));
         }
@@ -858,32 +563,19 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
             boolean portrait = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
 
-            String movePosition = "";
+            String movePosition;
 
             if (portrait) {
-                if (viewsSwitched) {
-                    movePosition = "down";
-                } else {
-                    movePosition = "up";
-                }
+                movePosition = viewsSwitched ? "down" : "up";
             } else {
-                if (viewsSwitched) {
-                    movePosition = "right";
-                } else {
-                    movePosition = "left";
-                }
+                movePosition = viewsSwitched ? "right" : "left";
             }
 
             viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), movePosition));
         } else if (this.layoutType == SceneLayoutEnum.LARGE_SMALL) {
             changeLayoutItem.setTitle(R.string.context_view_side_side);
 
-            String movePosition = "";
-            if (viewsSwitched) {
-                movePosition = "up";
-            } else {
-                movePosition = "down";
-            }
+            String movePosition = viewsSwitched ? "up" : "down";
 
             viewPositionItem.setTitle(String.format(this.getResources().getString(R.string.context_change_view_position), movePosition));
         }
@@ -904,11 +596,11 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
         switch (item.getItemId()) {
             case R.id.menuSwapViews:
-                this.onSwapViewsClicked();
+                this.onChangeFractalPositionClicked(this.viewContext);
                 return true;
 
             case R.id.menuChangeLayout:
-                this.onChangeLayoutClicked(this.viewContext);
+                this.onSwitchFractalViewLayoutClicked(this.viewContext);
                 return true;
 
             default:
@@ -924,7 +616,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 return true;
 
             case R.id.menuResetFractal:
-                this.resetMandelbrotFractal();
+                this.onResetFractalClicked(this.mandelbrotFractalView);
                 return true;
 
             default:
@@ -935,7 +627,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     public boolean onJuliaContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menuResetFractal:
-                this.resetJuliaFractal();
+                this.onResetFractalClicked(this.juliaFractalView);
                 return true;
 
             default:
@@ -943,61 +635,25 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         }
     }
 
-    // Menu Delegate
+    // Scene Menu Delegate
 
-    public void onResetClicked() {
+    @Override
+    public void onResetAllClicked() {
         this.resetMandelbrotFractal();
         this.resetJuliaFractal();
     }
 
-    public void resetMandelbrotFractal() {
-        this.mandelbrotFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultMandelbrotGraphArea);
-        this.onFractalViewReady(this.mandelbrotFractalPresenter);
-    }
-
-    public void resetJuliaFractal() {
-        this.juliaFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultJuliaGraphArea);
-        ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(MandelbrotJuliaLocation.defaultJuliaParams[0], MandelbrotJuliaLocation.defaultJuliaParams[1]);
-
-        double[] pinPosition = this.mandelbrotFractalPresenter.getPointFromGraphPosition(MandelbrotJuliaLocation.defaultJuliaParams[0], MandelbrotJuliaLocation.defaultJuliaParams[1]);
-        this.setPinPosition((float) pinPosition[0], (float) pinPosition[1]);
-        this.onFractalViewReady(this.juliaFractalPresenter);
-    }
-
-    public void onSettingsClicked() {
-        this.startActivity(new Intent(this, SettingsActivity.class));
-    }
-
-    public void onDetailClicked() {
-        this.showDetailDialog();
-    }
-
-//    @Override
-//    public void onSaveClicked() {
-//        this.saveImage();
-//        this.dismissMenuDialog();
-//    }
-//
-//    @Override
-//    public void onShareClicked() {
-//        this.shareImage();
-//        this.dismissMenuDialog();
-//    }
-
-    public void onHelpClicked() {
-        this.showHelpDialog();
-    }
-
-    public void onSwitchRendererClicked() {
+    @Override
+    public void onToggleCPURenderscriptClicked() {
         double[] juliaParams = ((JuliaSeedSettable) this.juliaStrategy).getJuliaSeed();
 
-        IColourStrategy mandelbrotColourStrategy = this.mandelbrotStrategy.getColourStrategy();
-        IColourStrategy juliaColourStrategy = this.juliaStrategy.getColourStrategy();
+        EnumColourStrategy mandelbrotColourStrategy = this.mandelbrotStrategy.getColourStrategy();
+        EnumColourStrategy juliaColourStrategy = this.juliaStrategy.getColourStrategy();
 
         this.mandelbrotStrategy.tearDown();
         this.juliaStrategy.tearDown();
 
-        if (this.shouldRenderscriptRender) {
+        if (shouldRenderscriptRender) {
             this.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
             this.juliaStrategy = new JuliaCPUFractalComputeStrategy();
         } else {
@@ -1019,7 +675,37 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.juliaFractalPresenter.initialiseStrategy();
 
         this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
-        this.shouldRenderscriptRender = !this.shouldRenderscriptRender;
+        shouldRenderscriptRender = !shouldRenderscriptRender;
+    }
+
+    @Override
+    public void onShowMandelbrotMenuClicked() {
+        float pinX = 0;
+        float pinY = 0;
+
+        if (this.showingPinOverlay) {
+            pinX = this.getPinX();
+            pinY = this.getPinY();
+        }
+
+        this.onFractalLongClick(this.mandelbrotFractalPresenter, pinX, pinY);
+    }
+
+    @Override
+    public void onShowJuliaMenuClicked() {
+        this.onFractalLongClick(this.juliaFractalPresenter, 0, 0);
+    }
+
+    public void onHelpClicked() {
+        this.showHelpDialog();
+    }
+
+    public void onSettingsClicked() {
+        this.startActivity(new Intent(this, SettingsActivity.class));
+    }
+
+    public void onDetailClicked() {
+        this.showDetailDialog();
     }
 
     public void onBenchmarkOldClicked() {
@@ -1102,18 +788,19 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.mandelbrotFractalPresenter.computeGraphAreaNow(benchmarkPoint);
     }
 
-    public void onSwapViewsClicked() {
-        long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
-        LOGGER.debug("Time (ms) since start of scene {}", timeDiffInMS);
+    // Context Specific Menus
 
-        if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS) {
-            this.settings.setViewsSwitched(!this.settings.getViewsSwitched());
-
-            this.reloadSelf();
+    @Override
+    public void onResetFractalClicked(View viewContext) {
+        if (viewContext == this.mandelbrotFractalView) {
+            this.resetMandelbrotFractal();
+        } else {
+            this.resetJuliaFractal();
         }
     }
 
-    public void onChangeLayoutClicked(View viewContext) {
+    @Override
+    public void onSwitchFractalViewLayoutClicked(View viewContext) {
         long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
         LOGGER.debug("Time (ms) since start of scene " + timeDiffInMS);
 
@@ -1130,6 +817,206 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             }
 
             this.toggleLayoutType();
+        }
+    }
+
+    @Override
+    public void onChangeFractalPositionClicked(View viewContext) {
+        long timeDiffInMS = (System.nanoTime() - this.sceneStartTime) / 1000000;
+        LOGGER.debug("Time (ms) since start of scene {}", timeDiffInMS);
+
+        if (timeDiffInMS > BUTTON_SPAM_MINIMUM_MS) {
+            this.settings.setViewsSwitched(!this.settings.getViewsSwitched());
+
+            this.reloadSelf();
+        }
+    }
+
+    @Override
+    public void onSaveFractalClicked(View viewContext) {
+
+    }
+
+    @Override
+    public void onShareFractalClicked(View viewContext) {
+
+    }
+
+    public void resetMandelbrotFractal() {
+        this.mandelbrotFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultMandelbrotGraphArea);
+        this.onFractalViewReady(this.mandelbrotFractalPresenter);
+    }
+
+    public void resetJuliaFractal() {
+        this.juliaFractalPresenter.setGraphArea(MandelbrotJuliaLocation.defaultJuliaGraphArea);
+        ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(MandelbrotJuliaLocation.defaultJuliaParams[0], MandelbrotJuliaLocation.defaultJuliaParams[1]);
+
+        double[] pinPosition = this.mandelbrotFractalPresenter.getPointFromGraphPosition(MandelbrotJuliaLocation.defaultJuliaParams[0], MandelbrotJuliaLocation.defaultJuliaParams[1]);
+        this.setPinPosition((float) pinPosition[0], (float) pinPosition[1]);
+        this.onFractalViewReady(this.juliaFractalPresenter);
+    }
+
+    public void toggleLayoutType() {
+        if (this.layoutType == SceneLayoutEnum.LARGE_SMALL) {
+            this.settings.setLayoutType(SceneLayoutEnum.SIDE_BY_SIDE);
+        } else {
+            this.settings.setLayoutType(SceneLayoutEnum.LARGE_SMALL);
+        }
+    }
+
+    public void scheduleRecomputeBasedOnPreferences(IFractalPresenter presenter, boolean fullRefresh) {
+        presenter.getComputeStrategy().stopAllRendering();
+
+        if (fullRefresh)
+            presenter.clearPixelSizes();
+
+        if (settings.performCrudeFirst()) {
+            presenter.recomputeGraph(FractalPresenter.CRUDE_PIXEL_BLOCK);
+        }
+
+        presenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
+    }
+
+    @Override
+    public void onPinColourChanged(PinColour colour) {
+        this.pinOverlay.setPinColour(colour);
+        this.firstFractalView.postUIThreadRedraw();
+    }
+
+    @Override
+    public void onMandelbrotColourSchemeChanged(EnumColourStrategy colourStrategy, boolean reRender) {
+        this.mandelbrotFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
+        if (reRender)
+            this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
+    }
+
+    @Override
+    public void onJuliaColourSchemeChanged(EnumColourStrategy colourStrategy, boolean reRender) {
+        this.juliaFractalPresenter.fractalStrategy.setColourStrategy(colourStrategy);
+        if (reRender)
+            this.scheduleRecomputeBasedOnPreferences(this.juliaFractalPresenter, true);
+    }
+
+    @Override
+    public void onFractalViewReady(IFractalPresenter presenter) {
+        LOGGER.debug("Fractal view ready");
+
+        // Move the fractal down a to the mid point of the view
+        //  Only if the graph area is the default, otherwise it got set manually
+        View view = null;
+        boolean isDefaultGraphArea = false;
+        if (presenter == this.mandelbrotFractalPresenter) {
+            view = this.firstFractalView;
+            isDefaultGraphArea = this.mandelbrotFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultMandelbrotGraphArea;
+        } else if (presenter == this.juliaFractalPresenter) {
+            view = this.secondFractalView;
+            isDefaultGraphArea = this.juliaFractalPresenter.getGraphArea() == MandelbrotJuliaLocation.defaultJuliaGraphArea;
+        }
+
+        if (isDefaultGraphArea) {
+            LOGGER.debug("Moved default graph area to midpoint of view");
+            double[] graphMidPoint = presenter.getGraphPositionFromClickedPosition(view.getWidth() / 2.0f, view.getHeight() / 2.0f);
+            double[] originalGraphPoint = presenter.getGraphArea();
+            originalGraphPoint[1] -= graphMidPoint[1];
+            presenter.setGraphArea(originalGraphPoint);
+        }
+
+        this.scheduleRecomputeBasedOnPreferences(presenter, true);
+    }
+
+    @Override
+    public void onSceneLayoutChanged(SceneLayoutEnum layoutType) {
+        this.reloadSelf();
+    }
+
+    public void reloadSelf() {
+        this.mandelbrotStrategy.tearDown();
+        this.juliaStrategy.tearDown();
+        this.firstFractalView.tearDown();
+        this.secondFractalView.tearDown();
+
+        this.finish();
+        this.startActivity(this.getIntent());
+    }
+
+    // Image saving and sharing
+
+    private void saveImage() {
+        LOGGER.warn("Saving image is not implemented yet");
+    }
+
+    private void shareImage() {
+        LOGGER.warn("Sharing image is not implemented yet");
+    }
+
+    // Utilities
+
+    public void showToastOnUIThread(final String toastText, final int length) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(getApplicationContext(), toastText, length).show();
+            }
+        });
+    }
+
+    /* Show the short tutorial/intro dialog */
+    private void showIntro() {
+        TextView text = new TextView(this);
+        text.setMovementMethod(LinkMovementMethod.getInstance());
+        text.setText(Html.fromHtml(getString(R.string.intro_text)));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true)
+                .setView(text)
+                .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        builder.create().show();
+
+        this.settings.setFirstTimeUse(false);
+    }
+
+    /* Show the large help dialog */
+    private void showHelpDialog() {
+        ScrollView scrollView = new ScrollView(this);
+        TextView text = new TextView(this);
+        text.setText(Html.fromHtml(getString(R.string.help_text)));
+        scrollView.addView(text);
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true)
+                .setView(scrollView)
+                .setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog helpDialog = builder.create();
+        helpDialog.getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        helpDialog.show();
+    }
+
+    // Dialogs
+
+    private void showDetailDialog() {
+        FragmentManager fm = getSupportFragmentManager();
+        DetailControlDialog detailControlDialog = new DetailControlDialog();
+        detailControlDialog.show(fm, FRAGMENT_DETAIL_DIALOG_NAME);
+    }
+
+    private void dismissDetailDialog() {
+        Fragment dialog = getSupportFragmentManager().findFragmentByTag(FRAGMENT_DETAIL_DIALOG_NAME);
+        if (dialog != null) {
+            DialogFragment df = (DialogFragment) dialog;
+            df.dismiss();
         }
     }
 
@@ -1280,7 +1167,5 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.juliaStrategy.stopAllRendering();
         this.juliaFractalPresenter.clearPixelSizes();
         this.juliaFractalPresenter.recomputeGraph(FractalPresenter.DEFAULT_PIXEL_SIZE);
-
-        int z = 1;
     }
 }

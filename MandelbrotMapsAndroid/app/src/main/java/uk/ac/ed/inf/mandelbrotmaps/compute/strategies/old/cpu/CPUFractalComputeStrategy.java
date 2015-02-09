@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.cpu;
+package uk.ac.ed.inf.mandelbrotmaps.compute.strategies.old.cpu;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import uk.ac.ed.inf.mandelbrotmaps.colouring.old.DefaultColourStrategy;
+import uk.ac.ed.inf.mandelbrotmaps.colouring.old.IColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.FractalComputeStrategy;
@@ -17,11 +19,15 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
     private ArrayList<CPURenderThread> renderThreadList;
     private ArrayList<Boolean> rendersComplete;
 
+    protected IColourStrategy cpuColourStrategy;
+
     private int numberOfThreads = 1;
 
     @Override
     public void initialise(int width, int height, IFractalComputeDelegate delegate) {
         super.initialise(width, height, delegate);
+
+        this.cpuColourStrategy = new DefaultColourStrategy();
 
         this.initialiseRenderThreads();
     }
@@ -197,8 +203,10 @@ public abstract class CPUFractalComputeStrategy extends FractalComputeStrategy {
         }
 
         if (allComplete) {
-            this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize, (System.nanoTime() - arguments.startTime) / 1000000000D);
+            double allTime = (System.nanoTime() - arguments.startTime) / 1000000000D;
+            this.delegate.postFinished(arguments.pixelBuffer, arguments.pixelBufferSizes, arguments.pixelBlockSize, allTime);
 
+            LOGGER.info("Took {} seconds to do CPU compute", allTime);
         }
     }
 

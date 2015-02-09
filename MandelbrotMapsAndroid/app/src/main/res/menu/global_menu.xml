@@ -7,73 +7,92 @@
         android:visible="true"
         android:title="@string/menu_reset_all"
         android:icon="@drawable/ic_action_refresh"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menuShowMandelbrotMenu"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_show_mandelbrot_menu"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menuShowJuliaMenu"
+        android:enabled="true"
+        android:visible="true"
+        android:title="@string/menu_show_julia_menu"
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuHelp"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_help"
         android:icon="@drawable/ic_action_help"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuSettings"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_settings"
         android:icon="@drawable/ic_action_settings"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
+    <group>
+        <!-- Separator for debug menu items -->
+        <item
+            android:title=""
+            android:visible="true"
+            android:enabled="false" />
+    </group>
     <item
         android:id="@+id/menuSwitchRenderer"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_switch_renderer"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuBenchmarkOld"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_benchmark_old"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuBenchmarkOne"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_benchmark_one"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuBenchmarkTwo"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_benchmark_two"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuBenchmarkThree"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_benchmark_three"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuBenchmarkFour"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_benchmark_four"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuBenchmarkFive"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_benchmark_five"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuBenchmarkSix"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_benchmark_six"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
     <item
         android:id="@+id/menuBenchmarkSeven"
         android:enabled="true"
         android:visible="true"
         android:title="@string/menu_benchmark_seven"
-        app:showAsAction="never"></item>
+        app:showAsAction="never" />
 </menu>
