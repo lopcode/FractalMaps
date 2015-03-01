@@ -36,6 +36,8 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
     private Allocation row_indices_alloc;
     private SparseArray<SparseArray<int[][]>> rowIndices;
 
+    private static final int MIN_LINES_PER_PROGRESS_UPDATE = 32;
+
     public void setContext(Context context) {
         this.context = context;
     }
@@ -60,6 +62,9 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
 
         for (int power = minPowerOfTwo; power <= maxPowerOfTwo; power++) {
             int linesPerProgressUpdate = (int) (this.height / Math.pow(2, power));
+            if (linesPerProgressUpdate <= MIN_LINES_PER_PROGRESS_UPDATE) {
+                linesPerProgressUpdate = MIN_LINES_PER_PROGRESS_UPDATE;
+            }
 
             SparseArray<int[][]> pixelBlockArray = new SparseArray<int[][]>(2);
             for (Integer pixelBlockSize : pixelBlockSizesToPrecompute) {
@@ -125,7 +130,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
     }
 
     public void initialiseRenderThread() {
-        if (this.renderThreadList != null && this.renderThreadList != null) {
+        if (this.renderThreadList != null) {
             this.stopAllRendering();
             this.interruptThreads();
         }

@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.robolectric'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1.1"
+    buildToolsVersion "21.1.2"
 
     defaultConfig {
         applicationId "uk.ac.ed.inf.mandelbrotmaps"
@@ -21,10 +22,13 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:21.0.+'
-    compile 'com.android.support:support-v4:21.0.+'
-    compile 'com.jakewharton:butterknife:5.1.+'
-    compile 'com.google.code.gson:gson:2.3.+'
+    compile group: 'com.android.support', name: 'appcompat-v7', version: '21.0.3'
+    compile group: 'com.android.support', name: 'support-v4', version: '21.0.3'
+    compile group: 'com.jakewharton', name: 'butterknife', version: '5.1.+'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.3.+'
     compile group: 'org.slf4j', name:'slf4j-api', version: '1.7.10'
-    compile 'eu.lp0.slf4j:slf4j-android:1.7.10-0'
+    compile group: 'eu.lp0.slf4j', name: 'slf4j-android', version: '1.7.10-0'
+
+    testCompile 'junit:junit:4.12'
+    testCompile "org.robolectric:robolectric:3.0-SNAPSHOT"
 }

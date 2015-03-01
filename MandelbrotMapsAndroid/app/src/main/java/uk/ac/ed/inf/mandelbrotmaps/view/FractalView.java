@@ -96,7 +96,7 @@ public class FractalView extends View implements IFractalView {
         this.height = height;
 
         if (this.resizeListener != null) {
-            LOGGER.debug("Firing onViewResized {} {}", width, height);
+            LOGGER.info("Firing onViewResized {} {}", width, height);
             this.resizeListener.onViewResized(this, width, height);
         }
     }

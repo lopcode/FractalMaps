@@ -21,13 +21,11 @@
 	<h2>Welcome to <span style="font-style: italic;">Mandelbrot Maps</span>!</h2>
 	<p>This app is designed to showcase the relationship between the Mandelbrot set and Julia set fractals.
 	<p>Move around the fractals with one finger and pinch to zoom. When you zoom, the fractal will re-render with more detail.
-	<p>Hold your finger on a point in the Mandelbrot or select <b>Add Julia</b> from the menu to display a Julia fractal.
-	There\'s a unique Julia fractal for each point in the Mandelbrot set - change the point defining it by dragging the coloured pin. Tap it to 
-	see it in more detail.
-	<p><b>Mandelbrot Maps</b> is being developed as my undergraduate dissertation project, so any feedback you leave on the Google Play Store page
-	is greatly appreciated.
-	<p><b>Mandelbrot Maps</b> is open-source software, relased under the GNU General Public License (v3). The source code can be
-	found <a href="https://github.com/withad/Mandelbrot-Maps-on-Android">here</a>.
+	<p>Tap and drag on the pin shown on the Mandelbrot fractal, to change the seed used for the associated Julia set, in real-time.
+	<p>You can change the viewing configuration by long tapping on either fractal, or using the menu at the top-right. Bring a context menu up, and choose one of the options to make the fractal bigger, smaller, or toggle the viewing configuration between side-by-side and large-small.
+	<p>Mandelbrot Maps works in both portrait and landscape mode - rotate your device to try it out!
+	<p><b>Mandelbrot Maps</b> is open-source software, released under the GNU General Public License (v3). The source code can be
+	found at <a href="https://github.com/Drayshak/MandelbrotMaps">https://github.com/Drayshak/MandelbrotMaps</a>.
 	]]>
     </string>
     <string name="help_text">
@@ -50,29 +48,25 @@
 	<h1>Controls</h1>
 	<p>Drag with a single finger to move around the fractals. Any new areas will fill themselves in once you stop.
 	<p>Use two fingers to zoom in and out. Again, the fractal will re-render once you stop.
-	<p>To compare the Mandelbrot and Julia sets, long click a point in the Mandelbrot set or tap <b>Add Julia</b> on the menu. Drag the coloured 
-	circle around to change the point parameterising the Julia set. To see the fractal in more detail, tap it. The zoom level and region
-	displayed will stay constant as you swap between the two fractals. Tap <b>Reset</b> on the menu to return to the default area. Dismiss the small
-	fractal by tapping <b>Remove Julia/Mandelbrot</b> on the menu. If you lose track of the Julia pin, long click again or add and remove the 
-	Julia from the menu to bring it to you.
-	
+	<p>Drag around the pin shown on the Mandelbrot set to change the seed used to render the Julia set. If you lose the pin, you can either long tap on the set to bring up the context menu, or use the application menu up top right.
+	<p>From each fractal\'s context menu (long tap, or choose from the application menu) you can swap the position of the fractals, or view one larger with a preview of the other up top left. You can also rotate your device to use the app in both landscape and portrait.
 	<h1>Other Menu Options</h1>
-	<p>Under <b>Preferences</b>, you can choose the colouring scheme for each fractal, the colour of the Julia pin, whether or not to do an initial
+	<p>Under <b>Settings</b>, you can choose the colouring scheme for each fractal, the colour of the Julia pin, whether or not to do an initial
 	crude rendering (a blockier first pass that gives a faster first impression but takes slightly longer overall), and whether or not to show
-	the time for each render after it\'s complete. 
-	<p>Tap <b>Detail level</b> to control the level of detail on each fractal. Higher detail means more iterations will be done when rendering, 
-	taking longer but giving a clearer picture.
-	<p><b>Save/Share</b> lets you save an image of the current fractal into your Pictures folder or share it using email, Facebook, Twitter, etc.
-	(if you have those apps installed).
+	the time for each render after it\'s complete.
 	
 	<h1>About Mandelbrot Maps</h1>
-	<p><b>Mandelbrot Maps</b> is being developed as my undergraduate dissertation project, so any feedback you leave on the Google Play Store page
-	is greatly appreciated. If you find any bugs, please include as much detail as possible, such as the device you\'re using, what you were
-	doing when the error occurred, and what version of Android you\'re running. 
-	<p><b>Mandelbrot Maps</b> is open-source software, released under the GNU General Public License (v3). The source code is linked from
-	the Google Play Store page.
+	<p><b>Mandelbrot Maps</b> is open-source software, released under the GNU General Public License (v3). The source code can be
+	found at <a href="https://github.com/Drayshak/MandelbrotMaps">https://github.com/Drayshak/MandelbrotMaps</a>.
 	]]>
+
     </string>
+
+    <!-- <p>Tap <b>Detail level</b> to control the level of detail on each fractal. Higher detail means more iterations will be done when rendering,
+    taking longer but giving a clearer picture.
+    <p><b>Save/Share</b> lets you save an image of the current fractal into your Pictures folder or share it using email, Facebook, Twitter, etc.
+    (if you have those apps installed). -->
+
     <string name="about_label">About</string>
     <string name="bitmap_label">Bitmap (not implemented)</string>
     <string name="side_by_side_label">Side-by-side fractals</string>

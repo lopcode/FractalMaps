@@ -83,20 +83,24 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     @InjectView(R.id.secondFractalView)
     FractalView secondFractalView;
 
+    public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
+    private Map<IFractalPresenter, Boolean> UIRenderStates = new HashMap<>();
+    private SceneLayoutEnum layoutType;
+
+    private long sceneStartTime = 0;
+    private static final int BUTTON_SPAM_MINIMUM_MS = 1000;
+
+    // Views
     FractalView mandelbrotFractalView;
     FractalView juliaFractalView;
 
+    // Presenters
     private FractalPresenter mandelbrotFractalPresenter;
     private FractalPresenter juliaFractalPresenter;
 
+    // Strategies
     private IFractalComputeStrategy mandelbrotStrategy;
     private IFractalComputeStrategy juliaStrategy;
-
-    public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
-
-    private Map<IFractalPresenter, Boolean> UIRenderStates = new HashMap<>();
-
-    private SceneLayoutEnum layoutType;
 
     // Overlays
     private List<IFractalOverlay> sceneOverlays;
@@ -105,13 +109,10 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     private float previousPinDragX = 0;
     private float previousPinDragY = 0;
 
+    // Settings
     private SettingsManager settings;
-
     private static boolean shouldRenderscriptRender = true;
     private boolean showingPinOverlay = true;
-
-    private long sceneStartTime = 0;
-    private static final int BUTTON_SPAM_MINIMUM_MS = 1000;
 
     // Context menus
     private float pinContextX = 0;

@@ -199,8 +199,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void translateGraphArea(int dx, int dy) {
-        //Log.d(TAG, "moveFractal()");
-
         // What does each pixel correspond to, on the complex plane?
         double pixelSize = getPixelSize();
 
@@ -213,7 +211,6 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void zoomGraphArea(int x, int y, double scale) {
-
         double pixelSize = getPixelSize();
 
         double[] oldGraphArea = graphArea;
