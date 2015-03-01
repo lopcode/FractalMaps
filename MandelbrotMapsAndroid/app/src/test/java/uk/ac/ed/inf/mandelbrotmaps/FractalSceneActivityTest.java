@@ -20,7 +20,17 @@ public class FractalSceneActivityTest {
     }
 
     @Test
-    public void testLayout() {
+    public void testActivityCreated() {
         assertNotNull(this.activity);
+    }
+
+    @Test
+    public void testLayout()
+    {
+        assertNotNull(this.activity.findViewById(R.id.firstFractalView));
+        assertNotNull(this.activity.findViewById(R.id.secondFractalView));
+        assertNotNull(this.activity.findViewById(R.id.toolbar));
+        assertNotNull(this.activity.findViewById(R.id.toolbarProgress));
+        assertNotNull(this.activity.findViewById(R.id.toolbarTextProgress));
     }
 }
