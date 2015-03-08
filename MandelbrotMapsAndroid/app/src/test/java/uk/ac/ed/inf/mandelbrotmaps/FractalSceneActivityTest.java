@@ -9,7 +9,7 @@ import org.robolectric.annotation.Config;
 
 import static org.junit.Assert.assertNotNull;
 
-@Config(emulateSdk = 18, manifest="app/src/main/AndroidManifest.xml")
+@Config(emulateSdk = 18, manifest = "app/src/main/AndroidManifest.xml")
 @RunWith(RobolectricTestRunner.class)
 public class FractalSceneActivityTest {
     private FractalSceneActivity activity;
@@ -25,8 +25,7 @@ public class FractalSceneActivityTest {
     }
 
     @Test
-    public void testLayout()
-    {
+    public void testLayout() {
         assertNotNull(this.activity.findViewById(R.id.firstFractalView));
         assertNotNull(this.activity.findViewById(R.id.secondFractalView));
         assertNotNull(this.activity.findViewById(R.id.toolbar));

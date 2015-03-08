@@ -96,7 +96,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     @Override
-    public void setFractalDetail(double detail) {
+    public void setFractalDetail(double detail)
+    {
         this.detail = detail;
     }
 
