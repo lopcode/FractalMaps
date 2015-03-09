@@ -11,10 +11,6 @@ public interface ISceneMenuDelegate {
 
     public void onSettingsClicked();
 
-    // Testing
-
-    public void onToggleCPURenderscriptClicked();
-
     // Benchmarking
 
     public void onBenchmarkOldClicked();

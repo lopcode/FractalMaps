@@ -5,7 +5,8 @@
     android:layout_height="?attr/actionBarSize"
     android:layout_gravity="top|end"
     android:minHeight="?attr/actionBarSize"
-    android:background="?attr/colorPrimary">
+    android:background="?attr/colorPrimary"
+    theme="@style/AppTheme">
 <TextView
     android:id="@+id/toolbarTextProgress"
     android:layout_width="match_parent"

@@ -42,8 +42,6 @@ import butterknife.InjectView;
 import uk.ac.ed.inf.mandelbrotmaps.colouring.EnumColourStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaSeedSettable;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.old.cpu.JuliaCPUFractalComputeStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.old.cpu.MandelbrotCPUFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.JuliaRenderscriptFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.MandelbrotRenderscriptFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.renderscript.RenderscriptFractalComputeStrategy;
@@ -111,7 +109,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     // Settings
     private SettingsManager settings;
-    private static boolean shouldRenderscriptRender = true;
     private boolean showingPinOverlay = true;
 
     // Context menus
@@ -142,8 +139,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.setContentViewFromLayoutType(this.layoutType);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+        //Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
         if (this.settings.isFirstTimeUse()) {
             showIntro();
@@ -240,12 +236,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     }
 
     public void initialiseMandelbrotPresenter() {
-        if (shouldRenderscriptRender) {
-            this.mandelbrotStrategy = new MandelbrotRenderscriptFractalComputeStrategy();
-            ((RenderscriptFractalComputeStrategy) this.mandelbrotStrategy).setContext(this);
-        } else {
-            this.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
-        }
+        this.mandelbrotStrategy = new MandelbrotRenderscriptFractalComputeStrategy();
+        ((RenderscriptFractalComputeStrategy) this.mandelbrotStrategy).setContext(this);
 
         this.mandelbrotFractalPresenter = new FractalPresenter(this, this, mandelbrotStrategy);
 
@@ -261,12 +253,8 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     }
 
     public void initialiseJuliaPresenter() {
-        if (shouldRenderscriptRender) {
-            this.juliaStrategy = new JuliaRenderscriptFractalComputeStrategy();
-            ((RenderscriptFractalComputeStrategy) this.juliaStrategy).setContext(this);
-        } else {
-            this.juliaStrategy = new JuliaCPUFractalComputeStrategy();
-        }
+        this.juliaStrategy = new JuliaRenderscriptFractalComputeStrategy();
+        ((RenderscriptFractalComputeStrategy) this.juliaStrategy).setContext(this);
 
         this.juliaFractalPresenter = new FractalPresenter(this, this, juliaStrategy);
         this.juliaFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.juliaFractalPresenter));
@@ -419,10 +407,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
             case R.id.menuSettings:
                 this.onSettingsClicked();
-                return true;
-
-            case R.id.menuSwitchRenderer:
-                this.onToggleCPURenderscriptClicked();
                 return true;
 
             case R.id.menuBenchmarkOld:
@@ -642,41 +626,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     public void onResetAllClicked() {
         this.resetMandelbrotFractal();
         this.resetJuliaFractal();
-    }
-
-    @Override
-    public void onToggleCPURenderscriptClicked() {
-        double[] juliaParams = ((JuliaSeedSettable) this.juliaStrategy).getJuliaSeed();
-
-        EnumColourStrategy mandelbrotColourStrategy = this.mandelbrotStrategy.getColourStrategy();
-        EnumColourStrategy juliaColourStrategy = this.juliaStrategy.getColourStrategy();
-
-        this.mandelbrotStrategy.tearDown();
-        this.juliaStrategy.tearDown();
-
-        if (shouldRenderscriptRender) {
-            this.mandelbrotStrategy = new MandelbrotCPUFractalComputeStrategy();
-            this.juliaStrategy = new JuliaCPUFractalComputeStrategy();
-        } else {
-            this.mandelbrotStrategy = new MandelbrotRenderscriptFractalComputeStrategy();
-            ((RenderscriptFractalComputeStrategy) this.mandelbrotStrategy).setContext(this);
-
-            this.juliaStrategy = new JuliaRenderscriptFractalComputeStrategy();
-            ((RenderscriptFractalComputeStrategy) this.juliaStrategy).setContext(this);
-        }
-
-        ((JuliaSeedSettable) this.juliaStrategy).setJuliaSeed(juliaParams[0], juliaParams[1]);
-        this.mandelbrotStrategy.setColourStrategy(mandelbrotColourStrategy);
-        this.juliaStrategy.setColourStrategy(juliaColourStrategy);
-
-        this.mandelbrotFractalPresenter.setComputeStrategy(this.mandelbrotStrategy);
-        this.juliaFractalPresenter.setComputeStrategy(this.juliaStrategy);
-
-        this.mandelbrotFractalPresenter.initialiseStrategy();
-        this.juliaFractalPresenter.initialiseStrategy();
-
-        this.scheduleRecomputeBasedOnPreferences(this.mandelbrotFractalPresenter, true);
-        shouldRenderscriptRender = !shouldRenderscriptRender;
     }
 
     @Override
@@ -1115,11 +1064,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onFractalRecomputed(IFractalPresenter presenter, double timeTakenInSeconds) {
-        String type = "CPU";
-        if (this.shouldRenderscriptRender)
-            type = "RS";
-
-        String toastText = type + " took " + timeTakenInSeconds + " seconds";
+        String toastText = "RS took " + timeTakenInSeconds + " seconds";
         this.showToastOnUIThread(toastText, toastText.length());
     }
 

@@ -96,8 +96,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     @Override
-    public void setFractalDetail(double detail)
-    {
+    public void setFractalDetail(double detail) {
         this.detail = detail;
     }
 
@@ -159,18 +158,20 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         // Empirically determined lines per update
         double absLnPixelSize = Math.abs(Math.log(getPixelSize()));
-        double adjustedLog = ((absLnPixelSize - 9.0D) / 2.0D);
+        double adjustedLog = ((absLnPixelSize - 9.0D) / 1.3D);
         if (adjustedLog < 2.0D)
             adjustedLog = 2.0D;
 
-        if (adjustedLog > 16.0D)
-            adjustedLog = 16.0D;
+        if (adjustedLog > 32.0D)
+            adjustedLog = 32.0D;
+
+        LOGGER.info("Adjusted log: {}", adjustedLog);
 
         int nextPowerOfTwo = this.nextClosestPowerOfTwo((int) Math.ceil(adjustedLog));
 
-        LOGGER.debug("Zoom power of two: " + nextPowerOfTwo);
+        LOGGER.info("Zoom power of two: " + nextPowerOfTwo);
         int linesPerUpdate = this.viewHeight / nextPowerOfTwo;
-        LOGGER.debug("Notifying of update every " + linesPerUpdate + " lines");
+        LOGGER.info("Notifying of update every " + linesPerUpdate + " lines");
 
         if (pixelBlockSize == DEFAULT_PIXEL_SIZE)
             this.sceneDelegate.setRenderingStatus(this, true);

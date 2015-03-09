@@ -53,7 +53,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
         this.initialiseRenderThread();
         this.initialiseRenderScript();
 
-        this.initialiseRowIndexCache(Arrays.asList(new Integer[]{FractalPresenter.CRUDE_PIXEL_BLOCK, FractalPresenter.DEFAULT_PIXEL_SIZE}), 1, 8);
+        this.initialiseRowIndexCache(Arrays.asList(new Integer[]{FractalPresenter.CRUDE_PIXEL_BLOCK, FractalPresenter.DEFAULT_PIXEL_SIZE}), 1, 32);
     }
 
     public void initialiseRowIndexCache(List<Integer> pixelBlockSizesToPrecompute, int minPowerOfTwo, int maxPowerOfTwo) {
