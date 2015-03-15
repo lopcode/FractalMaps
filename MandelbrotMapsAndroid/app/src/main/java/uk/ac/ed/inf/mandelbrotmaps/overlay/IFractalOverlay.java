@@ -10,4 +10,6 @@ public interface IFractalOverlay {
     public float getX();
 
     public float getY();
+
+    public boolean isAffectedByTransform();
 }

@@ -163,6 +163,10 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.initialiseFractalParameters(savedParameters);
 
         this.initialiseRenderStates();
+
+        if (this.settings.isFirstTimeUse()) {
+            this.settings.setFirstTimeUse(false);
+        }
     }
 
     private MandelbrotJuliaLocation loadSavedParameters(Bundle savedInstanceState) {
@@ -250,6 +254,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         }
 
         this.mandelbrotFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.MANDELBROT));
+        this.shiftGraphAreaIfDefault(this.mandelbrotFractalPresenter);
     }
 
     public void initialiseJuliaPresenter() {
@@ -260,6 +265,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         this.juliaFractalPresenter.setTouchHandler(new FractalTouchHandler(this, this.juliaFractalPresenter));
 
         this.juliaFractalPresenter.setFractalDetail(this.settings.getDetailFromPrefs(FractalTypeEnum.JULIA));
+        this.shiftGraphAreaIfDefault(this.juliaFractalPresenter);
     }
 
     public void initialiseViews() {
@@ -851,6 +857,11 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     public void onFractalViewReady(IFractalPresenter presenter) {
         LOGGER.debug("Fractal view ready");
 
+        this.shiftGraphAreaIfDefault(presenter);
+        this.scheduleRecomputeBasedOnPreferences(presenter, true);
+    }
+
+    private void shiftGraphAreaIfDefault(IFractalPresenter presenter) {
         // Move the fractal down a to the mid point of the view
         //  Only if the graph area is the default, otherwise it got set manually
         View view = null;
@@ -870,8 +881,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
             originalGraphPoint[1] -= graphMidPoint[1];
             presenter.setGraphArea(originalGraphPoint);
         }
-
-        this.scheduleRecomputeBasedOnPreferences(presenter, true);
     }
 
     @Override
@@ -925,8 +934,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 });
 
         builder.create().show();
-
-        this.settings.setFirstTimeUse(false);
     }
 
     /* Show the large help dialog */

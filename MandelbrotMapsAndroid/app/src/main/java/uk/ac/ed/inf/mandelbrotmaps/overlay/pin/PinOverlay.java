@@ -53,6 +53,11 @@ public class PinOverlay implements IFractalOverlay {
         return this.y;
     }
 
+    @Override
+    public boolean isAffectedByTransform() {
+        return true;
+    }
+
     public float getPinRadius() {
         return this.pinRadius;
     }

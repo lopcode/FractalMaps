@@ -54,4 +54,9 @@ public class LabelOverlay implements IFractalOverlay {
     public float getY() {
         return this.y;
     }
+
+    @Override
+    public boolean isAffectedByTransform() {
+        return false;
+    }
 }

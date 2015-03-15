@@ -116,14 +116,22 @@ public class FractalView extends View implements IFractalView {
 
         if (this.presenterOverlays != null) {
             for (IFractalOverlay overlay : this.presenterOverlays) {
-                this.drawOverlayWithTransformedPosition(overlay, canvas);
+                this.drawOverlay(overlay, canvas);
             }
         }
 
         if (this.sceneOverlays != null) {
             for (IFractalOverlay overlay : this.sceneOverlays) {
-                this.drawOverlayWithTransformedPosition(overlay, canvas);
+                this.drawOverlay(overlay, canvas);
             }
+        }
+    }
+
+    private void drawOverlay(IFractalOverlay overlay, Canvas canvas) {
+        if (overlay.isAffectedByTransform()) {
+            this.drawOverlayWithTransformedPosition(overlay, canvas);
+        } else {
+            overlay.drawToCanvas(canvas, overlay.getX(), overlay.getY());
         }
     }
 

@@ -80,7 +80,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.coordinatesOverlay = new LabelOverlay(this.context, "Coordinates not set yet", 10.0f, 10.0f);
         this.coordinatesOverlay.setTextAlignment(Paint.Align.RIGHT);
 
-//        this.fractalPresenterOverlays.add(this.coordinatesOverlay);
+        this.fractalPresenterOverlays.add(this.coordinatesOverlay);
     }
 
     // IFractalPresenter
