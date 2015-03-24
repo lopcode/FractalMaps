@@ -678,7 +678,7 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                     }
                 } else if (currentlyTLZooming) {
                         fractalView.stopZooming();
-                        startDragging(evt);
+                        stopDragging();
                         currentlyTLZooming = false;
                 } else if (fractalView.holdingPin) {
                     // If holding the pin, drop it, update screen (render won't display while dragging, might've finished in background)
