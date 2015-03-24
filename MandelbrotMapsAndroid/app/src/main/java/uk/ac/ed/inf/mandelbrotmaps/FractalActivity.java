@@ -125,6 +125,8 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
             {1.32758618f, 0.57776453f}};
     // rotation stored in radians
     public float[][] mandelbrotZoomRotate = {
+            // some values multiplied by factor of 2 or 3 to provide noticeable zoom change
+            // original values in comments
             {4f, 0f},               // {-2.0, 0.0}
             {2f, 3.14149f},         // {-1f, 0f}
             {4f, 0f},               // {2f, 0f}
@@ -594,21 +596,10 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                         littleFractalSelected = true;
                     // user taps "zoom" part of box
                     } else if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointOneCoords(),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth))
-                    {
-                        currentlyDragging = false;
-                        currentlyTLZooming = true;
-                        fractalView.stopDragging(true);
-                        fractalView.startZooming(evt.getX(), evt.getY());
-                        fractalView.zoomImage(evt.getX(), evt.getY(), calculateTLZoom(evt.getX(),evt.getY()));
-                    } else if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointTwoCoords(),
-                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)) {
-                        currentlyDragging = false;
-                        currentlyTLZooming = true;
-                        fractalView.stopDragging(true);
-                        fractalView.startZooming(evt.getX(), evt.getY());
-                        fractalView.zoomImage(evt.getX(), evt.getY(), calculateTLZoom(evt.getX(),evt.getY()));
-                    } else if (touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointThreeCoords(),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)
+                            || touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointTwoCoords(),
+                            fractalView.pointBoxHeight,fractalView.pointBoxWidth)
+                            || touchingInPointBox(evt.getX(), evt.getY(), fractalView.getPointThreeCoords(),
                             fractalView.pointBoxHeight,fractalView.pointBoxWidth)) {
                         currentlyDragging = false;
                         currentlyTLZooming = true;
@@ -685,15 +676,10 @@ public class FractalActivity extends ActionBarActivity implements OnTouchListene
                             finish();
                         }
                     }
-                } else if (currentlyTLZooming) {//if (tanLeiEnabled && fractalType == FractalTypeEnum.JULIA) {
-                    // TODO: get proper scale factor
-                    // TODO: figure out why zoom gets so off-center
-                    //if (currentlyTLZooming) {
+                } else if (currentlyTLZooming) {
                         fractalView.stopZooming();
-                        // set dragLastX and dragLastY to be updated WRT zoom
                         startDragging(evt);
                         currentlyTLZooming = false;
-                    //}
                 } else if (fractalView.holdingPin) {
                     // If holding the pin, drop it, update screen (render won't display while dragging, might've finished in background)
                     fractalView.holdingPin = false;
