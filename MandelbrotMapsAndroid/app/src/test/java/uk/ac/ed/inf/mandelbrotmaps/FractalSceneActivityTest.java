@@ -2,7 +2,6 @@ package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.content.Intent;
 import android.view.MenuItem;
-import android.view.View;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,36 +10,31 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboMenuItem;
 
 import uk.ac.ed.inf.mandelbrotmaps.colouring.EnumColourStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
-import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.JuliaSeedSettable;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinColour;
 import uk.ac.ed.inf.mandelbrotmaps.overlay.pin.PinOverlay;
 import uk.ac.ed.inf.mandelbrotmaps.presenter.FractalPresenter;
 import uk.ac.ed.inf.mandelbrotmaps.presenter.IFractalPresenter;
-import uk.ac.ed.inf.mandelbrotmaps.settings.FractalTypeEnum;
-import uk.ac.ed.inf.mandelbrotmaps.settings.SceneLayoutEnum;
 import uk.ac.ed.inf.mandelbrotmaps.settings.SettingsManager;
 import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedGraphArea;
 import uk.ac.ed.inf.mandelbrotmaps.settings.saved_state.SavedJuliaGraph;
 import uk.ac.ed.inf.mandelbrotmaps.view.FractalView;
-import uk.ac.ed.inf.mandelbrotmaps.view.IFractalView;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Matchers.anyFloat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 @Config(constants = BuildConfig.class)
 @RunWith(RobolectricGradleTestRunner.class)
@@ -350,7 +344,7 @@ public class FractalSceneActivityTest {
         this.activity.mandelbrotFractalPresenter = mock(FractalPresenter.class);
         this.activity.pinOverlay = mock(PinOverlay.class);
         Mockito.doNothing().when(this.activity.pinOverlay).setPosition(anyFloat(), anyFloat());
-        when(this.activity.mandelbrotFractalPresenter.getPointFromGraphPosition(anyDouble(), anyDouble())).thenReturn(new double[] {1.0, 1.0});
+        when(this.activity.mandelbrotFractalPresenter.getPointFromGraphPosition(anyDouble(), anyDouble())).thenReturn(new double[]{1.0, 1.0});
 
         this.activity.onFractalRecomputeScheduled(this.activity.mandelbrotFractalPresenter);
 

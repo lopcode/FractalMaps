@@ -7,12 +7,13 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import uk.ac.ed.inf.mandelbrotmaps.BuildConfig;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-
-import uk.ac.ed.inf.mandelbrotmaps.BuildConfig;
 
 @Config(constants = BuildConfig.class)
 @RunWith(RobolectricGradleTestRunner.class)

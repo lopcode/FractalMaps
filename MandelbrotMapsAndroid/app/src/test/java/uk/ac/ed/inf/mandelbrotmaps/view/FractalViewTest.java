@@ -3,16 +3,15 @@ package uk.ac.ed.inf.mandelbrotmaps.view;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import static org.junit.Assert.*;
+import uk.ac.ed.inf.mandelbrotmaps.BuildConfig;
+
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-
-import uk.ac.ed.inf.mandelbrotmaps.BuildConfig;
 
 @Config(constants = BuildConfig.class)
 @RunWith(RobolectricGradleTestRunner.class)

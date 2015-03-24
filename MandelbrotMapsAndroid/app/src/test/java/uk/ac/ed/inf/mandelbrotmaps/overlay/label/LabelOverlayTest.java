@@ -1,6 +1,5 @@
 package uk.ac.ed.inf.mandelbrotmaps.overlay.label;
 
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
@@ -8,17 +7,16 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import uk.ac.ed.inf.mandelbrotmaps.BuildConfig;
-import uk.ac.ed.inf.mandelbrotmaps.Constants;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @Config(constants = BuildConfig.class)
 @RunWith(RobolectricGradleTestRunner.class)

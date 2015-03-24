@@ -1,22 +1,20 @@
 package uk.ac.ed.inf.mandelbrotmaps.overlay.pin;
+
 import android.graphics.Canvas;
-import android.graphics.Paint;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import uk.ac.ed.inf.mandelbrotmaps.BuildConfig;
-import uk.ac.ed.inf.mandelbrotmaps.Constants;
 import uk.ac.ed.inf.mandelbrotmaps.R;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 

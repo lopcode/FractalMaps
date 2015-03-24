@@ -6,26 +6,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
 
 import uk.ac.ed.inf.mandelbrotmaps.BuildConfig;
 import uk.ac.ed.inf.mandelbrotmaps.Constants;
 import uk.ac.ed.inf.mandelbrotmaps.IFractalSceneDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.FractalComputeArguments;
-import uk.ac.ed.inf.mandelbrotmaps.compute.IFractalComputeDelegate;
 import uk.ac.ed.inf.mandelbrotmaps.compute.strategies.IFractalComputeStrategy;
 import uk.ac.ed.inf.mandelbrotmaps.touch.IFractalTouchHandler;
 import uk.ac.ed.inf.mandelbrotmaps.view.IFractalView;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @Config(constants = BuildConfig.class)
 @RunWith(RobolectricGradleTestRunner.class)
@@ -84,7 +82,7 @@ public class FractalPresenterTest {
         int total = VIEW_WIDTH * VIEW_HEIGHT;
 
         pixelBuffer[0] = 123;
-        pixelBuffer[VIEW_WIDTH-1] = 456;
+        pixelBuffer[VIEW_WIDTH - 1] = 456;
 
         this.presenter.translatePixelBuffer(5, 5);
         pixelBuffer = this.presenter.getPixelBuffer();
