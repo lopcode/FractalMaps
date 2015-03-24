@@ -32,7 +32,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     private Context context;
 
-    Matrix transformMatrix;
+    private Matrix transformMatrix;
 
     private int[] pixelBuffer;
     private int[] pixelBufferSizes;
@@ -80,7 +80,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.coordinatesOverlay = new LabelOverlay(this.context, "Coordinates not set yet", 10.0f, 10.0f);
         this.coordinatesOverlay.setTextAlignment(Paint.Align.RIGHT);
 
-        this.fractalPresenterOverlays.add(this.coordinatesOverlay);
+        //this.fractalPresenterOverlays.add(this.coordinatesOverlay);
     }
 
     // IFractalPresenter
@@ -167,7 +167,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         LOGGER.info("Adjusted log: {}", adjustedLog);
 
-        int nextPowerOfTwo = this.nextClosestPowerOfTwo((int) Math.ceil(adjustedLog));
+        int nextPowerOfTwo = FractalPresenter.nextClosestPowerOfTwo((int) Math.ceil(adjustedLog));
 
         LOGGER.info("Zoom power of two: " + nextPowerOfTwo);
         int linesPerUpdate = this.viewHeight / nextPowerOfTwo;
@@ -191,7 +191,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.sceneDelegate.onFractalRecomputeScheduled(this);
     }
 
-    public int nextClosestPowerOfTwo(int x) {
+    private static int nextClosestPowerOfTwo(int x) {
         int y = 1;
         while (y < x) {
             y = y << 1;
@@ -202,12 +202,13 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void translateGraphArea(int dx, int dy) {
         // What does each pixel correspond to, on the complex plane?
-        double pixelSize = getPixelSize();
+        double pixelSize = this.getPixelSize();
 
         // Adjust the Graph Area
-        double[] newGraphArea = graphArea;
+        double[] newGraphArea = this.graphArea;
         newGraphArea[0] -= (dx * pixelSize);
         newGraphArea[1] -= -(dy * pixelSize);
+
         this.setGraphArea(newGraphArea);
     }
 
@@ -215,7 +216,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     public void zoomGraphArea(int x, int y, double scale) {
         double pixelSize = getPixelSize();
 
-        double[] oldGraphArea = graphArea;
+        double[] oldGraphArea = this.graphArea;
         double[] newGraphArea = new double[3];
 
         double zoomPercentChange = scale;
@@ -382,7 +383,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     // IFractalTouchDelegate
 
     @Override
-    public void startDragging() {
+    public void startDraggingFractal() {
         LOGGER.debug("Started dragging");
 
         this.fractalStrategy.stopAllRendering();
@@ -401,7 +402,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.view.postUIThreadRedraw();
     }
 
-    public void stopDragging(boolean stoppedOnZoom, float totalDragX, float totalDragY) {
+    public void stopDraggingFractal(boolean stoppedOnZoom, float totalDragX, float totalDragY) {
         LOGGER.debug("Stopped dragging: {} {}", totalDragX, totalDragY);
 
         if (totalDragX < -this.viewWidth)
@@ -437,13 +438,13 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.view.postUIThreadRedraw();
     }
 
-    public void startScaling(float x, float y) {
+    public void startScalingFractal(float x, float y) {
         LOGGER.debug("Started scaling");
         hasZoomed = true;
         this.clearPixelSizes();
     }
 
-    public void stopScaling() {
+    public void stopScalingFractal() {
         LOGGER.debug("Stopped scaling");
         this.clearPixelSizes();
 
@@ -477,7 +478,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     // IViewResizeListener
 
     @Override
-    public void onViewResized(View view, int width, int height) {
+    public void onViewResized(IFractalView view, int width, int height) {
         this.viewWidth = width;
         this.viewHeight = height;
 

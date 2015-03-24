@@ -17,14 +17,17 @@ public class FractalTouchHandler implements IFractalTouchHandler {
     // Dragging/scaling control variables
     private float dragLastX;
     private float dragLastY;
-    private int dragID = -1;
+    protected int dragID = -1;
     private boolean currentlyDragging = false;
+    private boolean currentlyScaling = false;
 
     private ScaleGestureDetector gestureDetector;
 
     private float totalDragX = 0;
     private float totalDragY = 0;
     private float currentScaleFactor = 0;
+
+    private static final float MAX_MOVEMENT_JITTER = 5f;
 
     public FractalTouchHandler(Context context, IFractalTouchDelegate delegate) {
         this.setTouchDelegate(delegate);
@@ -33,6 +36,29 @@ public class FractalTouchHandler implements IFractalTouchHandler {
         gestureDetector = new ScaleGestureDetector(this.context, this);
     }
 
+    public float getTotalDragX() {
+        return this.totalDragX;
+    }
+
+    public float getTotalDragY() {
+        return this.totalDragY;
+    }
+
+    public int getCurrentPointerID() {
+        return this.dragID;
+    }
+
+    public boolean isCurrentlyDragging() {
+        return this.currentlyDragging;
+    }
+
+    public float getCurrentScaleFactor() {
+        return this.currentScaleFactor;
+    }
+
+    public boolean isCurrentlyScaling() {
+        return this.gestureDetector.isInProgress() || this.currentlyScaling;
+    }
     @Override
     public void setTouchDelegate(IFractalTouchDelegate delegate) {
         this.delegate = delegate;
@@ -40,27 +66,19 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
     @Override
     public boolean onTouch(View v, MotionEvent evt) {
-        gestureDetector.onTouchEvent(evt);
+        this.gestureDetector.onTouchEvent(evt);
 
         switch (evt.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                LOGGER.debug("Touch down");
-                startDragging(evt);
+            case MotionEvent.ACTION_DOWN: {
+                return this.onTouchDown(evt.getX(), evt.getY(), evt.getPointerId(0), evt.getPointerCount());
+            }
 
-                return false;
+            case MotionEvent.ACTION_MOVE: {
+                int pointerIndex = evt.findPointerIndex(this.dragID);
+                return this.onTouchMove(evt.getX(pointerIndex), evt.getY(pointerIndex), evt.getPointerCount());
+            }
 
-
-            case MotionEvent.ACTION_MOVE:
-                //Log.i("FA", "Touch moved");
-                if (!gestureDetector.isInProgress()) {
-                    if (currentlyDragging) {
-                        dragFractal(evt);
-                    }
-                }
-
-                return true;
-
-            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_POINTER_UP: {
                 if (evt.getPointerCount() == 1) {
                     break;
                 } else {
@@ -71,38 +89,63 @@ public class FractalTouchHandler implements IFractalTouchHandler {
                 }
 
                 break;
+            }
 
-            case MotionEvent.ACTION_UP:
-                LOGGER.debug("Touch removed");
-                if (currentlyDragging) {
-                    stopDragging();
-                }
-                break;
+            case MotionEvent.ACTION_UP: {
+                int pointerIndex = evt.findPointerIndex(this.dragID);
+                return this.onTouchUp(evt.getX(pointerIndex), evt.getY(pointerIndex));
+            }
         }
+
         return false;
     }
 
-    private void startDragging(MotionEvent evt) {
+    protected boolean onTouchDown(float x, float y, int pointerID, int pointerCount) {
+        LOGGER.debug("Touch down");
+
+        this.startDraggingFractal(x, y, pointerID);
+        return false;
+    }
+
+    protected boolean onTouchMove(float x, float y, int pointerCount) {
+        if (!this.gestureDetector.isInProgress()) {
+            if (this.isCurrentlyDragging()) {
+                this.dragFractal(x, y);
+            }
+        }
+
+        return true;
+    }
+
+    protected boolean onTouchUp(float x, float y) {
+        LOGGER.debug("Touch removed");
+
+        if (this.isCurrentlyDragging()) {
+            stopDraggingFractal();
+        }
+
+        return false;
+    }
+
+    public void startDraggingFractal(float x, float y, int pointerID) {
         this.totalDragX = 0;
         this.totalDragY = 0;
 
-        dragLastX = (int) evt.getX();
-        dragLastY = (int) evt.getY();
-        dragID = evt.getPointerId(0);
+        this.dragLastX = (int) x;
+        this.dragLastY = (int) y;
+        this.dragID = pointerID;
 
-        this.delegate.startDragging();
-        currentlyDragging = true;
+        this.delegate.startDraggingFractal();
+        this.currentlyDragging = true;
     }
 
-    private void dragFractal(MotionEvent evt) {
-        int pointerIndex = evt.findPointerIndex(dragID);
-
+    public void dragFractal(float x, float y) {
         float dragDiffPixelsX;
         float dragDiffPixelsY;
 
         try {
-            dragDiffPixelsX = evt.getX(pointerIndex) - dragLastX;
-            dragDiffPixelsY = evt.getY(pointerIndex) - dragLastY;
+            dragDiffPixelsX = x - dragLastX;
+            dragDiffPixelsY = y - dragLastY;
         } catch (IllegalArgumentException e) {
             return;
         }
@@ -116,33 +159,51 @@ public class FractalTouchHandler implements IFractalTouchHandler {
         }
 
         // Update last mouse position
-        dragLastX = evt.getX(pointerIndex);
-        dragLastY = evt.getY(pointerIndex);
+        this.dragLastX = x;
+        this.dragLastY = y;
     }
 
-    private void stopDragging() {
+    public void stopDraggingFractal() {
         currentlyDragging = false;
-        this.delegate.stopDragging(false, this.totalDragX, this.totalDragY);
+        this.delegate.stopDraggingFractal(false, this.totalDragX, this.totalDragY);
     }
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        this.delegate.stopDragging(true, this.totalDragX, this.totalDragY);
-        this.delegate.startScaling(detector.getFocusX(), detector.getFocusY());
+        this.startScalingFractal(detector.getFocusX(), detector.getFocusY());
 
-        currentlyDragging = false;
         return true;
+    }
+
+    public void startScalingFractal(float focusX, float focusY) {
+        this.delegate.stopDraggingFractal(true, this.totalDragX, this.totalDragY);
+        this.delegate.startScalingFractal(focusX, focusY);
+
+        this.currentlyDragging = false;
+        this.currentlyScaling = true;
     }
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-        this.currentScaleFactor = detector.getScaleFactor();
-        this.delegate.scaleFractal(this.currentScaleFactor, detector.getFocusX(), detector.getFocusY());
+        this.scaleFractal(detector.getFocusX(), detector.getFocusY(), detector.getScaleFactor());
+
         return true;
     }
 
+    public void scaleFractal(float focusX, float focusY, float scaleFactor) {
+        this.currentScaleFactor = scaleFactor;
+        this.delegate.scaleFractal(this.currentScaleFactor, focusX, focusY);
+    }
+
+    private boolean hasNotMovedOrScaledWithJitter() {
+        boolean hasStayedStill = Math.sqrt(Math.pow(this.totalDragX, 2) + Math.pow(this.totalDragY, 2)) < MAX_MOVEMENT_JITTER;
+        boolean hasNotScaled = !this.isCurrentlyScaling();
+
+        return hasStayedStill && hasNotScaled;
+    }
+
     public boolean onLongClick(View v) {
-        if (!gestureDetector.isInProgress() && Math.abs(this.totalDragX) < 2 && Math.abs(this.totalDragY) < 2 && this.currentScaleFactor < 1.2f) {
+        if (this.hasNotMovedOrScaledWithJitter()) {
             LOGGER.info("Long tap at {} {}", this.dragLastX, this.dragLastY);
             this.delegate.onLongClick(this.dragLastX, this.dragLastY);
             return true;
@@ -153,14 +214,19 @@ public class FractalTouchHandler implements IFractalTouchHandler {
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
+        this.stopScalingFractal();
+    }
+
+    public void stopScalingFractal() {
         this.totalDragX = 0;
         this.totalDragY = 0;
         this.currentScaleFactor = 0;
 
-        this.delegate.stopScaling();
-        currentlyDragging = true;
+        this.delegate.stopScalingFractal();
+        this.currentlyScaling = false;
 
-        this.delegate.startDragging();
+        this.currentlyDragging = true;
+        this.delegate.startDraggingFractal();
     }
 
     // Choose a new active pointer, from available pointers

@@ -62,6 +62,10 @@ public class FractalView extends View implements IFractalView {
         this.fractalBitmap.setPixels(pixels, 0, this.width, 0, 0, this.width, this.height);
     }
 
+    public Bitmap getCurrentBitmap() {
+        return this.fractalBitmap;
+    }
+
     @Override
     public void cacheCurrentBitmap(int[] pixelBuffer) {
         this.drawOverlays = false;

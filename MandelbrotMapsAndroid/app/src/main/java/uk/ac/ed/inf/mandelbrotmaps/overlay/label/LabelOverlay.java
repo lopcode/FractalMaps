@@ -27,9 +27,12 @@ public class LabelOverlay implements IFractalOverlay {
         this.text = text;
     }
 
+    public String getText() {
+        return this.text;
+    }
+
     public void setTextAlignment(Paint.Align textAlignment) {
         this.textPaint.setTextAlign(textAlignment);
-
     }
 
     // IFractalOverlay

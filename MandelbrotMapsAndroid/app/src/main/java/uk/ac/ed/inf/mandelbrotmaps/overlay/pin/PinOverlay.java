@@ -23,15 +23,16 @@ public class PinOverlay implements IFractalOverlay {
         this.context = context;
         this.pinOuterPaint = new Paint();
         this.pinInnerPaint = new Paint();
-        this.pinRadius = pinRadius;
+        this.setPinRadius(pinRadius);
         this.setPosition(initialX, initialY);
     }
 
     @Override
     public void drawToCanvas(Canvas canvas, float drawX, float drawY) {
         float drawRadius = this.pinRadius;
-        if (this.hilighted)
+        if (this.hilighted) {
             drawRadius *= 2.0f;
+        }
 
         canvas.drawCircle(drawX, drawY, drawRadius, this.pinOuterPaint);
         canvas.drawCircle(drawX, drawY, drawRadius * (0.5f), this.pinInnerPaint);
@@ -58,6 +59,10 @@ public class PinOverlay implements IFractalOverlay {
         return true;
     }
 
+    public void setPinRadius(float pinRadius) {
+        this.pinRadius = pinRadius;
+    }
+
     public float getPinRadius() {
         return this.pinRadius;
     }
@@ -71,6 +76,14 @@ public class PinOverlay implements IFractalOverlay {
         this.pinOuterPaint.setAlpha(OUTER_ALPHA);
         this.pinInnerPaint.setColor(this.context.getResources().getColor(innerPinColour));
         this.pinInnerPaint.setAlpha(INNER_ALPHA);
+    }
+
+    public Paint getPinInnerPaint() {
+        return this.pinInnerPaint;
+    }
+
+    public Paint getPinOuterPaint() {
+        return this.pinOuterPaint;
     }
 
     public void setPinColour(PinColour colour) {

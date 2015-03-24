@@ -24,7 +24,7 @@ public class MandelbrotTouchHandler extends FractalTouchHandler {
         this.delegate = delegate;
     }
 
-    private boolean isTouchingPin(float x, float y) {
+    public boolean isTouchingPin(float x, float y) {
         float pinRadius = this.delegate.getPinRadius();
         float pinX = this.delegate.getPinX();
         float pinY = this.delegate.getPinY();
@@ -37,50 +37,55 @@ public class MandelbrotTouchHandler extends FractalTouchHandler {
     }
 
     @Override
-    public boolean onTouch(View v, MotionEvent evt) {
-        boolean stopDraggingPin = false;
-
-        switch (evt.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                LOGGER.debug("Touch down");
-
-                if (isTouchingPin(evt.getX(), evt.getY()) && evt.getPointerCount() == 1) {
-                    LOGGER.debug("Started dragging pin");
-                    this.draggingPin = true;
-                    this.delegate.startedDraggingPin();
-                    return true;
-                }
-
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                if (this.draggingPin && evt.getPointerCount() == 1) {
-                    //Log.i("MTH", "Dragged pin");
-                    this.delegate.pinDragged(evt.getX(), evt.getY(), false);
-                    return true;
-                }
-
-                break;
-
-            case MotionEvent.ACTION_UP:
-                LOGGER.debug("Touch removed");
-                if (this.draggingPin) {
-                    LOGGER.debug("Stopped dragging pin");
-                    this.draggingPin = false;
-                    stopDraggingPin = true;
-                    this.delegate.stoppedDraggingPin(evt.getX(), evt.getY());
-
-                    return true;
-                }
-
-                break;
+    protected boolean onTouchDown(float x, float y, int pointerID, int pointerCount) {
+        if (this.draggingPin && pointerCount > 1) {
+            this.stopDraggingPin(this.delegate.getPinX(), this.delegate.getPinY());
         }
 
-        if (!draggingPin && !stopDraggingPin) {
-            return super.onTouch(v, evt);
+        if (isTouchingPin(x, y) && pointerCount == 1) {
+            LOGGER.debug("Started dragging pin");
+            this.draggingPin = true;
+            this.delegate.startedDraggingPin();
+
+            this.dragID = pointerID;
+
+            return false;
         }
 
-        return false;
+        return super.onTouchDown(x, y, pointerID, pointerCount);
+    }
+
+    @Override
+    protected boolean onTouchMove(float x, float y, int pointerCount) {
+        if (this.draggingPin && pointerCount > 1) {
+            this.stopDraggingPin(this.delegate.getPinX(), this.delegate.getPinY());
+        }
+
+        if (this.draggingPin && pointerCount == 1) {
+            //Log.i("MTH", "Dragged pin");
+            this.delegate.pinDragged(x, y, false);
+
+            return true;
+        }
+
+        return super.onTouchMove(x, y, pointerCount);
+    }
+
+    @Override
+    protected boolean onTouchUp(float x, float y) {
+        LOGGER.debug("Touch removed");
+        if (this.draggingPin) {
+            this.stopDraggingPin(x, y);
+            return false;
+        }
+
+        return super.onTouchUp(x, y);
+    }
+
+    private void stopDraggingPin(float x, float y) {
+        LOGGER.debug("Stopped dragging pin");
+        this.draggingPin = false;
+        this.delegate.stoppedDraggingPin(x, y);
     }
 
     @Override

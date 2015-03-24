@@ -1,13 +1,13 @@
 package uk.ac.ed.inf.mandelbrotmaps.touch;
 
 public interface IFractalTouchDelegate {
-    public void startDragging();
+    public void startDraggingFractal();
 
-    public void stopDragging(boolean stoppedOnZoom, float totalDragX, float totalDragY);
+    public void stopDraggingFractal(boolean stoppedOnZoom, float totalDragX, float totalDragY);
 
-    public void startScaling(float x, float y);
+    public void startScalingFractal(float x, float y);
 
-    public void stopScaling();
+    public void stopScalingFractal();
 
     public void dragFractal(float x, float y, float totalDragX, float totalDragY);
 
