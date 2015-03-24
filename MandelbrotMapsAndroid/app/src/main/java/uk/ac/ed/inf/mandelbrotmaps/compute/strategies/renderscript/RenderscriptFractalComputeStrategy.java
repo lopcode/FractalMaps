@@ -227,6 +227,13 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
         if (this.renderScript == null)
             return;
 
+        int boundedLinesPerProgressUpdate = arguments.linesPerProgressUpdate;
+        if (boundedLinesPerProgressUpdate <= MIN_LINES_PER_PROGRESS_UPDATE) {
+            boundedLinesPerProgressUpdate = MIN_LINES_PER_PROGRESS_UPDATE;
+        }
+
+        int lastAllocSize = boundedLinesPerProgressUpdate;
+
         this.delegate.onComputeStarted(arguments.pixelBlockSize);
 
         long setupStart = System.nanoTime();
@@ -276,18 +283,17 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
             if (this.row_indices_alloc != null)
                 this.row_indices_alloc.destroy();
 
-            this.row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), arguments.linesPerProgressUpdate, Allocation.USAGE_SCRIPT);
+            this.row_indices_alloc = Allocation.createSized(this.renderScript, Element.I32(this.renderScript), boundedLinesPerProgressUpdate, Allocation.USAGE_SCRIPT);
             this.fractalRenderScript.set_gIn(row_indices_alloc);
             this.fractalRenderScript.set_gOut(row_indices_alloc);
         }
-
-        int lastAllocSize = arguments.linesPerProgressUpdate;
 
         long setupEnd = System.nanoTime();
         double setupTime = (setupEnd - setupStart) / 1000000000D;
         //Log.i("GFCS", "Took " + setupTime + " seconds to set up for RS compute");
 
-        int[][] indices = this.rowIndices.get(arguments.linesPerProgressUpdate).get(arguments.pixelBlockSize);
+        SparseArray<int[][]> rowIndexMap = this.rowIndices.get(boundedLinesPerProgressUpdate);
+        int[][] indices = rowIndexMap.get(arguments.pixelBlockSize);
         int progressUpdates = indices.length;
         for (int i = 0; i < progressUpdates; i++) {
             int linesInProgressUpdate = indices[i].length;
@@ -336,7 +342,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
             //Log.i("RFCS", "Checking if abort signalled to do a progress update");
             boolean abortSignalled = renderThreadList.abortSignalled();
             //Log.i("RFCS", "Result: " + abortSignalled);
-            if (!abortSignalled && arguments.linesPerProgressUpdate != arguments.viewHeight) {
+            if (!abortSignalled && boundedLinesPerProgressUpdate != arguments.viewHeight) {
                 //Log.i("RFCS", "Done progress update");
                 this.delegate.postUpdate(arguments.pixelBuffer, arguments.pixelBufferSizes);
             }
