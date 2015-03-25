@@ -73,7 +73,7 @@ public class RenderscriptRenderThread extends Thread {
                 arguments.startTime = System.nanoTime();
 
                 if (!(this.strategy == null || this.abortSignalled() || this.strategy.getContext() == null)) {
-                    this.strategy.computeFractalWithThreadID(arguments);
+                    this.strategy.computeFractalWithArguments(arguments);
                 }
 
                 synchronized (readyLock) {
