@@ -3,7 +3,6 @@ package uk.ac.ed.inf.mandelbrotmaps.presenter;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.view.View;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

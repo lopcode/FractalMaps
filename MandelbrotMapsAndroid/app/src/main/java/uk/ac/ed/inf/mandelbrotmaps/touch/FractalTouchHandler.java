@@ -59,6 +59,7 @@ public class FractalTouchHandler implements IFractalTouchHandler {
     public boolean isCurrentlyScaling() {
         return this.gestureDetector.isInProgress() || this.currentlyScaling;
     }
+
     @Override
     public void setTouchDelegate(IFractalTouchDelegate delegate) {
         this.delegate = delegate;

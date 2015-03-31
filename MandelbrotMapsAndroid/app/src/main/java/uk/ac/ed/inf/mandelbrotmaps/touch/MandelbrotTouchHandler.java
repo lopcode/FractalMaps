@@ -1,7 +1,6 @@
 package uk.ac.ed.inf.mandelbrotmaps.touch;
 
 import android.content.Context;
-import android.view.MotionEvent;
 import android.view.View;
 
 import org.slf4j.Logger;

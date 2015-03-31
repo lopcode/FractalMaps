@@ -134,6 +134,8 @@ public class FractalPresenterTest {
 
     @Test
     public void testComputeGraphAreaNow() {
+        this.presenter.setGraphArea(Constants.testGraphPointOne);
+
         this.presenter.computeGraphAreaNow(Constants.testGraphPointOne);
 
         double[] newGraphArea = this.presenter.getGraphArea();

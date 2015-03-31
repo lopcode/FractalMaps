@@ -1,14 +1,20 @@
 package uk.ac.ed.inf.mandelbrotmaps;
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -31,6 +37,10 @@ import android.widget.Toast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -596,8 +606,16 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
                 this.onSwitchFractalViewLayoutClicked(this.viewContext);
                 return true;
 
+            case R.id.menuSave:
+                this.saveImage(this.viewContext);
+                return true;
+
+            case R.id.menuShare:
+                this.shareImage(this.viewContext);
+                return true;
+
             default:
-                LOGGER.debug("Context item selected");
+                LOGGER.debug("Context item selected that wasn't handled");
                 return true;
         }
     }
@@ -903,19 +921,154 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     // Image saving and sharing
 
     private void saveImage(View viewContext) {
-        LOGGER.warn("Saving image is not implemented yet");
+        if (viewContext == this.juliaFractalView) {
+            LOGGER.info("Saving Julia image");
+
+            this.saveJuliaImage();
+        } else if (viewContext == this.mandelbrotFractalView) {
+            LOGGER.info("Saving Mandelbrot image");
+
+            this.saveMandelbrotImage();
+        }
+    }
+
+    private void saveMandelbrotImage() {
+        Bitmap bitmap = this.mandelbrotFractalView.getCurrentBitmap();
+        this.saveImage(bitmap, this.formImageTitle("Mandelbrot"));
+    }
+
+    private void saveJuliaImage() {
+        Bitmap bitmap = this.juliaFractalView.getCurrentBitmap();
+        this.saveImage(bitmap, this.formImageTitle("Julia"));
+    }
+
+    private File saveImage(Bitmap bitmap, String title) {
+        File fractalImage = this.getImageOutputFile(title);
+        LOGGER.info("Saving '{}' to '{}'", title, fractalImage.getAbsolutePath());
+
+        OutputStream output = null;
+        try {
+            output = new FileOutputStream(fractalImage);
+        } catch (FileNotFoundException e) {
+            LOGGER.error("Failed to open file for writing: {}", e);
+        }
+
+        boolean couldWriteImage = this.writeBitmapToPNGStream(output, bitmap);
+        if (!couldWriteImage) {
+            this.showLongToast("Failed to save image!");
+            return null;
+        }
+
+        addImageToGallery(fractalImage.getAbsolutePath(), this.getApplicationContext());
+        this.showShortToast("Saved " + title + " to " + fractalImage.getAbsolutePath());
+
+        return fractalImage;
+    }
+
+    private File getImageOutputFile(String title) {
+        File path = Environment.getExternalStorageDirectory();
+        File fractalsDirectory = new File(path.getAbsolutePath() + "/MandelbrotMaps/");
+        File fractalImage = new File(fractalsDirectory, title + ".png");
+
+        this.createApplicationDirectoryIfNecessary();
+        return fractalImage;
+    }
+
+    private boolean writeBitmapToPNGStream(OutputStream output, Bitmap bitmap) {
+        try {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
+            output.flush();
+            output.close();
+        } catch (Exception e) {
+            LOGGER.error("Failed to write image: {}", e);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private void createApplicationDirectoryIfNecessary() {
+        File path = Environment.getExternalStorageDirectory();
+        File fractalsDirectory = new File(path.getAbsolutePath() + "/MandelbrotMaps/");
+
+        if (!fractalsDirectory.exists()) {
+            LOGGER.info("Fractal images directory doesn't exist, creating it: {}", fractalsDirectory.getAbsolutePath());
+            fractalsDirectory.mkdirs();
+        }
+    }
+
+    private String formImageTitle(String fractalType) {
+        return fractalType + (System.currentTimeMillis() / 1000L);
+    }
+
+    // http://stackoverflow.com/questions/20859584/how-save-image-in-android-gallery
+    public static void addImageToGallery(final String filePath, final Context context) {
+        ContentValues values = new ContentValues();
+
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+        values.put(MediaStore.MediaColumns.DATA, filePath);
+
+        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
     }
 
     private void shareImage(View viewContext) {
-        LOGGER.warn("Sharing image is not implemented yet");
+        if (viewContext == this.juliaFractalView) {
+            LOGGER.info("Saving Julia image");
+
+            this.shareJuliaImage();
+        } else if (viewContext == this.mandelbrotFractalView) {
+            LOGGER.info("Saving Mandelbrot image");
+
+            this.shareMandelbrotImage();
+        }
+    }
+
+    private void shareMandelbrotImage() {
+        Bitmap bitmap = this.mandelbrotFractalView.getCurrentBitmap();
+        this.shareImage(bitmap, this.formImageTitle("Mandelbrot"));
+    }
+
+    private void shareJuliaImage() {
+        Bitmap bitmap = this.juliaFractalView.getCurrentBitmap();
+        this.shareImage(bitmap, this.formImageTitle("Julia"));
+    }
+
+    private boolean shareImage(Bitmap bitmap, String title) {
+        File image = this.saveImage(bitmap, title);
+        if (image == null) {
+            LOGGER.error("Couldn't share image because it couldn't be saved!");
+            this.showShortToast("Failed to share image, because it couldn't be saved first");
+
+            return false;
+        }
+
+        Uri uri = Uri.fromFile(image);
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setType("image/png");
+
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(intent, "Share " + title + " image using"));
+
+        return true;
     }
 
     // Utilities
 
-    public void showToastOnUIThread(final String toastText, final int length) {
+    public void showLongToast(final String toastText) {
+        this.showToast(toastText, Toast.LENGTH_LONG);
+    }
+
+    public void showShortToast(final String toastText) {
+        this.showToast(toastText, Toast.LENGTH_SHORT);
+    }
+
+    private void showToast(final String toastText, final int timeLength) {
         runOnUiThread(new Runnable() {
             public void run() {
-                Toast.makeText(getApplicationContext(), toastText, length).show();
+                Toast.makeText(getApplicationContext(), toastText, timeLength).show();
             }
         });
     }
@@ -1074,7 +1227,7 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
     @Override
     public void onFractalRecomputed(IFractalPresenter presenter, double timeTakenInSeconds) {
         String toastText = "Render took " + timeTakenInSeconds + " seconds";
-        this.showToastOnUIThread(toastText, toastText.length());
+        this.showShortToast(toastText);
     }
 
     // IPinMovementDelegate
