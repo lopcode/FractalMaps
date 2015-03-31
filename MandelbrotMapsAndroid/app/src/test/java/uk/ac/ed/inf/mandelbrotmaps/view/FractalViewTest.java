@@ -38,6 +38,4 @@ public class FractalViewTest {
 
         verify(this.resizeListener).onViewResized(this.view, 100, 100);
     }
-
-    // TODO: Canvas related tests?
 }

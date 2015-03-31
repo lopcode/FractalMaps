@@ -119,7 +119,7 @@ public class FractalPresenterTest {
     @Test
     public void testShiftGraphArea() {
         this.presenter.setGraphArea(Constants.testGraphPointOne);
-        double pixelSize = this.presenter.getPixelSize();
+        double pixelSize = this.presenter.getPixelSize(VIEW_WIDTH, Constants.testGraphPointOne);
 
         this.presenter.translateGraphArea(5, 5);
 

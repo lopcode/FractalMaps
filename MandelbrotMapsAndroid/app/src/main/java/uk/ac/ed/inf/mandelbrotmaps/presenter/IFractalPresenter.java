@@ -20,8 +20,6 @@ public interface IFractalPresenter extends IFractalPresenterDelegate {
 
     public int getMaxIterations();
 
-    public double getPixelSize();
-
     public void setFractalDetail(double detail);
 
     public void setView(IFractalView view, Matrix matrix, IViewResizeListener listener);
@@ -41,8 +39,6 @@ public interface IFractalPresenter extends IFractalPresenterDelegate {
     // Graph area affecting
 
     public void translateGraphArea(int dx, int dy);
-
-    public void zoomGraphArea(int x, int y, double scale);
 
     public void setGraphArea(double[] graphArea);
 

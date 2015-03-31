@@ -25,4 +25,6 @@ public interface IFractalSceneDelegate {
     public void onFractalViewReady(IFractalPresenter presenter);
 
     public void onSceneLayoutChanged(SceneLayoutEnum layoutType);
+
+    public void showShortToast(String message);
 }

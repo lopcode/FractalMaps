@@ -63,6 +63,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     private List<IFractalOverlay> fractalPresenterOverlays;
     private LabelOverlay coordinatesOverlay;
 
+    private double[] lastSaneGraphArea;
+
     public FractalPresenter(Context context, IFractalSceneDelegate sceneDelegate, IFractalComputeStrategy fractalStrategy) {
         this.context = context;
         this.fractalStrategy = fractalStrategy;
@@ -156,7 +158,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         LOGGER.info("Computing: " + coordinates);
 
         // Empirically determined lines per update
-        double absLnPixelSize = Math.abs(Math.log(getPixelSize()));
+        double absLnPixelSize = Math.abs(Math.log(getPixelSize(this.viewWidth, this.graphArea)));
         double adjustedLog = ((absLnPixelSize - 9.0D) / 1.3D);
         if (adjustedLog < 2.0D)
             adjustedLog = 2.0D;
@@ -183,7 +185,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
                 this.viewHeight,
                 graphArea[0],
                 graphArea[1],
-                getPixelSize(),
+                getPixelSize(this.viewWidth, this.graphArea),
                 this.pixelBuffer,
                 this.pixelBufferSizes));
 
@@ -201,7 +203,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public void translateGraphArea(int dx, int dy) {
         // What does each pixel correspond to, on the complex plane?
-        double pixelSize = this.getPixelSize();
+        double pixelSize = this.getPixelSize(this.viewWidth, this.graphArea);
 
         // Adjust the Graph Area
         double[] newGraphArea = this.graphArea;
@@ -211,9 +213,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
         this.setGraphArea(newGraphArea);
     }
 
-    @Override
-    public void zoomGraphArea(int x, int y, double scale) {
-        double pixelSize = getPixelSize();
+    public double[] zoomGraphArea(int x, int y, double scale) {
+        double pixelSize = this.getPixelSize(this.viewWidth, this.graphArea);
 
         double[] oldGraphArea = this.graphArea;
         double[] newGraphArea = new double[3];
@@ -242,11 +243,11 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
         //Log.d(TAG, "Just zoomed - zoom level is " + getZoomLevel());
 
-        setGraphArea(newGraphArea);
+        return newGraphArea;
     }
 
     public int getMaxIterations() {
-        double absLnPixelSize = Math.abs(Math.log(getPixelSize()));
+        double absLnPixelSize = Math.abs(Math.log(getPixelSize(this.viewWidth, this.graphArea)));
 
         LOGGER.debug("Abs ln pixel size: " + absLnPixelSize);
         double dblIterations = (this.detail / DETAIL_DIVISOR) * this.fractalStrategy.getIterationConstantFactor() * Math.pow(this.fractalStrategy.getIterationBase(), absLnPixelSize);
@@ -257,17 +258,17 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     // Compute length of 1 pixel on the complex plane
-    public double getPixelSize() {
+    public double getPixelSize(int viewWidth, double[] graphArea) {
         // Nothing to do - cannot compute a sane pixel size
-        if (this.viewWidth == 0) return 0.0;
+        if (viewWidth == 0) return 0.0;
         if (graphArea == null) return 0.0;
 
         // Return the pixel size
-        return (graphArea[2] / (double) this.viewWidth);
+        return (graphArea[2] / (double) viewWidth);
     }
 
-    public int getZoomLevel() {
-        double pixelSize = getPixelSize();
+    public int getZoomLevel(int viewWidth, double[] graphArea) {
+        double pixelSize = getPixelSize(viewWidth, graphArea);
 
         // If the pixel size = 0, something's wrong (happens at Julia launch).
         if (pixelSize == 0.0d)
@@ -279,8 +280,8 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     /* Checks if this zoom level if sane (within the chosen limits) */
-    boolean saneZoomLevel() {
-        int zoomLevel = getZoomLevel();
+    boolean isSaneZoomLevel(int viewWidth, double[] graphArea) {
+        int zoomLevel = this.getZoomLevel(viewWidth, graphArea);
 
         return ((zoomLevel >= 1) && (zoomLevel <= ZOOM_SLIDER_SCALING));
     }
@@ -325,7 +326,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     }
 
     public double[] getGraphPositionFromClickedPosition(float touchX, float touchY) {
-        double pixelSize = getPixelSize();
+        double pixelSize = getPixelSize(this.viewWidth, this.graphArea);
 
         double[] graphPosition = new double[2];
 
@@ -339,7 +340,7 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
     @Override
     public double[] getPointFromGraphPosition(double pointX, double pointY) {
         double[] point = new double[2];
-        double pixelSize = getPixelSize();
+        double pixelSize = getPixelSize(this.viewWidth, this.graphArea);
         point[0] = ((pointX - graphArea[0]) / pixelSize);
         point[1] = (-(pointY - graphArea[1]) / pixelSize);
 
@@ -454,14 +455,15 @@ public class FractalPresenter implements IFractalPresenter, IFractalComputeDeleg
 
     @Override
     public void scaleFractal(float scaleFactor, float midX, float midY) {
-        if (!this.saneZoomLevel()) {
-            LOGGER.info("Zoom level not sane!");
+        double[] newGraphArea = this.zoomGraphArea((int) midX, (int) midY, 1 / scaleFactor);
+        if (!this.isSaneZoomLevel(this.viewWidth, newGraphArea)) {
+            LOGGER.info("Zoom level not sane, not scaling!");
 
             this.view.postUIThreadRedraw();
             return;
         }
 
-        this.zoomGraphArea((int) midX, (int) midY, 1 / scaleFactor);
+        this.setGraphArea(newGraphArea);
 
         this.transformMatrix.postScale(scaleFactor, scaleFactor, midX, midY);
         this.view.setFractalTransformMatrix(this.transformMatrix);
