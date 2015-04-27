@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@color/black">
+
+<io.bunnies.fractalmaps.view.FractalView
+    android:id="@+id/firstFractalView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"/>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="10"
+    android:orientation="horizontal">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:weightSum="10"
+        android:orientation="vertical"
+        android:layout_weight="4">
+
+        <io.bunnies.fractalmaps.view.FractalView
+            android:id="@+id/secondFractalView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="top|left"
+            android:layout_weight="1.5"
+            android:background="@color/black"/>
+
+    </LinearLayout>
+</LinearLayout>
+
+<include
+    android:id="@+id/toolbar"
+    layout="@layout/toolbar"/>
+</FrameLayout>

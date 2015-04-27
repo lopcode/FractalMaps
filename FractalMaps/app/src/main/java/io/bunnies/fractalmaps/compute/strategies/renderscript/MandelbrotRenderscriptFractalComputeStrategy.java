@@ -1,0 +1,23 @@
+package io.bunnies.fractalmaps.compute.strategies.renderscript;
+
+public class MandelbrotRenderscriptFractalComputeStrategy extends RenderscriptFractalComputeStrategy {
+    @Override
+    protected void invokeComputeFunction() {
+        if (this.fractalRenderScript != null)
+            this.fractalRenderScript.invoke_mandelbrot();
+    }
+
+    // Set the "maximum iteration" calculation constants
+    // Empirically determined values for Mandelbrot set.
+    public double getIterationBase() {
+        return 1.24D;
+    }
+
+    public double getIterationConstantFactor() {
+        return 54.0D;
+    }
+
+    public double getMaxZoomLevel() {
+        return -31;
+    }
+}
