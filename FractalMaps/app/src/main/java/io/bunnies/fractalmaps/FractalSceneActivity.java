@@ -1226,8 +1226,10 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
 
     @Override
     public void onFractalRecomputed(IFractalPresenter presenter, double timeTakenInSeconds) {
-        String toastText = "Render took " + timeTakenInSeconds + " seconds";
-        this.showShortToast(toastText);
+        if (this.settings.showTimes()) {
+            String toastText = "Render took " + timeTakenInSeconds + " seconds";
+            this.showShortToast(toastText);
+        }
     }
 
     // IPinMovementDelegate

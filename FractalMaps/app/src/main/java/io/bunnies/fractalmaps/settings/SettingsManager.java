@@ -79,7 +79,7 @@ public class SettingsManager implements SharedPreferences.OnSharedPreferenceChan
     }
 
     public boolean showTimes() {
-        return this.getDefaultSharedPreferences().getBoolean(PREFERENCE_KEY_CRUDE_FIRST, PREFERENCE_SHOW_TIMES_DEFAULT);
+        return this.getDefaultSharedPreferences().getBoolean(PREFERENCE_KEY_SHOW_TIMES, PREFERENCE_SHOW_TIMES_DEFAULT);
     }
 
     public void refreshPinSettings() {
