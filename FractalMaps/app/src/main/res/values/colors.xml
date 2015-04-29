@@ -14,4 +14,6 @@
     <color name="gray">#222222</color>
     <color name="black">#000000</color>
 
+    <color name="divider">#222222</color>
+
 </resources>

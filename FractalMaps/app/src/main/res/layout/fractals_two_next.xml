@@ -17,6 +17,11 @@ android:background="@color/black">
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider" />
+
     <io.bunnies.fractalmaps.view.FractalView
         android:id="@+id/secondFractalView"
         android:layout_width="match_parent"
