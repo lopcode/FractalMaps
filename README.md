@@ -13,3 +13,13 @@ Additions:
 * Refactored pretty much everything
 * Renderscript rendering (~5x faster at deeper zoom levels)
 * Unit testing
+
+# License
+All the work here is completed under the GNU GPL v3 license. Please see [COPYING](COPYING) and [GPL-LICENSE](GPL-LICENSE) for details.
+
+# Credits
+This work builds on that of the following people:
+* Alasdair Corbett, who created the Android port of Mandelbrot Maps: https://github.com/withad/Mandelbrot-Maps-on-Android
+* Edward Mallia: http://edwardmallia.com/mandelbrotmaps/
+* Taige Liu
+* Iain Parris, who created the original Mandelbrot Maps: http://homepages.inf.ed.ac.uk/wadler/mandelbrot-maps/mmaps.html, http://www.inf.ed.ac.uk/publications/thesis/online/IM080583.pdf
