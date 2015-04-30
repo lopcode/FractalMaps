@@ -8,7 +8,7 @@ android {
     defaultConfig {
         applicationId "io.bunnies.fractalmaps"
         minSdkVersion 15
-        targetSdkVersion 21
+        targetSdkVersion 22
         renderscriptTargetApi 18
         renderscriptSupportModeEnabled true
     }
@@ -24,8 +24,8 @@ android {
 // jacoco: https://code.google.com/p/android/issues/detail?id=144664
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:21.0.3'
-    compile 'com.android.support:support-v4:21.0.3'
+    compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.android.support:support-v4:22.1.1'
     compile 'com.jakewharton:butterknife:6.1.0'
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'org.slf4j:slf4j-api:1.7.10'
