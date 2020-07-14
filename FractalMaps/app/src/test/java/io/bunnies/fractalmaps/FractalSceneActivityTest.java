@@ -1,6 +1,7 @@
 package io.bunnies.fractalmaps;
 
 import android.content.Intent;
+import android.os.Build;
 import android.view.MenuItem;
 
 import org.junit.Before;
@@ -9,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboMenuItem;
 
@@ -38,8 +39,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@Config(constants = BuildConfig.class)
-@RunWith(RobolectricGradleTestRunner.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@RunWith(RobolectricTestRunner.class)
 public class FractalSceneActivityTest {
     private FractalSceneActivity activity;
 

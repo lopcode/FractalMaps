@@ -1,16 +1,16 @@
 package io.bunnies.fractalmaps.presenter;
 
 import android.graphics.Matrix;
+import android.os.Build;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import io.bunnies.fractalmaps.BuildConfig;
 import io.bunnies.fractalmaps.Constants;
 import io.bunnies.fractalmaps.IFractalSceneDelegate;
 import io.bunnies.fractalmaps.compute.FractalComputeArguments;
@@ -25,8 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@Config(constants = BuildConfig.class)
-@RunWith(RobolectricGradleTestRunner.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@RunWith(RobolectricTestRunner.class)
 public class FractalPresenterTest {
     private FractalPresenter presenter;
     private IFractalSceneDelegate sceneDelegate;

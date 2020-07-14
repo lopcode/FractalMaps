@@ -15,12 +15,12 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.ContextMenu;
@@ -47,8 +47,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import butterknife.ButterKnife;
-import butterknife.InjectView;
 import io.bunnies.fractalmaps.colouring.EnumColourStrategy;
 import io.bunnies.fractalmaps.compute.strategies.IFractalComputeStrategy;
 import io.bunnies.fractalmaps.compute.strategies.JuliaSeedSettable;
@@ -75,20 +73,13 @@ import io.bunnies.fractalmaps.touch.FractalTouchHandler;
 import io.bunnies.fractalmaps.touch.MandelbrotTouchHandler;
 import io.bunnies.fractalmaps.view.FractalView;
 
-public class FractalSceneActivity extends ActionBarActivity implements IFractalSceneDelegate, IPinMovementDelegate, DetailControlDelegate, ISceneMenuDelegate, IFractalMenuDelegate {
+public class FractalSceneActivity extends AppCompatActivity implements IFractalSceneDelegate, IPinMovementDelegate, DetailControlDelegate, ISceneMenuDelegate, IFractalMenuDelegate {
     private final Logger LOGGER = LoggerFactory.getLogger(FractalSceneActivity.class);
 
     // Layout variables
-    @InjectView(io.bunnies.fractalmaps.R.id.toolbar)
     Toolbar toolbar;
-
-    @InjectView(io.bunnies.fractalmaps.R.id.toolbarTextProgress)
     TextView toolbarTextProgress;
-
-    @InjectView(io.bunnies.fractalmaps.R.id.firstFractalView)
     FractalView firstFractalView;
-
-    @InjectView(io.bunnies.fractalmaps.R.id.secondFractalView)
     FractalView secondFractalView;
 
     public static final String FRAGMENT_DETAIL_DIALOG_NAME = "detailControlDialog";
@@ -157,6 +148,11 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         }
 
         this.showingPinOverlay = (this.layoutType == SceneLayoutEnum.SIDE_BY_SIDE || (this.layoutType == SceneLayoutEnum.LARGE_SMALL && !this.settings.getViewsSwitched()));
+
+        toolbar = findViewById(R.id.toolbar);
+        toolbarTextProgress = findViewById(R.id.toolbarTextProgress);
+        firstFractalView = findViewById(R.id.firstFractalView);
+        secondFractalView = findViewById(R.id.secondFractalView);
 
         this.firstFractalView.initialise();
         this.secondFractalView.initialise();
@@ -240,7 +236,6 @@ public class FractalSceneActivity extends ActionBarActivity implements IFractalS
         }
 
         this.layoutType = layoutType;
-        ButterKnife.inject(this);
     }
 
     private void initialiseToolbar() {

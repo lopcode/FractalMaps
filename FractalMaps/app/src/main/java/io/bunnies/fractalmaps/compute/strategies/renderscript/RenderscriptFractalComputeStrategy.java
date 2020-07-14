@@ -1,7 +1,7 @@
 package io.bunnies.fractalmaps.compute.strategies.renderscript;
 
 import android.content.Context;
-import android.support.v8.renderscript.*;
+import androidx.renderscript.*;
 import android.util.SparseArray;
 
 import org.slf4j.Logger;
@@ -159,7 +159,7 @@ public abstract class RenderscriptFractalComputeStrategy extends FractalComputeS
     private boolean initialiseRenderScript() {
         try {
             this.renderScript = RenderScript.create(this.context);
-            this.fractalRenderScript = new ScriptC_mandelbrot(this.renderScript, context.getResources(), R.raw.mandelbrot);
+            this.fractalRenderScript = new ScriptC_mandelbrot(this.renderScript);
         } catch (Throwable throwable) {
             LOGGER.error("Failed to initialise renderscript: " + throwable.getLocalizedMessage());
             return false;

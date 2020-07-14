@@ -1,13 +1,14 @@
 package io.bunnies.fractalmaps.touch;
 
+import android.os.Build;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import io.bunnies.fractalmaps.BuildConfig;
 import io.bunnies.fractalmaps.overlay.pin.IPinMovementDelegate;
 
 import static org.junit.Assert.assertEquals;
@@ -17,8 +18,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.stub;
 import static org.mockito.Mockito.verify;
 
-@Config(constants = BuildConfig.class)
-@RunWith(RobolectricGradleTestRunner.class)
+@Config(sdk = Build.VERSION_CODES.P)
+@RunWith(RobolectricTestRunner.class)
 public class MandelbrotTouchHandlerTest {
     private MandelbrotTouchHandler touchHandler;
     private IFractalTouchDelegate touchDelegate;

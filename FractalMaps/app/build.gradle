@@ -1,16 +1,20 @@
 apply plugin: 'com.android.application'
-apply plugin: 'org.robolectric'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
 
     defaultConfig {
         applicationId "io.bunnies.fractalmaps"
-        minSdkVersion 15
-        targetSdkVersion 22
-        renderscriptTargetApi 18
+        minSdkVersion 21
+        targetSdkVersion 29
+        renderscriptTargetApi 21
         renderscriptSupportModeEnabled true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     buildTypes {
@@ -19,18 +23,23 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
 // jacoco: https://code.google.com/p/android/issues/detail?id=144664
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:22.1.1'
-    compile 'com.android.support:support-v4:22.1.1'
-    compile 'com.jakewharton:butterknife:6.1.0'
-    compile 'com.google.code.gson:gson:2.3.1'
-    compile 'org.slf4j:slf4j-api:1.7.10'
-    compile 'eu.lp0.slf4j:slf4j-android:1.7.10-0'
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.0-SNAPSHOT'
-    testCompile 'org.mockito:mockito-core:1.+'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'org.slf4j:slf4j-api:1.7.30'
+    implementation 'eu.lp0.slf4j:slf4j-android:1.7.10-0'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:1.+'
+    testImplementation 'org.robolectric:robolectric:4.3'
 }

@@ -2,10 +2,10 @@
 buildscript {
     repositories {
         jcenter()
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.2.0'
-        classpath 'org.robolectric:robolectric-gradle-plugin:1.0.1'
+        classpath 'com.android.tools.build:gradle:4.0.1'
     }
 }
 
@@ -13,5 +13,6 @@ allprojects {
     repositories {
         jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+        google()
     }
 }
